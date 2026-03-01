@@ -1,5 +1,5 @@
 # AGENTS.md - AI-First Workflow
-SommarStugan (Android)
+StugBygget (Android)
 
 > This document defines how Codex should work in this repository.
 > Human review is mandatory before merge.
@@ -8,7 +8,7 @@ SommarStugan (Android)
 
 # Project Overview
 
-SommarStugan is an Android app for coordinating a Swedish summer cottage renovation (summer 2026).
+StugBygget is an Android app for coordinating a Swedish summer cottage renovation (summer 2026).
 
 Core modules:
 - Planning / Timeline
@@ -220,4 +220,4 @@ Add KDoc for non-trivial business logic (calculations, budgeting, transport deci
 
 # Long-Term Goal
 
-Codebase should stay modular, testable, and safe to evolve as SommarStugan grows from prototype to production.
+Codebase should stay modular, testable, and safe to evolve as StugBygget grows from prototype to production.

@@ -1,4 +1,4 @@
-# SommarStugan - Ticket Templates
+# StugBygget - Ticket Templates
 
 Use these templates when creating tickets in Linear.
 
@@ -172,4 +172,3 @@ Bad ticket traits:
 
 Senior test:
 Could a developer new to the repo build it correctly and know when it is done?
-
