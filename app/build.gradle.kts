@@ -20,6 +20,9 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+        val googleWebClientId = (project.findProperty("GOOGLE_WEB_CLIENT_ID") as? String).orEmpty()
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
+
     }
 
     buildTypes {
@@ -37,6 +40,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -57,6 +61,8 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.functions)
+    implementation(libs.play.services.auth)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
