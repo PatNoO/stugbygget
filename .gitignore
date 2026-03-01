@@ -1,0 +1,25 @@
+# Android Studio / IntelliJ
+*.iml
+.gradle
+/local.properties
+/.idea/
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+
+# Keystores / Signing (Viktigt för säkerhet)
+*.jks
+*.keystore
+*.pk8
+*.pem
+
+# Google Services / Firebase
+google-services.json
+
+# Secrets
+secrets.properties
+
+# Log files
+*.log
