@@ -1,8 +1,11 @@
 package com.example.stugbygget.di
 
 import com.example.stugbygget.data.firebase.auth.FirebaseAuthRepository
+import com.example.stugbygget.data.firebase.firestore.FirestorePhaseRepository
 import com.example.stugbygget.domain.repository.AuthRepository
+import com.example.stugbygget.domain.repository.PhaseRepository
 import com.example.stugbygget.domain.usecase.ObserveAuthUserUseCase
+import com.example.stugbygget.domain.usecase.ObservePhasesUseCase
 import com.example.stugbygget.domain.usecase.SignInWithGoogleUseCase
 import com.example.stugbygget.domain.usecase.SignOutUseCase
 import com.google.firebase.auth.FirebaseAuth
@@ -17,6 +20,7 @@ class AppContainer {
     val functions: FirebaseFunctions by lazy { FirebaseFunctions.getInstance() }
 
     val authRepository: AuthRepository by lazy { FirebaseAuthRepository(firebaseAuth) }
+    val phaseRepository: PhaseRepository by lazy { FirestorePhaseRepository(firestore) }
 
     val observeAuthUserUseCase: ObserveAuthUserUseCase by lazy {
         ObserveAuthUserUseCase(authRepository)
@@ -26,5 +30,8 @@ class AppContainer {
     }
     val signOutUseCase: SignOutUseCase by lazy {
         SignOutUseCase(authRepository)
+    }
+    val observePhasesUseCase: ObservePhasesUseCase by lazy {
+        ObservePhasesUseCase(phaseRepository)
     }
 }

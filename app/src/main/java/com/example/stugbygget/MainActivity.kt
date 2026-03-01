@@ -19,6 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.feature.auth.ui.AuthViewModel
 import com.example.stugbygget.feature.auth.ui.AuthViewModelFactory
 import com.example.stugbygget.feature.auth.ui.SignInScreen
@@ -51,6 +52,7 @@ class MainActivity : ComponentActivity() {
 private fun AppContent(authViewModel: AuthViewModel) {
     val authState by authViewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val container = (context.applicationContext as StugByggetApp).container
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -97,12 +99,12 @@ private fun AppContent(authViewModel: AuthViewModel) {
             }
         )
     } else {
-        MainNavigationScaffold()
+        MainNavigationScaffold(container = container)
     }
 }
 
 @Composable
-private fun MainNavigationScaffold() {
+private fun MainNavigationScaffold(container: AppContainer) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
@@ -123,6 +125,7 @@ private fun MainNavigationScaffold() {
     ) { innerPadding ->
         AppNavHost(
             navController = navController,
+            container = container,
             modifier = Modifier.padding(innerPadding)
         )
     }

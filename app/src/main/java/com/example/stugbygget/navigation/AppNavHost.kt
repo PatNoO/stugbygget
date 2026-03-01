@@ -6,10 +6,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.stugbygget.core.ui.PlaceholderScreen
+import com.example.stugbygget.di.AppContainer
+import com.example.stugbygget.feature.planning.ui.PlanningScreen
 
 @Composable
 fun AppNavHost(
     navController: NavHostController,
+    container: AppContainer,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -18,7 +21,7 @@ fun AppNavHost(
         modifier = modifier
     ) {
         composable(AppRoute.Planning.route) {
-            PlaceholderScreen("Planering", "Tidslinje med faser och progress")
+            PlanningScreen(container = container)
         }
         composable(AppRoute.Todos.route) {
             PlaceholderScreen("Todo", "Uppgiftshantering med ansvar och prioritet")
