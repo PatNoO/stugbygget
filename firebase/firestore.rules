@@ -1,0 +1,21 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isTeamMember(projectId) {
+      return signedIn() &&
+        request.auth.uid in get(/databases/$(database)/documents/projects/$(projectId)/info).data.teamMembers;
+    }
+
+    match /projects/{projectId} {
+      allow read, write: if isTeamMember(projectId);
+
+      match /{document=**} {
+        allow read, write: if isTeamMember(projectId);
+      }
+    }
+  }
+}
