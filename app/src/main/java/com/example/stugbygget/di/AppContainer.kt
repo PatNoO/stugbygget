@@ -11,6 +11,7 @@ import com.example.stugbygget.data.firebase.firestore.FirestoreProjectContextPro
 import com.example.stugbygget.data.firebase.firestore.FirestoreShoppingRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreTodoRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreBudgetRepository
+import com.example.stugbygget.data.firebase.firestore.FirestoreLogisticsRepository
 import com.example.stugbygget.data.local.LocalRoomDimensionsRepository
 import com.example.stugbygget.data.local.LocalRoomLayoutDataSource
 import com.example.stugbygget.data.local.LocalRoomLayoutRepository
@@ -24,6 +25,7 @@ import com.example.stugbygget.domain.repository.PhaseRepository
 import com.example.stugbygget.domain.repository.PhotoRepository
 import com.example.stugbygget.domain.repository.MeasurementRepository
 import com.example.stugbygget.domain.repository.PriceRecommendationRepository
+import com.example.stugbygget.domain.repository.LogisticsRepository
 import com.example.stugbygget.domain.repository.RoomDimensionsRepository
 import com.example.stugbygget.domain.repository.RoomLayoutRepository
 import com.example.stugbygget.domain.repository.TodoRepository
@@ -33,6 +35,7 @@ import com.example.stugbygget.domain.usecase.CalculateMeasurementDistanceUseCase
 import com.example.stugbygget.domain.usecase.CompareShoppingPricesUseCase
 import com.example.stugbygget.domain.usecase.AddShoppingItemUseCase
 import com.example.stugbygget.domain.usecase.CreateShoppingListUseCase
+import com.example.stugbygget.domain.usecase.CalculateLogisticsRecommendationUseCase
 import com.example.stugbygget.domain.usecase.ExportMeasurementToRoomPlannerUseCase
 import com.example.stugbygget.domain.usecase.GetRoomDimensionsUseCase
 import com.example.stugbygget.domain.usecase.MeasurementUnitConverter
@@ -76,6 +79,7 @@ class AppContainer(
     val todoRepository: TodoRepository by lazy { FirestoreTodoRepository(firestore) }
     val shoppingRepository: ShoppingRepository by lazy { FirestoreShoppingRepository(firestore) }
     val budgetRepository: BudgetRepository by lazy { FirestoreBudgetRepository(firestore) }
+    val logisticsRepository: LogisticsRepository by lazy { FirestoreLogisticsRepository(firestore) }
     val photoRepository: PhotoRepository by lazy { FirestorePhotoRepository(firestore, storage) }
     val measurementRepository: MeasurementRepository by lazy { FirestoreMeasurementRepository(firestore) }
     val priceRecommendationRepository: PriceRecommendationRepository by lazy {
@@ -144,6 +148,9 @@ class AppContainer(
     }
     val compareShoppingPricesUseCase: CompareShoppingPricesUseCase by lazy {
         CompareShoppingPricesUseCase(priceRecommendationRepository)
+    }
+    val calculateLogisticsRecommendationUseCase: CalculateLogisticsRecommendationUseCase by lazy {
+        CalculateLogisticsRecommendationUseCase(logisticsRepository)
     }
     val upsertTodoUseCase: UpsertTodoUseCase by lazy {
         UpsertTodoUseCase(todoRepository)
