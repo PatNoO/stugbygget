@@ -3,6 +3,7 @@ package com.example.stugbygget.feature.roomplanner.ui
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,13 +26,15 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.stugbygget.di.AppContainer
 
 @Composable
-fun RoomPlannerScreen() {
-    val viewModel: RoomPlannerViewModel = viewModel()
+fun RoomPlannerScreen(container: AppContainer) {
+    val viewModel: RoomPlannerViewModel = viewModel(factory = RoomPlannerViewModelFactory(container))
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val selectedItem = uiState.furniture.firstOrNull { it.id == uiState.selectedFurnitureId }
 
@@ -105,6 +108,32 @@ fun RoomPlannerScreen() {
                     }
                 }
             }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .pointerInput(uiState.furniture, uiState.selectedFurnitureId) {
+                        val cmPerPxX = uiState.roomWidthCm.toFloat() / size.width.toFloat()
+                        val cmPerPxY = uiState.roomHeightCm.toFloat() / size.height.toFloat()
+                        detectDragGestures(
+                            onDragStart = { touchOffset ->
+                                viewModel.onCanvasDragStart(
+                                    xCm = touchOffset.x * cmPerPxX,
+                                    yCm = touchOffset.y * cmPerPxY
+                                )
+                            },
+                            onDrag = { change, _ ->
+                                viewModel.onCanvasDragged(
+                                    xCm = change.position.x * cmPerPxX,
+                                    yCm = change.position.y * cmPerPxY
+                                )
+                                change.consume()
+                            },
+                            onDragEnd = {
+                                viewModel.onCanvasDragEnd()
+                            }
+                        )
+                    }
+            )
         }
 
         Spacer(modifier = Modifier.height(12.dp))
@@ -112,6 +141,14 @@ fun RoomPlannerScreen() {
             Text(
                 text = "Vald möbel: ${it.label} (${it.widthCm / 100.0}m × ${it.depthCm / 100.0}m)",
                 style = MaterialTheme.typography.titleSmall
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
+        uiState.errorMessage?.let { error ->
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
             )
             Spacer(modifier = Modifier.height(8.dp))
         }
