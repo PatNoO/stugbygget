@@ -37,7 +37,7 @@ fun AppNavHost(
             AiChatScreen(container = container)
         }
         composable(AppRoute.RoomPlanner.route) {
-            RoomPlannerScreen()
+            RoomPlannerScreen(container = container)
         }
         composable(AppRoute.ArMeasure.route) {
             PlaceholderScreen("AR-mätning", "Mät ytor och avstånd med kameran")
