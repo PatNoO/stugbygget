@@ -20,6 +20,7 @@ import com.example.stugbygget.domain.repository.TodoRepository
 import com.example.stugbygget.domain.usecase.DeletePhotoUseCase
 import com.example.stugbygget.domain.usecase.DeleteTodoUseCase
 import com.example.stugbygget.domain.usecase.MoveFurnitureUseCase
+import com.example.stugbygget.domain.usecase.CalculateMeasurementDistanceUseCase
 import com.example.stugbygget.domain.usecase.ObserveAuthUserUseCase
 import com.example.stugbygget.domain.usecase.ObservePhotosUseCase
 import com.example.stugbygget.domain.usecase.ObservePhasesUseCase
@@ -43,7 +44,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 class AppContainer(
     appContext: Context
 ) {
-    private val applicationContext = appContext.applicationContext
+    val applicationContext: Context = appContext.applicationContext
 
     val firebaseAuth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
     val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
@@ -126,5 +127,8 @@ class AppContainer(
     }
     val moveFurnitureUseCase: MoveFurnitureUseCase by lazy {
         MoveFurnitureUseCase()
+    }
+    val calculateMeasurementDistanceUseCase: CalculateMeasurementDistanceUseCase by lazy {
+        CalculateMeasurementDistanceUseCase()
     }
 }
