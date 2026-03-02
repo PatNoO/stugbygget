@@ -6,6 +6,7 @@ import com.example.stugbygget.data.firebase.auth.FirebaseAuthRepository
 import com.example.stugbygget.data.firebase.firestore.FirestorePhaseRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreMeasurementRepository
 import com.example.stugbygget.data.firebase.firestore.FirestorePhotoRepository
+import com.example.stugbygget.data.firebase.firestore.FirestorePriceRecommendationRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreProjectContextProvider
 import com.example.stugbygget.data.firebase.firestore.FirestoreShoppingRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreTodoRepository
@@ -20,12 +21,14 @@ import com.example.stugbygget.domain.repository.ShoppingRepository
 import com.example.stugbygget.domain.repository.PhaseRepository
 import com.example.stugbygget.domain.repository.PhotoRepository
 import com.example.stugbygget.domain.repository.MeasurementRepository
+import com.example.stugbygget.domain.repository.PriceRecommendationRepository
 import com.example.stugbygget.domain.repository.RoomDimensionsRepository
 import com.example.stugbygget.domain.repository.RoomLayoutRepository
 import com.example.stugbygget.domain.repository.TodoRepository
 import com.example.stugbygget.domain.usecase.DeletePhotoUseCase
 import com.example.stugbygget.domain.usecase.DeleteTodoUseCase
 import com.example.stugbygget.domain.usecase.CalculateMeasurementDistanceUseCase
+import com.example.stugbygget.domain.usecase.CompareShoppingPricesUseCase
 import com.example.stugbygget.domain.usecase.AddShoppingItemUseCase
 import com.example.stugbygget.domain.usecase.CreateShoppingListUseCase
 import com.example.stugbygget.domain.usecase.ExportMeasurementToRoomPlannerUseCase
@@ -71,6 +74,9 @@ class AppContainer(
     val shoppingRepository: ShoppingRepository by lazy { FirestoreShoppingRepository(firestore) }
     val photoRepository: PhotoRepository by lazy { FirestorePhotoRepository(firestore, storage) }
     val measurementRepository: MeasurementRepository by lazy { FirestoreMeasurementRepository(firestore) }
+    val priceRecommendationRepository: PriceRecommendationRepository by lazy {
+        FirestorePriceRecommendationRepository(firestore)
+    }
     val projectContextProvider: FirestoreProjectContextProvider by lazy {
         FirestoreProjectContextProvider(firestore)
     }
@@ -128,6 +134,9 @@ class AppContainer(
     }
     val toggleShoppingItemPurchasedUseCase: ToggleShoppingItemPurchasedUseCase by lazy {
         ToggleShoppingItemPurchasedUseCase(shoppingRepository)
+    }
+    val compareShoppingPricesUseCase: CompareShoppingPricesUseCase by lazy {
+        CompareShoppingPricesUseCase(priceRecommendationRepository)
     }
     val upsertTodoUseCase: UpsertTodoUseCase by lazy {
         UpsertTodoUseCase(todoRepository)
