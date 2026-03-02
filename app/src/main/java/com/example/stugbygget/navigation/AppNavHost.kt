@@ -8,8 +8,10 @@ import androidx.navigation.compose.composable
 import com.example.stugbygget.core.ui.PlaceholderScreen
 import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.feature.aichat.ui.AiChatScreen
+import com.example.stugbygget.feature.armeasure.ui.ArMeasureScreen
 import com.example.stugbygget.feature.gallery.ui.GalleryScreen
 import com.example.stugbygget.feature.planning.ui.PlanningScreen
+import com.example.stugbygget.feature.roomplanner.ui.RoomPlannerScreen
 import com.example.stugbygget.feature.todos.ui.TodosScreen
 
 @Composable
@@ -36,10 +38,10 @@ fun AppNavHost(
             AiChatScreen(container = container)
         }
         composable(AppRoute.RoomPlanner.route) {
-            PlaceholderScreen("Rumsplanerare", "2D-planering med möbler och mått")
+            RoomPlannerScreen(container = container)
         }
         composable(AppRoute.ArMeasure.route) {
-            PlaceholderScreen("AR-mätning", "Mät ytor och avstånd med kameran")
+            ArMeasureScreen(container = container)
         }
         composable(AppRoute.Materials.route) {
             PlaceholderScreen("Material", "Materialkatalog och mängdberäkning")

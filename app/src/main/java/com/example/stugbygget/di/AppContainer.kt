@@ -1,30 +1,39 @@
 package com.example.stugbygget.di
 
+import android.content.Context
+import com.example.stugbygget.BuildConfig
 import com.example.stugbygget.data.firebase.auth.FirebaseAuthRepository
 import com.example.stugbygget.data.firebase.firestore.FirestorePhaseRepository
 import com.example.stugbygget.data.firebase.firestore.FirestorePhotoRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreProjectContextProvider
 import com.example.stugbygget.data.firebase.firestore.FirestoreTodoRepository
+import com.example.stugbygget.data.local.LocalRoomLayoutDataSource
+import com.example.stugbygget.data.local.LocalRoomLayoutRepository
 import com.example.stugbygget.data.remote.claude.ClaudeApiService
 import com.example.stugbygget.data.remote.claude.ClaudeChatRepository
-import com.example.stugbygget.domain.repository.ChatRepository
 import com.example.stugbygget.domain.repository.AuthRepository
+import com.example.stugbygget.domain.repository.ChatRepository
 import com.example.stugbygget.domain.repository.PhaseRepository
 import com.example.stugbygget.domain.repository.PhotoRepository
+import com.example.stugbygget.domain.repository.RoomLayoutRepository
 import com.example.stugbygget.domain.repository.TodoRepository
 import com.example.stugbygget.domain.usecase.DeletePhotoUseCase
 import com.example.stugbygget.domain.usecase.DeleteTodoUseCase
+import com.example.stugbygget.domain.usecase.MoveFurnitureUseCase
+import com.example.stugbygget.domain.usecase.CalculateMeasurementDistanceUseCase
 import com.example.stugbygget.domain.usecase.ObserveAuthUserUseCase
 import com.example.stugbygget.domain.usecase.ObservePhotosUseCase
 import com.example.stugbygget.domain.usecase.ObservePhasesUseCase
+import com.example.stugbygget.domain.usecase.ObserveRoomLayoutUseCase
 import com.example.stugbygget.domain.usecase.ObserveTodosUseCase
+import com.example.stugbygget.domain.usecase.SaveRoomLayoutUseCase
 import com.example.stugbygget.domain.usecase.SignInWithGoogleUseCase
 import com.example.stugbygget.domain.usecase.SignOutUseCase
 import com.example.stugbygget.domain.usecase.StreamAssistantReplyUseCase
 import com.example.stugbygget.domain.usecase.ToggleTodoUseCase
 import com.example.stugbygget.domain.usecase.UploadPhotoUseCase
 import com.example.stugbygget.domain.usecase.UpsertTodoUseCase
-import com.example.stugbygget.BuildConfig
+import com.example.stugbygget.feature.roomplanner.ui.defaultFurniture
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.functions.FirebaseFunctions
@@ -32,7 +41,11 @@ import com.google.firebase.storage.FirebaseStorage
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class AppContainer {
+class AppContainer(
+    appContext: Context
+) {
+    val applicationContext: Context = appContext.applicationContext
+
     val firebaseAuth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
     val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
     val storage: FirebaseStorage by lazy { FirebaseStorage.getInstance() }
@@ -58,6 +71,15 @@ class AppContainer {
         ClaudeChatRepository(
             apiService = claudeApiService,
             contextProvider = projectContextProvider
+        )
+    }
+    val roomLayoutDataSource: LocalRoomLayoutDataSource by lazy {
+        LocalRoomLayoutDataSource(applicationContext)
+    }
+    val roomLayoutRepository: RoomLayoutRepository by lazy {
+        LocalRoomLayoutRepository(
+            dataSource = roomLayoutDataSource,
+            defaultLayoutProvider = { defaultFurniture() }
         )
     }
 
@@ -96,5 +118,17 @@ class AppContainer {
     }
     val streamAssistantReplyUseCase: StreamAssistantReplyUseCase by lazy {
         StreamAssistantReplyUseCase(chatRepository)
+    }
+    val observeRoomLayoutUseCase: ObserveRoomLayoutUseCase by lazy {
+        ObserveRoomLayoutUseCase(roomLayoutRepository)
+    }
+    val saveRoomLayoutUseCase: SaveRoomLayoutUseCase by lazy {
+        SaveRoomLayoutUseCase(roomLayoutRepository)
+    }
+    val moveFurnitureUseCase: MoveFurnitureUseCase by lazy {
+        MoveFurnitureUseCase()
+    }
+    val calculateMeasurementDistanceUseCase: CalculateMeasurementDistanceUseCase by lazy {
+        CalculateMeasurementDistanceUseCase()
     }
 }
