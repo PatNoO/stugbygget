@@ -33,7 +33,7 @@ fun AppNavHost(
             GalleryScreen(container = container)
         }
         composable(AppRoute.AiChat.route) {
-            AiChatScreen()
+            AiChatScreen(container = container)
         }
         composable(AppRoute.RoomPlanner.route) {
             PlaceholderScreen("Rumsplanerare", "2D-planering med möbler och mått")

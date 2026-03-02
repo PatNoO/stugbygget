@@ -22,6 +22,11 @@ android {
 
         val googleWebClientId = (project.findProperty("GOOGLE_WEB_CLIENT_ID") as? String).orEmpty()
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
+        val claudeApiKey = (project.findProperty("CLAUDE_API_KEY") as? String).orEmpty()
+        buildConfigField("String", "CLAUDE_API_KEY", "\"$claudeApiKey\"")
+        val claudeBaseUrl = (project.findProperty("CLAUDE_BASE_URL") as? String)
+            ?: "https://api.anthropic.com/"
+        buildConfigField("String", "CLAUDE_BASE_URL", "\"$claudeBaseUrl\"")
 
     }
 
@@ -63,6 +68,8 @@ dependencies {
     implementation(libs.firebase.functions)
     implementation(libs.play.services.auth)
     implementation(libs.kotlinx.coroutines.play.services)
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

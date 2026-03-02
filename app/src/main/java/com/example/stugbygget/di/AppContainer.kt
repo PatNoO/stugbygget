@@ -3,7 +3,11 @@ package com.example.stugbygget.di
 import com.example.stugbygget.data.firebase.auth.FirebaseAuthRepository
 import com.example.stugbygget.data.firebase.firestore.FirestorePhaseRepository
 import com.example.stugbygget.data.firebase.firestore.FirestorePhotoRepository
+import com.example.stugbygget.data.firebase.firestore.FirestoreProjectContextProvider
 import com.example.stugbygget.data.firebase.firestore.FirestoreTodoRepository
+import com.example.stugbygget.data.remote.claude.ClaudeApiService
+import com.example.stugbygget.data.remote.claude.ClaudeChatRepository
+import com.example.stugbygget.domain.repository.ChatRepository
 import com.example.stugbygget.domain.repository.AuthRepository
 import com.example.stugbygget.domain.repository.PhaseRepository
 import com.example.stugbygget.domain.repository.PhotoRepository
@@ -16,13 +20,17 @@ import com.example.stugbygget.domain.usecase.ObservePhasesUseCase
 import com.example.stugbygget.domain.usecase.ObserveTodosUseCase
 import com.example.stugbygget.domain.usecase.SignInWithGoogleUseCase
 import com.example.stugbygget.domain.usecase.SignOutUseCase
+import com.example.stugbygget.domain.usecase.StreamAssistantReplyUseCase
 import com.example.stugbygget.domain.usecase.ToggleTodoUseCase
 import com.example.stugbygget.domain.usecase.UploadPhotoUseCase
 import com.example.stugbygget.domain.usecase.UpsertTodoUseCase
+import com.example.stugbygget.BuildConfig
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.functions.FirebaseFunctions
 import com.google.firebase.storage.FirebaseStorage
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 class AppContainer {
     val firebaseAuth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
@@ -34,6 +42,24 @@ class AppContainer {
     val phaseRepository: PhaseRepository by lazy { FirestorePhaseRepository(firestore) }
     val todoRepository: TodoRepository by lazy { FirestoreTodoRepository(firestore) }
     val photoRepository: PhotoRepository by lazy { FirestorePhotoRepository(firestore, storage) }
+    val projectContextProvider: FirestoreProjectContextProvider by lazy {
+        FirestoreProjectContextProvider(firestore)
+    }
+    val retrofit: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(BuildConfig.CLAUDE_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+    val claudeApiService: ClaudeApiService by lazy {
+        retrofit.create(ClaudeApiService::class.java)
+    }
+    val chatRepository: ChatRepository by lazy {
+        ClaudeChatRepository(
+            apiService = claudeApiService,
+            contextProvider = projectContextProvider
+        )
+    }
 
     val observeAuthUserUseCase: ObserveAuthUserUseCase by lazy {
         ObserveAuthUserUseCase(authRepository)
@@ -67,5 +93,8 @@ class AppContainer {
     }
     val deletePhotoUseCase: DeletePhotoUseCase by lazy {
         DeletePhotoUseCase(photoRepository)
+    }
+    val streamAssistantReplyUseCase: StreamAssistantReplyUseCase by lazy {
+        StreamAssistantReplyUseCase(chatRepository)
     }
 }
