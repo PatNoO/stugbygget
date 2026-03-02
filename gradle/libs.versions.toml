@@ -42,6 +42,7 @@ firebase-auth = { group = "com.google.firebase", name = "firebase-auth" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore" }
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage" }
 firebase-functions = { group = "com.google.firebase", name = "firebase-functions" }
+firebase-config = { group = "com.google.firebase", name = "firebase-config" }
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version.ref = "playServicesAuth" }
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "coroutines" }
 retrofit = { group = "com.squareup.retrofit2", name = "retrofit", version.ref = "retrofit" }

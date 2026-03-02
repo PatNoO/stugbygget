@@ -3,6 +3,7 @@ package com.example.stugbygget.di
 import android.content.Context
 import com.example.stugbygget.BuildConfig
 import com.example.stugbygget.data.firebase.auth.FirebaseAuthRepository
+import com.example.stugbygget.data.firebase.config.FirebaseRuntimeConfigRepository
 import com.example.stugbygget.data.firebase.firestore.FirestorePhaseRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreMeasurementRepository
 import com.example.stugbygget.data.firebase.firestore.FirestorePhotoRepository
@@ -36,6 +37,7 @@ import com.example.stugbygget.domain.repository.NotificationSettingsRepository
 import com.example.stugbygget.domain.repository.RoomDimensionsRepository
 import com.example.stugbygget.domain.repository.RoomLayoutRepository
 import com.example.stugbygget.domain.repository.RouteRepository
+import com.example.stugbygget.domain.repository.RuntimeConfigRepository
 import com.example.stugbygget.domain.repository.TodoRepository
 import com.example.stugbygget.domain.usecase.DeletePhotoUseCase
 import com.example.stugbygget.domain.usecase.DeleteTodoUseCase
@@ -51,6 +53,7 @@ import com.example.stugbygget.domain.usecase.MoveFurnitureUseCase
 import com.example.stugbygget.domain.usecase.ObserveAuthUserUseCase
 import com.example.stugbygget.domain.usecase.GetRouteMetricsUseCase
 import com.example.stugbygget.domain.usecase.GetNotificationSettingsUseCase
+import com.example.stugbygget.domain.usecase.GetRuntimeConfigUseCase
 import com.example.stugbygget.domain.usecase.ObservePhotosUseCase
 import com.example.stugbygget.domain.usecase.ObservePhasesUseCase
 import com.example.stugbygget.domain.usecase.ObserveRoomLayoutUseCase
@@ -66,6 +69,7 @@ import com.example.stugbygget.domain.usecase.PlanLogisticsWithRouteUseCase
 import com.example.stugbygget.domain.usecase.RunNotificationPipelineUseCase
 import com.example.stugbygget.domain.usecase.BuildNotificationEventsUseCase
 import com.example.stugbygget.domain.usecase.DispatchNotificationEventsUseCase
+import com.example.stugbygget.domain.usecase.FetchRuntimeConfigUseCase
 import com.example.stugbygget.domain.usecase.UpdateNotificationSettingsUseCase
 import com.example.stugbygget.domain.usecase.ToggleShoppingItemPurchasedUseCase
 import com.example.stugbygget.domain.usecase.ToggleTodoUseCase
@@ -75,6 +79,7 @@ import com.example.stugbygget.feature.roomplanner.ui.defaultFurniture
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.functions.FirebaseFunctions
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.storage.FirebaseStorage
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -88,6 +93,7 @@ class AppContainer(
     val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
     val storage: FirebaseStorage by lazy { FirebaseStorage.getInstance() }
     val functions: FirebaseFunctions by lazy { FirebaseFunctions.getInstance() }
+    val remoteConfig: FirebaseRemoteConfig by lazy { FirebaseRemoteConfig.getInstance() }
 
     val authRepository: AuthRepository by lazy { FirebaseAuthRepository(firebaseAuth) }
     val phaseRepository: PhaseRepository by lazy { FirestorePhaseRepository(firestore) }
@@ -102,6 +108,9 @@ class AppContainer(
     }
     val projectContextProvider: FirestoreProjectContextProvider by lazy {
         FirestoreProjectContextProvider(firestore)
+    }
+    val runtimeConfigRepository: RuntimeConfigRepository by lazy {
+        FirebaseRuntimeConfigRepository(remoteConfig)
     }
     val retrofit: Retrofit by lazy {
         Retrofit.Builder()
@@ -263,5 +272,11 @@ class AppContainer(
     }
     val exportMeasurementToRoomPlannerUseCase: ExportMeasurementToRoomPlannerUseCase by lazy {
         ExportMeasurementToRoomPlannerUseCase(roomDimensionsRepository, measurementUnitConverter)
+    }
+    val fetchRuntimeConfigUseCase: FetchRuntimeConfigUseCase by lazy {
+        FetchRuntimeConfigUseCase(runtimeConfigRepository)
+    }
+    val getRuntimeConfigUseCase: GetRuntimeConfigUseCase by lazy {
+        GetRuntimeConfigUseCase(runtimeConfigRepository)
     }
 }
