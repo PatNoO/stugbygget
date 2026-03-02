@@ -27,6 +27,8 @@ android {
         val claudeBaseUrl = (project.findProperty("CLAUDE_BASE_URL") as? String)
             ?: "https://api.anthropic.com/"
         buildConfigField("String", "CLAUDE_BASE_URL", "\"$claudeBaseUrl\"")
+        val mapsApiKey = (project.findProperty("MAPS_API_KEY") as? String).orEmpty()
+        buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
 
     }
 
