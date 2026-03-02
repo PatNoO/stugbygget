@@ -7,6 +7,7 @@ import com.example.stugbygget.data.firebase.firestore.FirestorePhaseRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreMeasurementRepository
 import com.example.stugbygget.data.firebase.firestore.FirestorePhotoRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreProjectContextProvider
+import com.example.stugbygget.data.firebase.firestore.FirestoreShoppingRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreTodoRepository
 import com.example.stugbygget.data.local.LocalRoomDimensionsRepository
 import com.example.stugbygget.data.local.LocalRoomLayoutDataSource
@@ -15,6 +16,7 @@ import com.example.stugbygget.data.remote.claude.ClaudeApiService
 import com.example.stugbygget.data.remote.claude.ClaudeChatRepository
 import com.example.stugbygget.domain.repository.AuthRepository
 import com.example.stugbygget.domain.repository.ChatRepository
+import com.example.stugbygget.domain.repository.ShoppingRepository
 import com.example.stugbygget.domain.repository.PhaseRepository
 import com.example.stugbygget.domain.repository.PhotoRepository
 import com.example.stugbygget.domain.repository.MeasurementRepository
@@ -24,6 +26,8 @@ import com.example.stugbygget.domain.repository.TodoRepository
 import com.example.stugbygget.domain.usecase.DeletePhotoUseCase
 import com.example.stugbygget.domain.usecase.DeleteTodoUseCase
 import com.example.stugbygget.domain.usecase.CalculateMeasurementDistanceUseCase
+import com.example.stugbygget.domain.usecase.AddShoppingItemUseCase
+import com.example.stugbygget.domain.usecase.CreateShoppingListUseCase
 import com.example.stugbygget.domain.usecase.ExportMeasurementToRoomPlannerUseCase
 import com.example.stugbygget.domain.usecase.GetRoomDimensionsUseCase
 import com.example.stugbygget.domain.usecase.MeasurementUnitConverter
@@ -32,12 +36,14 @@ import com.example.stugbygget.domain.usecase.ObserveAuthUserUseCase
 import com.example.stugbygget.domain.usecase.ObservePhotosUseCase
 import com.example.stugbygget.domain.usecase.ObservePhasesUseCase
 import com.example.stugbygget.domain.usecase.ObserveRoomLayoutUseCase
+import com.example.stugbygget.domain.usecase.ObserveShoppingListsUseCase
 import com.example.stugbygget.domain.usecase.ObserveTodosUseCase
 import com.example.stugbygget.domain.usecase.SaveMeasurementUseCase
 import com.example.stugbygget.domain.usecase.SaveRoomLayoutUseCase
 import com.example.stugbygget.domain.usecase.SignInWithGoogleUseCase
 import com.example.stugbygget.domain.usecase.SignOutUseCase
 import com.example.stugbygget.domain.usecase.StreamAssistantReplyUseCase
+import com.example.stugbygget.domain.usecase.ToggleShoppingItemPurchasedUseCase
 import com.example.stugbygget.domain.usecase.ToggleTodoUseCase
 import com.example.stugbygget.domain.usecase.UploadPhotoUseCase
 import com.example.stugbygget.domain.usecase.UpsertTodoUseCase
@@ -62,6 +68,7 @@ class AppContainer(
     val authRepository: AuthRepository by lazy { FirebaseAuthRepository(firebaseAuth) }
     val phaseRepository: PhaseRepository by lazy { FirestorePhaseRepository(firestore) }
     val todoRepository: TodoRepository by lazy { FirestoreTodoRepository(firestore) }
+    val shoppingRepository: ShoppingRepository by lazy { FirestoreShoppingRepository(firestore) }
     val photoRepository: PhotoRepository by lazy { FirestorePhotoRepository(firestore, storage) }
     val measurementRepository: MeasurementRepository by lazy { FirestoreMeasurementRepository(firestore) }
     val projectContextProvider: FirestoreProjectContextProvider by lazy {
@@ -109,6 +116,18 @@ class AppContainer(
     }
     val observeTodosUseCase: ObserveTodosUseCase by lazy {
         ObserveTodosUseCase(todoRepository)
+    }
+    val observeShoppingListsUseCase: ObserveShoppingListsUseCase by lazy {
+        ObserveShoppingListsUseCase(shoppingRepository)
+    }
+    val createShoppingListUseCase: CreateShoppingListUseCase by lazy {
+        CreateShoppingListUseCase(shoppingRepository)
+    }
+    val addShoppingItemUseCase: AddShoppingItemUseCase by lazy {
+        AddShoppingItemUseCase(shoppingRepository)
+    }
+    val toggleShoppingItemPurchasedUseCase: ToggleShoppingItemPurchasedUseCase by lazy {
+        ToggleShoppingItemPurchasedUseCase(shoppingRepository)
     }
     val upsertTodoUseCase: UpsertTodoUseCase by lazy {
         UpsertTodoUseCase(todoRepository)

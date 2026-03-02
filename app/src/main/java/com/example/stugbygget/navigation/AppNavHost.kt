@@ -12,6 +12,7 @@ import com.example.stugbygget.feature.armeasure.ui.ArMeasureScreen
 import com.example.stugbygget.feature.gallery.ui.GalleryScreen
 import com.example.stugbygget.feature.planning.ui.PlanningScreen
 import com.example.stugbygget.feature.roomplanner.ui.RoomPlannerScreen
+import com.example.stugbygget.feature.shopping.ui.ShoppingScreen
 import com.example.stugbygget.feature.todos.ui.TodosScreen
 
 @Composable
@@ -47,7 +48,7 @@ fun AppNavHost(
             PlaceholderScreen("Materials", "Material catalog and quantity calculations")
         }
         composable(AppRoute.Shopping.route) {
-            PlaceholderScreen("Shopping", "Shared shopping lists and price comparison")
+            ShoppingScreen(container = container)
         }
         composable(AppRoute.Budget.route) {
             PlaceholderScreen("Budget", "Budget, forecasts, and overspend warnings")
