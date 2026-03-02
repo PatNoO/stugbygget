@@ -1,5 +1,6 @@
 package com.example.stugbygget.data.firebase.firestore
 
+import com.example.stugbygget.core.offline.OfflineSyncCoordinator
 import com.example.stugbygget.domain.model.ShoppingItem
 import com.example.stugbygget.domain.model.ShoppingList
 import com.example.stugbygget.domain.repository.ShoppingRepository
@@ -11,16 +12,18 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
 class FirestoreShoppingRepository(
-    private val firestore: FirebaseFirestore
+    private val firestore: FirebaseFirestore,
+    private val offlineSyncCoordinator: OfflineSyncCoordinator
 ) : ShoppingRepository {
     override fun observeShoppingLists(projectId: String): Flow<List<ShoppingList>> = callbackFlow {
         val query = firestore.collection("projects")
             .document(projectId)
             .collection("shopping_lists")
+        var cachedLists: List<ShoppingList> = emptyList()
 
         val registration = query.addSnapshotListener { snapshot, error ->
             if (error != null) {
-                close(error)
+                trySend(cachedLists)
                 return@addSnapshotListener
             }
             val lists = snapshot?.documents.orEmpty()
@@ -29,6 +32,7 @@ class FirestoreShoppingRepository(
                     runCatching { ShoppingDocumentMapper.fromMap(doc.id, data) }.getOrNull()
                 }
                 .sortedByDescending { it.updatedAt }
+            cachedLists = lists
             trySend(lists)
         }
 
@@ -56,7 +60,9 @@ class FirestoreShoppingRepository(
             totalEstimate = 0.0,
             updatedAt = Instant.now()
         )
-        doc.set(ShoppingDocumentMapper.toMap(list)).await()
+        offlineSyncCoordinator.runOrQueue {
+            doc.set(ShoppingDocumentMapper.toMap(list)).await()
+        }
     }
 
     override suspend fun addItem(projectId: String, listId: String, item: ShoppingItem) {
@@ -64,11 +70,13 @@ class FirestoreShoppingRepository(
             .document(projectId)
             .collection("shopping_lists")
             .document(listId)
-        val snapshot = listRef.get().await()
-        val currentData = snapshot.data ?: return
-        val currentList = ShoppingDocumentMapper.fromMap(snapshot.id, currentData)
-        val updated = currentList.copy(items = currentList.items + item)
-        listRef.set(ShoppingDocumentMapper.toMap(updated)).await()
+        offlineSyncCoordinator.runOrQueue {
+            val snapshot = listRef.get().await()
+            val currentData = snapshot.data ?: return@runOrQueue
+            val currentList = ShoppingDocumentMapper.fromMap(snapshot.id, currentData)
+            val updated = currentList.copy(items = currentList.items + item)
+            listRef.set(ShoppingDocumentMapper.toMap(updated)).await()
+        }
     }
 
     override suspend fun updateItemPurchased(
@@ -81,20 +89,22 @@ class FirestoreShoppingRepository(
             .document(projectId)
             .collection("shopping_lists")
             .document(listId)
-        val snapshot = listRef.get().await()
-        val currentData = snapshot.data ?: return
-        val currentList = ShoppingDocumentMapper.fromMap(snapshot.id, currentData)
-        val updatedItems = currentList.items.map { item ->
-            if (item.id == itemId) {
-                item.copy(
-                    purchased = purchased,
-                    purchasedAt = if (purchased) Instant.now() else null
-                )
-            } else {
-                item
+        offlineSyncCoordinator.runOrQueue {
+            val snapshot = listRef.get().await()
+            val currentData = snapshot.data ?: return@runOrQueue
+            val currentList = ShoppingDocumentMapper.fromMap(snapshot.id, currentData)
+            val updatedItems = currentList.items.map { item ->
+                if (item.id == itemId) {
+                    item.copy(
+                        purchased = purchased,
+                        purchasedAt = if (purchased) Instant.now() else null
+                    )
+                } else {
+                    item
+                }
             }
+            val updated = currentList.copy(items = updatedItems)
+            listRef.set(ShoppingDocumentMapper.toMap(updated)).await()
         }
-        val updated = currentList.copy(items = updatedItems)
-        listRef.set(ShoppingDocumentMapper.toMap(updated)).await()
     }
 }
