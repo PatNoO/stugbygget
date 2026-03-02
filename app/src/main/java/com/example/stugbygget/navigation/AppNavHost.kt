@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import com.example.stugbygget.core.ui.PlaceholderScreen
 import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.feature.planning.ui.PlanningScreen
+import com.example.stugbygget.feature.todos.ui.TodosScreen
 
 @Composable
 fun AppNavHost(
@@ -24,7 +25,7 @@ fun AppNavHost(
             PlanningScreen(container = container)
         }
         composable(AppRoute.Todos.route) {
-            PlaceholderScreen("Todo", "Uppgiftshantering med ansvar och prioritet")
+            TodosScreen(container = container)
         }
         composable(AppRoute.Gallery.route) {
             PlaceholderScreen("Galleri", "Före, under och efter bilder")
