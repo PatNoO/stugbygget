@@ -9,6 +9,7 @@ import com.example.stugbygget.core.ui.PlaceholderScreen
 import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.feature.aichat.ui.AiChatScreen
 import com.example.stugbygget.feature.armeasure.ui.ArMeasureScreen
+import com.example.stugbygget.feature.budget.ui.BudgetScreen
 import com.example.stugbygget.feature.gallery.ui.GalleryScreen
 import com.example.stugbygget.feature.planning.ui.PlanningScreen
 import com.example.stugbygget.feature.roomplanner.ui.RoomPlannerScreen
@@ -51,7 +52,7 @@ fun AppNavHost(
             ShoppingScreen(container = container)
         }
         composable(AppRoute.Budget.route) {
-            PlaceholderScreen("Budget", "Budget, forecasts, and overspend warnings")
+            BudgetScreen(container = container)
         }
         composable(AppRoute.Logistics.route) {
             PlaceholderScreen("Logistics", "Transport costs and delivery planning")
