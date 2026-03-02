@@ -15,7 +15,9 @@ import com.example.stugbygget.data.firebase.firestore.FirestoreLogisticsReposito
 import com.example.stugbygget.data.local.LocalRoomDimensionsRepository
 import com.example.stugbygget.data.local.LocalRoomLayoutDataSource
 import com.example.stugbygget.data.local.LocalRoomLayoutRepository
+import com.example.stugbygget.data.local.LocalNotificationSettingsRepository
 import com.example.stugbygget.data.local.RouteCacheDataSource
+import com.example.stugbygget.data.local.AndroidNotificationDispatcher
 import com.example.stugbygget.data.remote.claude.ClaudeApiService
 import com.example.stugbygget.data.remote.claude.ClaudeChatRepository
 import com.example.stugbygget.data.remote.maps.GoogleDirectionsService
@@ -29,6 +31,8 @@ import com.example.stugbygget.domain.repository.PhotoRepository
 import com.example.stugbygget.domain.repository.MeasurementRepository
 import com.example.stugbygget.domain.repository.PriceRecommendationRepository
 import com.example.stugbygget.domain.repository.LogisticsRepository
+import com.example.stugbygget.domain.repository.NotificationDispatchGateway
+import com.example.stugbygget.domain.repository.NotificationSettingsRepository
 import com.example.stugbygget.domain.repository.RoomDimensionsRepository
 import com.example.stugbygget.domain.repository.RoomLayoutRepository
 import com.example.stugbygget.domain.repository.RouteRepository
@@ -46,6 +50,7 @@ import com.example.stugbygget.domain.usecase.MeasurementUnitConverter
 import com.example.stugbygget.domain.usecase.MoveFurnitureUseCase
 import com.example.stugbygget.domain.usecase.ObserveAuthUserUseCase
 import com.example.stugbygget.domain.usecase.GetRouteMetricsUseCase
+import com.example.stugbygget.domain.usecase.GetNotificationSettingsUseCase
 import com.example.stugbygget.domain.usecase.ObservePhotosUseCase
 import com.example.stugbygget.domain.usecase.ObservePhasesUseCase
 import com.example.stugbygget.domain.usecase.ObserveRoomLayoutUseCase
@@ -58,6 +63,10 @@ import com.example.stugbygget.domain.usecase.SignInWithGoogleUseCase
 import com.example.stugbygget.domain.usecase.SignOutUseCase
 import com.example.stugbygget.domain.usecase.StreamAssistantReplyUseCase
 import com.example.stugbygget.domain.usecase.PlanLogisticsWithRouteUseCase
+import com.example.stugbygget.domain.usecase.RunNotificationPipelineUseCase
+import com.example.stugbygget.domain.usecase.BuildNotificationEventsUseCase
+import com.example.stugbygget.domain.usecase.DispatchNotificationEventsUseCase
+import com.example.stugbygget.domain.usecase.UpdateNotificationSettingsUseCase
 import com.example.stugbygget.domain.usecase.ToggleShoppingItemPurchasedUseCase
 import com.example.stugbygget.domain.usecase.ToggleTodoUseCase
 import com.example.stugbygget.domain.usecase.UploadPhotoUseCase
@@ -127,6 +136,12 @@ class AppContainer(
     val roomDimensionsRepository: RoomDimensionsRepository by lazy {
         LocalRoomDimensionsRepository(applicationContext)
     }
+    val notificationSettingsRepository: NotificationSettingsRepository by lazy {
+        LocalNotificationSettingsRepository(applicationContext)
+    }
+    val notificationDispatchGateway: NotificationDispatchGateway by lazy {
+        AndroidNotificationDispatcher(applicationContext)
+    }
     val roomLayoutRepository: RoomLayoutRepository by lazy {
         LocalRoomLayoutRepository(
             dataSource = roomLayoutDataSource,
@@ -183,6 +198,25 @@ class AppContainer(
         PlanLogisticsWithRouteUseCase(
             getRouteMetricsUseCase = getRouteMetricsUseCase,
             calculateLogisticsRecommendationUseCase = calculateLogisticsRecommendationUseCase
+        )
+    }
+    val getNotificationSettingsUseCase: GetNotificationSettingsUseCase by lazy {
+        GetNotificationSettingsUseCase(notificationSettingsRepository)
+    }
+    val updateNotificationSettingsUseCase: UpdateNotificationSettingsUseCase by lazy {
+        UpdateNotificationSettingsUseCase(notificationSettingsRepository)
+    }
+    val buildNotificationEventsUseCase: BuildNotificationEventsUseCase by lazy {
+        BuildNotificationEventsUseCase()
+    }
+    val dispatchNotificationEventsUseCase: DispatchNotificationEventsUseCase by lazy {
+        DispatchNotificationEventsUseCase(notificationDispatchGateway)
+    }
+    val runNotificationPipelineUseCase: RunNotificationPipelineUseCase by lazy {
+        RunNotificationPipelineUseCase(
+            getNotificationSettingsUseCase = getNotificationSettingsUseCase,
+            buildNotificationEventsUseCase = buildNotificationEventsUseCase,
+            dispatchNotificationEventsUseCase = dispatchNotificationEventsUseCase
         )
     }
     val upsertTodoUseCase: UpsertTodoUseCase by lazy {
