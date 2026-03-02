@@ -4,9 +4,11 @@ import android.content.Context
 import com.example.stugbygget.BuildConfig
 import com.example.stugbygget.data.firebase.auth.FirebaseAuthRepository
 import com.example.stugbygget.data.firebase.firestore.FirestorePhaseRepository
+import com.example.stugbygget.data.firebase.firestore.FirestoreMeasurementRepository
 import com.example.stugbygget.data.firebase.firestore.FirestorePhotoRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreProjectContextProvider
 import com.example.stugbygget.data.firebase.firestore.FirestoreTodoRepository
+import com.example.stugbygget.data.local.LocalRoomDimensionsRepository
 import com.example.stugbygget.data.local.LocalRoomLayoutDataSource
 import com.example.stugbygget.data.local.LocalRoomLayoutRepository
 import com.example.stugbygget.data.remote.claude.ClaudeApiService
@@ -15,17 +17,23 @@ import com.example.stugbygget.domain.repository.AuthRepository
 import com.example.stugbygget.domain.repository.ChatRepository
 import com.example.stugbygget.domain.repository.PhaseRepository
 import com.example.stugbygget.domain.repository.PhotoRepository
+import com.example.stugbygget.domain.repository.MeasurementRepository
+import com.example.stugbygget.domain.repository.RoomDimensionsRepository
 import com.example.stugbygget.domain.repository.RoomLayoutRepository
 import com.example.stugbygget.domain.repository.TodoRepository
 import com.example.stugbygget.domain.usecase.DeletePhotoUseCase
 import com.example.stugbygget.domain.usecase.DeleteTodoUseCase
-import com.example.stugbygget.domain.usecase.MoveFurnitureUseCase
 import com.example.stugbygget.domain.usecase.CalculateMeasurementDistanceUseCase
+import com.example.stugbygget.domain.usecase.ExportMeasurementToRoomPlannerUseCase
+import com.example.stugbygget.domain.usecase.GetRoomDimensionsUseCase
+import com.example.stugbygget.domain.usecase.MeasurementUnitConverter
+import com.example.stugbygget.domain.usecase.MoveFurnitureUseCase
 import com.example.stugbygget.domain.usecase.ObserveAuthUserUseCase
 import com.example.stugbygget.domain.usecase.ObservePhotosUseCase
 import com.example.stugbygget.domain.usecase.ObservePhasesUseCase
 import com.example.stugbygget.domain.usecase.ObserveRoomLayoutUseCase
 import com.example.stugbygget.domain.usecase.ObserveTodosUseCase
+import com.example.stugbygget.domain.usecase.SaveMeasurementUseCase
 import com.example.stugbygget.domain.usecase.SaveRoomLayoutUseCase
 import com.example.stugbygget.domain.usecase.SignInWithGoogleUseCase
 import com.example.stugbygget.domain.usecase.SignOutUseCase
@@ -55,6 +63,7 @@ class AppContainer(
     val phaseRepository: PhaseRepository by lazy { FirestorePhaseRepository(firestore) }
     val todoRepository: TodoRepository by lazy { FirestoreTodoRepository(firestore) }
     val photoRepository: PhotoRepository by lazy { FirestorePhotoRepository(firestore, storage) }
+    val measurementRepository: MeasurementRepository by lazy { FirestoreMeasurementRepository(firestore) }
     val projectContextProvider: FirestoreProjectContextProvider by lazy {
         FirestoreProjectContextProvider(firestore)
     }
@@ -75,6 +84,9 @@ class AppContainer(
     }
     val roomLayoutDataSource: LocalRoomLayoutDataSource by lazy {
         LocalRoomLayoutDataSource(applicationContext)
+    }
+    val roomDimensionsRepository: RoomDimensionsRepository by lazy {
+        LocalRoomDimensionsRepository(applicationContext)
     }
     val roomLayoutRepository: RoomLayoutRepository by lazy {
         LocalRoomLayoutRepository(
@@ -125,10 +137,22 @@ class AppContainer(
     val saveRoomLayoutUseCase: SaveRoomLayoutUseCase by lazy {
         SaveRoomLayoutUseCase(roomLayoutRepository)
     }
+    val getRoomDimensionsUseCase: GetRoomDimensionsUseCase by lazy {
+        GetRoomDimensionsUseCase(roomDimensionsRepository)
+    }
     val moveFurnitureUseCase: MoveFurnitureUseCase by lazy {
         MoveFurnitureUseCase()
     }
+    val measurementUnitConverter: MeasurementUnitConverter by lazy {
+        MeasurementUnitConverter()
+    }
     val calculateMeasurementDistanceUseCase: CalculateMeasurementDistanceUseCase by lazy {
         CalculateMeasurementDistanceUseCase()
+    }
+    val saveMeasurementUseCase: SaveMeasurementUseCase by lazy {
+        SaveMeasurementUseCase(measurementRepository, measurementUnitConverter)
+    }
+    val exportMeasurementToRoomPlannerUseCase: ExportMeasurementToRoomPlannerUseCase by lazy {
+        ExportMeasurementToRoomPlannerUseCase(roomDimensionsRepository, measurementUnitConverter)
     }
 }

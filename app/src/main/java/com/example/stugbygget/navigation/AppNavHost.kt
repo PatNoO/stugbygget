@@ -44,16 +44,16 @@ fun AppNavHost(
             ArMeasureScreen(container = container)
         }
         composable(AppRoute.Materials.route) {
-            PlaceholderScreen("Material", "Materialkatalog och mängdberäkning")
+            PlaceholderScreen("Materials", "Material catalog and quantity calculations")
         }
         composable(AppRoute.Shopping.route) {
-            PlaceholderScreen("Inköp", "Delade inköpslistor och prisjämförelse")
+            PlaceholderScreen("Shopping", "Shared shopping lists and price comparison")
         }
         composable(AppRoute.Budget.route) {
-            PlaceholderScreen("Budget", "Budget, prognos och varningar")
+            PlaceholderScreen("Budget", "Budget, forecasts, and overspend warnings")
         }
         composable(AppRoute.Logistics.route) {
-            PlaceholderScreen("Logistik", "Transportkostnad och leveransplanering")
+            PlaceholderScreen("Logistics", "Transport costs and delivery planning")
         }
     }
 }

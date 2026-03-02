@@ -3,6 +3,7 @@ package com.example.stugbygget.feature.roomplanner.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stugbygget.domain.usecase.MoveFurnitureUseCase
+import com.example.stugbygget.domain.usecase.GetRoomDimensionsUseCase
 import com.example.stugbygget.domain.usecase.ObserveRoomLayoutUseCase
 import com.example.stugbygget.domain.usecase.SaveRoomLayoutUseCase
 import kotlinx.coroutines.flow.catch
@@ -15,13 +16,15 @@ import kotlinx.coroutines.launch
 class RoomPlannerViewModel(
     private val observeRoomLayoutUseCase: ObserveRoomLayoutUseCase,
     private val saveRoomLayoutUseCase: SaveRoomLayoutUseCase,
-    private val moveFurnitureUseCase: MoveFurnitureUseCase
+    private val moveFurnitureUseCase: MoveFurnitureUseCase,
+    private val getRoomDimensionsUseCase: GetRoomDimensionsUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RoomPlannerUiState())
     val uiState: StateFlow<RoomPlannerUiState> = _uiState.asStateFlow()
 
     init {
+        loadRoomDimensions()
         observeRoomLayout()
     }
 
@@ -71,12 +74,23 @@ class RoomPlannerViewModel(
             observeRoomLayoutUseCase(_uiState.value.roomId)
                 .catch { throwable ->
                     _uiState.update {
-                        it.copy(errorMessage = throwable.message ?: "Kunde inte ladda rumslayout")
+                        it.copy(errorMessage = throwable.message ?: "Could not load room layout.")
                     }
                 }
                 .collect { furniture ->
                     _uiState.update { it.copy(furniture = furniture, errorMessage = null) }
                 }
+        }
+    }
+
+    private fun loadRoomDimensions() {
+        val roomId = _uiState.value.roomId
+        val dimensions = getRoomDimensionsUseCase(roomId)
+        _uiState.update {
+            it.copy(
+                roomWidthCm = dimensions.widthCm,
+                roomHeightCm = dimensions.heightCm
+            )
         }
     }
 }

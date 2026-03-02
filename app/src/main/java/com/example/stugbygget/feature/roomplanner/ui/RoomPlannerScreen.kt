@@ -43,8 +43,8 @@ fun RoomPlannerScreen(container: AppContainer) {
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Text("Rumsplanerare", style = MaterialTheme.typography.headlineSmall)
-        Text("1 ruta = 50 cm", style = MaterialTheme.typography.bodySmall)
+        Text("Room Planner", style = MaterialTheme.typography.headlineSmall)
+        Text("1 grid cell = 50 cm", style = MaterialTheme.typography.bodySmall)
         Spacer(modifier = Modifier.height(12.dp))
 
         Box(
@@ -139,7 +139,7 @@ fun RoomPlannerScreen(container: AppContainer) {
         Spacer(modifier = Modifier.height(12.dp))
         selectedItem?.let {
             Text(
-                text = "Vald möbel: ${it.label} (${it.widthCm / 100.0}m × ${it.depthCm / 100.0}m)",
+                text = "Selected item: ${it.label} (${it.widthCm / 100.0}m × ${it.depthCm / 100.0}m)",
                 style = MaterialTheme.typography.titleSmall
             )
             Spacer(modifier = Modifier.height(8.dp))
@@ -153,7 +153,7 @@ fun RoomPlannerScreen(container: AppContainer) {
             Spacer(modifier = Modifier.height(8.dp))
         }
 
-        Text("Möbelprimitiver", style = MaterialTheme.typography.titleMedium)
+        Text("Furniture primitives", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(uiState.furniture, key = { item -> item.id }) { item ->

@@ -21,7 +21,7 @@ class MoveFurnitureUseCase {
         snapStepCm: Int
     ): MoveFurnitureResult {
         val current = furniture.firstOrNull { it.id == movingId }
-            ?: return MoveFurnitureResult(furniture, false, "Möbeln hittades inte.")
+            ?: return MoveFurnitureResult(furniture, false, "Furniture item was not found.")
 
         val snappedX = snapToGrid(targetXCm, snapStepCm)
         val snappedY = snapToGrid(targetYCm, snapStepCm)
@@ -34,7 +34,7 @@ class MoveFurnitureUseCase {
             .filter { it.id != movingId }
             .any { other -> isOverlapping(candidate, other) }
         if (overlaps) {
-            return MoveFurnitureResult(furniture, false, "Placering blockerad: överlappar annan möbel.")
+            return MoveFurnitureResult(furniture, false, "Placement blocked: overlaps another furniture item.")
         }
 
         val updated = furniture.map { item ->
