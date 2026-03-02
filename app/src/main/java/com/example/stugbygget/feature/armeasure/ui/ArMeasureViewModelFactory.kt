@@ -12,7 +12,9 @@ class ArMeasureViewModelFactory(
         if (modelClass.isAssignableFrom(ArMeasureViewModel::class.java)) {
             return ArMeasureViewModel(
                 appContext = container.applicationContext,
-                calculateMeasurementDistanceUseCase = container.calculateMeasurementDistanceUseCase
+                calculateMeasurementDistanceUseCase = container.calculateMeasurementDistanceUseCase,
+                saveMeasurementUseCase = container.saveMeasurementUseCase,
+                exportMeasurementToRoomPlannerUseCase = container.exportMeasurementToRoomPlannerUseCase
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

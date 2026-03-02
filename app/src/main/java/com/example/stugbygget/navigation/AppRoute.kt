@@ -1,16 +1,16 @@
 package com.example.stugbygget.navigation
 
 sealed class AppRoute(val route: String, val title: String) {
-    data object Planning : AppRoute("planning", "Planering")
-    data object Todos : AppRoute("todos", "Todo")
-    data object Gallery : AppRoute("gallery", "Galleri")
+    data object Planning : AppRoute("planning", "Planning")
+    data object Todos : AppRoute("todos", "Todos")
+    data object Gallery : AppRoute("gallery", "Gallery")
     data object AiChat : AppRoute("ai_chat", "Stugan AI")
-    data object RoomPlanner : AppRoute("room_planner", "Rumsplanerare")
-    data object ArMeasure : AppRoute("ar_measure", "AR-mätning")
-    data object Materials : AppRoute("materials", "Material")
-    data object Shopping : AppRoute("shopping", "Inköp")
+    data object RoomPlanner : AppRoute("room_planner", "Room Planner")
+    data object ArMeasure : AppRoute("ar_measure", "AR Measure")
+    data object Materials : AppRoute("materials", "Materials")
+    data object Shopping : AppRoute("shopping", "Shopping")
     data object Budget : AppRoute("budget", "Budget")
-    data object Logistics : AppRoute("logistics", "Logistik")
+    data object Logistics : AppRoute("logistics", "Logistics")
 }
 
 val primaryRoutes = listOf(

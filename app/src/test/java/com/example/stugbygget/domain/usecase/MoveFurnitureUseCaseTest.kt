@@ -51,6 +51,6 @@ class MoveFurnitureUseCaseTest {
         )
 
         assertFalse(result.applied)
-        assertEquals("Placering blockerad: överlappar annan möbel.", result.reason)
+        assertEquals("Placement blocked: overlaps another furniture item.", result.reason)
     }
 }

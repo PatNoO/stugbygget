@@ -13,7 +13,8 @@ class RoomPlannerViewModelFactory(
             return RoomPlannerViewModel(
                 observeRoomLayoutUseCase = container.observeRoomLayoutUseCase,
                 saveRoomLayoutUseCase = container.saveRoomLayoutUseCase,
-                moveFurnitureUseCase = container.moveFurnitureUseCase
+                moveFurnitureUseCase = container.moveFurnitureUseCase,
+                getRoomDimensionsUseCase = container.getRoomDimensionsUseCase
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
