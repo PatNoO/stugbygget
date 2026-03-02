@@ -2,6 +2,8 @@ package com.example.stugbygget.di
 
 import android.content.Context
 import com.example.stugbygget.BuildConfig
+import com.example.stugbygget.core.offline.ConnectivityMonitor
+import com.example.stugbygget.core.offline.OfflineSyncCoordinator
 import com.example.stugbygget.data.firebase.auth.FirebaseAuthRepository
 import com.example.stugbygget.data.firebase.config.FirebaseRuntimeConfigRepository
 import com.example.stugbygget.data.firebase.firestore.FirestorePhaseRepository
@@ -89,6 +91,17 @@ class AppContainer(
 ) {
     val applicationContext: Context = appContext.applicationContext
 
+    val offlineSyncCoordinator: OfflineSyncCoordinator by lazy { OfflineSyncCoordinator() }
+    private val connectivityMonitor: ConnectivityMonitor by lazy {
+        ConnectivityMonitor(applicationContext) { online ->
+            offlineSyncCoordinator.onConnectivityChanged(online)
+        }
+    }
+
+    init {
+        connectivityMonitor.start()
+    }
+
     val firebaseAuth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
     val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
     val storage: FirebaseStorage by lazy { FirebaseStorage.getInstance() }
@@ -97,12 +110,16 @@ class AppContainer(
 
     val authRepository: AuthRepository by lazy { FirebaseAuthRepository(firebaseAuth) }
     val phaseRepository: PhaseRepository by lazy { FirestorePhaseRepository(firestore) }
-    val todoRepository: TodoRepository by lazy { FirestoreTodoRepository(firestore) }
-    val shoppingRepository: ShoppingRepository by lazy { FirestoreShoppingRepository(firestore) }
+    val todoRepository: TodoRepository by lazy { FirestoreTodoRepository(firestore, offlineSyncCoordinator) }
+    val shoppingRepository: ShoppingRepository by lazy {
+        FirestoreShoppingRepository(firestore, offlineSyncCoordinator)
+    }
     val budgetRepository: BudgetRepository by lazy { FirestoreBudgetRepository(firestore) }
     val logisticsRepository: LogisticsRepository by lazy { FirestoreLogisticsRepository(firestore) }
     val photoRepository: PhotoRepository by lazy { FirestorePhotoRepository(firestore, storage) }
-    val measurementRepository: MeasurementRepository by lazy { FirestoreMeasurementRepository(firestore) }
+    val measurementRepository: MeasurementRepository by lazy {
+        FirestoreMeasurementRepository(firestore, offlineSyncCoordinator)
+    }
     val priceRecommendationRepository: PriceRecommendationRepository by lazy {
         FirestorePriceRecommendationRepository(firestore)
     }
