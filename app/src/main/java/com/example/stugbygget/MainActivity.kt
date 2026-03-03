@@ -2,10 +2,8 @@ package com.example.stugbygget
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
@@ -14,6 +12,7 @@ import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -30,9 +29,6 @@ import com.example.stugbygget.feature.auth.ui.SignInScreen
 import com.example.stugbygget.navigation.AppNavHost
 import com.example.stugbygget.navigation.primaryRoutes
 import com.example.stugbygget.ui.theme.StugbyggetTheme
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
 
 class MainActivity : ComponentActivity() {
 
@@ -58,57 +54,29 @@ private fun AppContent(authViewModel: AuthViewModel) {
     val context = LocalContext.current
     val container = (context.applicationContext as StugByggetApp).container
 
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        val data = result.data
-        if (data == null) {
-            authViewModel.onGoogleSignInFailed("No sign-in result returned.")
-            return@rememberLauncherForActivityResult
-        }
-
-        runCatching {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            task.getResult(ApiException::class.java)
-        }.onSuccess { account ->
-            val token = account.idToken
-            if (token.isNullOrBlank()) {
-                authViewModel.onGoogleSignInFailed("Missing Google ID token.")
-            } else {
-                authViewModel.onGoogleTokenReceived(token)
-            }
-        }.onFailure {
-            authViewModel.onGoogleSignInFailed(it.message ?: "Google sign-in failed.")
-        }
-    }
-
     if (authState.currentUser == null) {
         SignInScreen(
+            email = authState.email,
+            password = authState.password,
             isLoading = authState.isLoading,
             errorMessage = authState.errorMessage,
-            onSignInClick = {
-                val webClientId = BuildConfig.GOOGLE_WEB_CLIENT_ID
-                if (webClientId.isBlank()) {
-                    authViewModel.onGoogleSignInFailed(
-                        "GOOGLE_WEB_CLIENT_ID is missing. Set it in local.properties."
-                    )
-                } else {
-                    val options = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                        .requestIdToken(webClientId)
-                        .requestEmail()
-                        .build()
-                    val client = GoogleSignIn.getClient(context, options)
-                    launcher.launch(client.signInIntent)
-                }
-            }
+            onEmailChanged = authViewModel::onEmailChanged,
+            onPasswordChanged = authViewModel::onPasswordChanged,
+            onSignInClick = authViewModel::onEmailPasswordSignIn
         )
     } else {
-        MainNavigationScaffold(container = container)
+        MainNavigationScaffold(
+            container = container,
+            onSignOut = authViewModel::signOut
+        )
     }
 }
 
 @Composable
-private fun MainNavigationScaffold(container: AppContainer) {
+private fun MainNavigationScaffold(
+    container: AppContainer,
+    onSignOut: () -> Unit
+) {
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
@@ -123,11 +91,31 @@ private fun MainNavigationScaffold(container: AppContainer) {
                     else -> "Pending writes: ${syncState.pendingWrites}"
                 }
                 Surface(color = MaterialTheme.colorScheme.secondaryContainer) {
-                    Text(
-                        text = text,
+                    androidx.compose.foundation.layout.Row(
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = text,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.weight(1f)
+                        )
+                        TextButton(onClick = onSignOut) {
+                            Text("Sign out")
+                        }
+                    }
+                }
+            } else {
+                Surface(color = MaterialTheme.colorScheme.surface) {
+                    androidx.compose.foundation.layout.Row(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End
+                    ) {
+                        TextButton(onClick = onSignOut) {
+                            Text("Sign out")
+                        }
+                    }
                 }
             }
         },

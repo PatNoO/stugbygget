@@ -34,14 +34,20 @@ class AuthViewModel(
     }
 
     fun onEmailPasswordSignIn(email: String, password: String) {
-        if (email.isBlank() || password.isBlank()) {
+        val trimmedEmail = email.trim()
+        if (trimmedEmail.isBlank() || password.isBlank()) {
             _uiState.update { it.copy(errorMessage = "Email and password are required.") }
+            return
+        }
+
+        if (!trimmedEmail.contains("@")) {
+            _uiState.update { it.copy(errorMessage = "Enter a valid email address.") }
             return
         }
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            runCatching { signInWithEmailPasswordUseCase(email, password) }
+            runCatching { signInWithEmailPasswordUseCase(trimmedEmail, password) }
                 .onFailure { throwable ->
                     _uiState.update {
                         it.copy(
@@ -53,18 +59,12 @@ class AuthViewModel(
         }
     }
 
-    // Temporary compatibility method until SB45 removes Google login UI flow.
-    fun onGoogleTokenReceived(idToken: String) {
-        _uiState.update {
-            it.copy(
-                isLoading = false,
-                errorMessage = "Google sign-in is no longer supported. Use email and password."
-            )
-        }
+    fun onEmailChanged(value: String) {
+        _uiState.update { it.copy(email = value, errorMessage = null) }
     }
 
-    fun onGoogleSignInFailed(message: String) {
-        _uiState.update { it.copy(isLoading = false, errorMessage = message) }
+    fun onPasswordChanged(value: String) {
+        _uiState.update { it.copy(password = value, errorMessage = null) }
     }
 
     fun signOut() {
