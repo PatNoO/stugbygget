@@ -5,6 +5,7 @@ import com.example.stugbygget.BuildConfig
 import com.example.stugbygget.core.offline.ConnectivityMonitor
 import com.example.stugbygget.core.offline.OfflineSyncCoordinator
 import com.example.stugbygget.data.firebase.auth.FirebaseAuthRepository
+import com.example.stugbygget.data.firebase.auth.FirebaseProjectSessionRepository
 import com.example.stugbygget.data.firebase.config.FirebaseRuntimeConfigRepository
 import com.example.stugbygget.data.firebase.firestore.FirestorePhaseRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreMeasurementRepository
@@ -31,6 +32,7 @@ import com.example.stugbygget.domain.repository.ShoppingRepository
 import com.example.stugbygget.domain.repository.BudgetRepository
 import com.example.stugbygget.domain.repository.PhaseRepository
 import com.example.stugbygget.domain.repository.PhotoRepository
+import com.example.stugbygget.domain.repository.ProjectSessionRepository
 import com.example.stugbygget.domain.repository.MeasurementRepository
 import com.example.stugbygget.domain.repository.PriceRecommendationRepository
 import com.example.stugbygget.domain.repository.LogisticsRepository
@@ -109,6 +111,12 @@ class AppContainer(
     val remoteConfig: FirebaseRemoteConfig by lazy { FirebaseRemoteConfig.getInstance() }
 
     val authRepository: AuthRepository by lazy { FirebaseAuthRepository(firebaseAuth) }
+    val projectSessionRepository: ProjectSessionRepository by lazy {
+        FirebaseProjectSessionRepository(
+            firebaseAuth = firebaseAuth,
+            configuredProjectId = BuildConfig.PROJECT_ID
+        )
+    }
     val phaseRepository: PhaseRepository by lazy { FirestorePhaseRepository(firestore) }
     val todoRepository: TodoRepository by lazy { FirestoreTodoRepository(firestore, offlineSyncCoordinator) }
     val shoppingRepository: ShoppingRepository by lazy {

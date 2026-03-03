@@ -11,14 +11,15 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class BudgetViewModel(
-    private val observeBudgetOverviewUseCase: ObserveBudgetOverviewUseCase
+    private val observeBudgetOverviewUseCase: ObserveBudgetOverviewUseCase,
+    private val projectId: String
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(BudgetUiState())
     val uiState: StateFlow<BudgetUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
-            observeBudgetOverviewUseCase(DEFAULT_PROJECT_ID)
+            observeBudgetOverviewUseCase(projectId)
                 .catch { throwable ->
                     _uiState.update {
                         it.copy(isLoading = false, errorMessage = throwable.message ?: "Failed to load budget.")
@@ -39,9 +40,5 @@ class BudgetViewModel(
                     }
                 }
         }
-    }
-
-    companion object {
-        private const val DEFAULT_PROJECT_ID = "default-project"
     }
 }

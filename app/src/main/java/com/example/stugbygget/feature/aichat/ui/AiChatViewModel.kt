@@ -15,7 +15,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class AiChatViewModel(
-    private val streamAssistantReplyUseCase: StreamAssistantReplyUseCase
+    private val streamAssistantReplyUseCase: StreamAssistantReplyUseCase,
+    private val projectId: String
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AiChatUiState(messages = defaultMessages()))
@@ -61,7 +62,7 @@ class AiChatViewModel(
                 )
             }
             streamAssistantReplyUseCase(
-                projectId = DEFAULT_PROJECT_ID,
+                projectId = projectId,
                 conversation = _uiState.value.messages
                     .filter { chat -> chat.text.isNotBlank() }
                     .map { chat ->
@@ -109,7 +110,4 @@ class AiChatViewModel(
         )
     }
 
-    companion object {
-        private const val DEFAULT_PROJECT_ID = "default-project"
-    }
 }

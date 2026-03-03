@@ -12,7 +12,8 @@ class PlanningViewModelFactory(
         if (modelClass.isAssignableFrom(PlanningViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return PlanningViewModel(
-                observePhasesUseCase = container.observePhasesUseCase
+                observePhasesUseCase = container.observePhasesUseCase,
+                projectId = container.projectSessionRepository.getProjectId()
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

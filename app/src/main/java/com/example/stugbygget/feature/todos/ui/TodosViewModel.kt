@@ -13,7 +13,8 @@ import kotlinx.coroutines.launch
 
 class TodosViewModel(
     private val observeTodosUseCase: ObserveTodosUseCase,
-    private val toggleTodoUseCase: ToggleTodoUseCase
+    private val toggleTodoUseCase: ToggleTodoUseCase,
+    private val projectId: String
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TodosUiState())
@@ -36,7 +37,7 @@ class TodosViewModel(
     fun onTodoToggle(todoId: String, checked: Boolean) {
         viewModelScope.launch {
             runCatching {
-                toggleTodoUseCase(DEFAULT_PROJECT_ID, todoId, checked)
+                toggleTodoUseCase(projectId, todoId, checked)
             }.onFailure { throwable ->
                 _uiState.update { it.copy(errorMessage = throwable.message ?: "Kunde inte uppdatera todo") }
             }
@@ -46,7 +47,7 @@ class TodosViewModel(
     private fun observeTodos() {
         viewModelScope.launch {
             observeTodosUseCase(
-                projectId = DEFAULT_PROJECT_ID,
+                projectId = projectId,
                 phaseId = _uiState.value.selectedPhase,
                 assignee = _uiState.value.selectedAssignee
             ).catch { throwable ->
@@ -65,9 +66,5 @@ class TodosViewModel(
                 }
             }
         }
-    }
-
-    companion object {
-        private const val DEFAULT_PROJECT_ID = "default-project"
     }
 }

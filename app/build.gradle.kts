@@ -30,6 +30,9 @@ android {
         buildConfigField("String", "CLAUDE_BASE_URL", "\"$claudeBaseUrl\"")
         val mapsApiKey = (project.findProperty("MAPS_API_KEY") as? String).orEmpty()
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
+        val projectId = (project.findProperty("PROJECT_ID") as? String)
+            ?: "default-project"
+        buildConfigField("String", "PROJECT_ID", "\"$projectId\"")
 
     }
 

@@ -14,7 +14,8 @@ class ArMeasureViewModelFactory(
                 appContext = container.applicationContext,
                 calculateMeasurementDistanceUseCase = container.calculateMeasurementDistanceUseCase,
                 saveMeasurementUseCase = container.saveMeasurementUseCase,
-                exportMeasurementToRoomPlannerUseCase = container.exportMeasurementToRoomPlannerUseCase
+                exportMeasurementToRoomPlannerUseCase = container.exportMeasurementToRoomPlannerUseCase,
+                projectId = container.projectSessionRepository.getProjectId()
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

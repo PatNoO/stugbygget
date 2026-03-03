@@ -13,7 +13,8 @@ class TodosViewModelFactory(
             @Suppress("UNCHECKED_CAST")
             return TodosViewModel(
                 observeTodosUseCase = container.observeTodosUseCase,
-                toggleTodoUseCase = container.toggleTodoUseCase
+                toggleTodoUseCase = container.toggleTodoUseCase,
+                projectId = container.projectSessionRepository.getProjectId()
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

@@ -12,7 +12,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class GalleryViewModel(
-    private val observePhotosUseCase: ObservePhotosUseCase
+    private val observePhotosUseCase: ObservePhotosUseCase,
+    private val projectId: String
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GalleryUiState())
@@ -35,7 +36,7 @@ class GalleryViewModel(
     private fun observePhotos() {
         viewModelScope.launch {
             observePhotosUseCase(
-                projectId = DEFAULT_PROJECT_ID,
+                projectId = projectId,
                 roomName = _uiState.value.selectedRoom,
                 phase = _uiState.value.selectedPhase
             ).catch { throwable ->
@@ -53,9 +54,5 @@ class GalleryViewModel(
                 }
             }
         }
-    }
-
-    companion object {
-        private const val DEFAULT_PROJECT_ID = "default-project"
     }
 }
