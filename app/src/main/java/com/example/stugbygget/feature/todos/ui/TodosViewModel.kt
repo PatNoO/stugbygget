@@ -47,7 +47,9 @@ class TodosViewModel(
             runCatching {
                 toggleTodoUseCase(projectId, todoId, checked)
             }.onFailure { throwable ->
-                _uiState.update { it.copy(errorMessage = throwable.message ?: "Kunde inte uppdatera todo") }
+                _uiState.update {
+                    it.copy(errorMessage = throwable.message ?: "Failed to update todo.")
+                }
             }
         }
     }
@@ -55,13 +57,6 @@ class TodosViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun observeTodos() {
         viewModelScope.launch {
-            observeTodosUseCase(
-                projectId = projectId,
-                phaseId = _uiState.value.selectedPhase,
-                assignee = _uiState.value.selectedAssignee
-            ).catch { throwable ->
-                _uiState.update {
-                    it.copy(isLoading = false, errorMessage = throwable.message ?: "Kunde inte ladda todos")
             _uiState
                 .map { state ->
                     TodoFilters(
@@ -72,7 +67,7 @@ class TodosViewModel(
                 .distinctUntilChanged()
                 .flatMapLatest { filters ->
                     observeTodosUseCase(
-                        projectId = DEFAULT_PROJECT_ID,
+                        projectId = projectId,
                         phaseId = filters.phaseId,
                         assignee = filters.assignee
                     )
@@ -80,7 +75,10 @@ class TodosViewModel(
                 .onStart { _uiState.update { it.copy(isLoading = true) } }
                 .catch { throwable ->
                     _uiState.update {
-                        it.copy(isLoading = false, errorMessage = throwable.message ?: "Failed to load todos.")
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = throwable.message ?: "Failed to load todos."
+                        )
                     }
                 }
                 .collect { todos ->
