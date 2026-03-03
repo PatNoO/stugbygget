@@ -22,11 +22,10 @@ class FirestoreTodoRepository(
         val query = firestore.collection("projects")
             .document(projectId)
             .collection("todos")
-        var cachedTodos: List<TodoItem> = emptyList()
 
         val registration = query.addSnapshotListener { snapshot, error ->
             if (error != null) {
-                trySend(cachedTodos)
+                close(error)
                 return@addSnapshotListener
             }
 
@@ -38,7 +37,6 @@ class FirestoreTodoRepository(
                 .filter { todo -> phaseId == null || todo.phaseId == phaseId }
                 .filter { todo -> assignee == null || todo.assignee == assignee }
                 .sortedByDescending { it.createdAt }
-            cachedTodos = todos
             trySend(todos)
         }
 
