@@ -13,7 +13,7 @@ class AuthViewModelFactory(
             @Suppress("UNCHECKED_CAST")
             return AuthViewModel(
                 observeAuthUserUseCase = container.observeAuthUserUseCase,
-                signInWithGoogleUseCase = container.signInWithGoogleUseCase,
+                signInWithEmailPasswordUseCase = container.signInWithEmailPasswordUseCase,
                 signOutUseCase = container.signOutUseCase
             ) as T
         }

@@ -3,7 +3,7 @@ package com.example.stugbygget.feature.auth.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stugbygget.domain.usecase.ObserveAuthUserUseCase
-import com.example.stugbygget.domain.usecase.SignInWithGoogleUseCase
+import com.example.stugbygget.domain.usecase.SignInWithEmailPasswordUseCase
 import com.example.stugbygget.domain.usecase.SignOutUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 
 class AuthViewModel(
     observeAuthUserUseCase: ObserveAuthUserUseCase,
-    private val signInWithGoogleUseCase: SignInWithGoogleUseCase,
+    private val signInWithEmailPasswordUseCase: SignInWithEmailPasswordUseCase,
     private val signOutUseCase: SignOutUseCase
 ) : ViewModel() {
 
@@ -33,18 +33,33 @@ class AuthViewModel(
         }
     }
 
-    fun onGoogleTokenReceived(idToken: String) {
+    fun onEmailPasswordSignIn(email: String, password: String) {
+        if (email.isBlank() || password.isBlank()) {
+            _uiState.update { it.copy(errorMessage = "Email and password are required.") }
+            return
+        }
+
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
-            runCatching { signInWithGoogleUseCase(idToken) }
+            runCatching { signInWithEmailPasswordUseCase(email, password) }
                 .onFailure { throwable ->
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            errorMessage = throwable.message ?: "Kunde inte logga in"
+                            errorMessage = throwable.message ?: "Could not sign in."
                         )
                     }
                 }
+        }
+    }
+
+    // Temporary compatibility method until SB45 removes Google login UI flow.
+    fun onGoogleTokenReceived(idToken: String) {
+        _uiState.update {
+            it.copy(
+                isLoading = false,
+                errorMessage = "Google sign-in is no longer supported. Use email and password."
+            )
         }
     }
 

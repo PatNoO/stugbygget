@@ -3,7 +3,6 @@ package com.example.stugbygget.data.firebase.auth
 import com.example.stugbygget.domain.model.AppUser
 import com.example.stugbygget.domain.repository.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -31,9 +30,8 @@ class FirebaseAuthRepository(
         awaitClose { firebaseAuth.removeAuthStateListener(listener) }
     }
 
-    override suspend fun signInWithGoogleIdToken(idToken: String) {
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
-        firebaseAuth.signInWithCredential(credential).await()
+    override suspend fun signInWithEmailPassword(email: String, password: String) {
+        firebaseAuth.signInWithEmailAndPassword(email, password).await()
     }
 
     override suspend fun signOut() {

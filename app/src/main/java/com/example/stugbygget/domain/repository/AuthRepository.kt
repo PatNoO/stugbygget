@@ -5,6 +5,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface AuthRepository {
     fun observeCurrentUser(): Flow<AppUser?>
-    suspend fun signInWithGoogleIdToken(idToken: String)
+    suspend fun signInWithEmailPassword(email: String, password: String)
     suspend fun signOut()
 }
