@@ -122,6 +122,7 @@ class AppContainer(
             firebaseAuth = firebaseAuth,
             configuredProjectId = BuildConfig.PROJECT_ID
         )
+    }
     val arSessionRepository: ArSessionRepository by lazy {
         ArCoreSessionRepository(applicationContext)
     }
