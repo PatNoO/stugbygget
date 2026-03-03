@@ -23,7 +23,6 @@ import com.example.stugbygget.data.local.LocalRoomLayoutRepository
 import com.example.stugbygget.data.local.LocalNotificationSettingsRepository
 import com.example.stugbygget.data.local.RouteCacheDataSource
 import com.example.stugbygget.data.local.AndroidNotificationDispatcher
-import com.example.stugbygget.data.remote.claude.ClaudeApiService
 import com.example.stugbygget.data.remote.claude.ClaudeChatRepository
 import com.example.stugbygget.data.remote.maps.GoogleDirectionsService
 import com.example.stugbygget.data.remote.maps.GoogleRouteRepository
@@ -146,27 +145,18 @@ class AppContainer(
     val runtimeConfigRepository: RuntimeConfigRepository by lazy {
         FirebaseRuntimeConfigRepository(remoteConfig)
     }
-    val retrofit: Retrofit by lazy {
-        Retrofit.Builder()
-            .baseUrl(BuildConfig.CLAUDE_BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
     val mapsRetrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl("https://maps.googleapis.com/")
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
-    val claudeApiService: ClaudeApiService by lazy {
-        retrofit.create(ClaudeApiService::class.java)
-    }
     val googleDirectionsService: GoogleDirectionsService by lazy {
         mapsRetrofit.create(GoogleDirectionsService::class.java)
     }
     val chatRepository: ChatRepository by lazy {
         ClaudeChatRepository(
-            apiService = claudeApiService,
+            functions = functions,
             contextProvider = projectContextProvider
         )
     }

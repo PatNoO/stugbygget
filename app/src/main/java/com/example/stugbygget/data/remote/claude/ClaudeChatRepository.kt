@@ -1,15 +1,16 @@
 package com.example.stugbygget.data.remote.claude
 
-import com.example.stugbygget.BuildConfig
 import com.example.stugbygget.data.firebase.firestore.FirestoreProjectContextProvider
 import com.example.stugbygget.domain.model.ChatMessage
 import com.example.stugbygget.domain.model.ChatRole
 import com.example.stugbygget.domain.repository.ChatRepository
+import com.google.firebase.functions.FirebaseFunctions
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.tasks.await
 
 class ClaudeChatRepository(
-    private val apiService: ClaudeApiService,
+    private val functions: FirebaseFunctions,
     private val contextProvider: FirestoreProjectContextProvider
 ) : ChatRepository {
 
@@ -17,30 +18,32 @@ class ClaudeChatRepository(
         projectId: String,
         conversation: List<ChatMessage>
     ): Flow<String> = flow {
-        val apiKey = BuildConfig.CLAUDE_API_KEY
-        if (apiKey.isBlank()) {
-            throw IllegalStateException("CLAUDE_API_KEY saknas i local.properties")
-        }
-
         val context = contextProvider.load(projectId)
-        val request = ClaudeMessageRequest(
-            model = "claude-3-5-sonnet-latest",
-            maxTokens = 1024,
-            system = ClaudePromptBuilder.buildSystemPrompt(context),
-            messages = conversation.map { message ->
-                ClaudeInputMessage(
-                    role = if (message.role == ChatRole.USER) "user" else "assistant",
-                    content = message.text
+        val payload = mapOf(
+            "projectId" to projectId,
+            "system" to ClaudePromptBuilder.buildSystemPrompt(context),
+            "messages" to conversation.map { message ->
+                mapOf(
+                    "role" to if (message.role == ChatRole.USER) "user" else "assistant",
+                    "content" to message.text
                 )
             }
         )
-        val response = apiService.createMessage(apiKey = apiKey, request = request)
-        val fullText = response.content
-            .filter { it.type == "text" }
-            .joinToString(separator = "") { it.text }
-            .ifBlank { "Jag kunde inte generera ett svar just nu." }
+        val response = functions
+            .getHttpsCallable("generateAssistantReply")
+            .call(payload)
+            .await()
 
-        // Simulerar tokenvis uppdatering tills SSE läggs till i nästa iteration.
+        val rawText = (response.data as? Map<*, *>)
+            ?.get("text")
+            ?.toString()
+        val fullText = if (rawText.isNullOrBlank()) {
+            "Jag kunde inte generera ett svar just nu."
+        } else {
+            rawText
+        }
+
+        // Simulate streaming chunks until server-side streaming is introduced.
         val words = fullText.split(" ")
         val partial = StringBuilder()
         words.forEachIndexed { index, word ->
