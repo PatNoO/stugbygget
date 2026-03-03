@@ -63,7 +63,10 @@ fun ShoppingScreen(container: AppContainer) {
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Button(onClick = viewModel::onCreateList) {
+        Button(
+            onClick = viewModel::onCreateList,
+            enabled = !uiState.isSubmitting
+        ) {
             Text("Create List")
         }
 
@@ -73,54 +76,65 @@ fun ShoppingScreen(container: AppContainer) {
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            items(uiState.shoppingLists, key = { it.id }) { list ->
-                Card(modifier = Modifier.fillMaxWidth()) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(list.name, style = MaterialTheme.typography.titleMedium)
-                        Text("Phase: ${list.phaseId}", style = MaterialTheme.typography.bodySmall)
+        if (uiState.shoppingLists.isEmpty()) {
+            Text(
+                text = "No shopping lists yet. Create your first list above.",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        } else {
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                items(uiState.shoppingLists, key = { it.id }) { list ->
+                    val draft = uiState.itemDrafts[list.id] ?: ShoppingItemDraftUiState()
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(list.name, style = MaterialTheme.typography.titleMedium)
+                            Text("Phase: ${list.phaseId}", style = MaterialTheme.typography.bodySmall)
 
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row {
-                            OutlinedTextField(
-                                value = uiState.itemNameInput,
-                                onValueChange = viewModel::onItemNameChanged,
-                                label = { Text("Item") },
-                                modifier = Modifier.weight(1f)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            OutlinedTextField(
-                                value = uiState.itemQuantityInput,
-                                onValueChange = viewModel::onItemQuantityChanged,
-                                label = { Text("Qty") },
-                                modifier = Modifier.width(90.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            OutlinedTextField(
-                                value = uiState.itemUnitInput,
-                                onValueChange = viewModel::onItemUnitChanged,
-                                label = { Text("Unit") },
-                                modifier = Modifier.width(80.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { viewModel.onAddItem(list.id) }) {
-                            Text("Add Item")
-                        }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row {
+                                OutlinedTextField(
+                                    value = draft.name,
+                                    onValueChange = { value -> viewModel.onItemNameChanged(list.id, value) },
+                                    label = { Text("Item") },
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                OutlinedTextField(
+                                    value = draft.quantity,
+                                    onValueChange = { value -> viewModel.onItemQuantityChanged(list.id, value) },
+                                    label = { Text("Qty") },
+                                    modifier = Modifier.width(90.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                OutlinedTextField(
+                                    value = draft.unit,
+                                    onValueChange = { value -> viewModel.onItemUnitChanged(list.id, value) },
+                                    label = { Text("Unit") },
+                                    modifier = Modifier.width(80.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(
+                                onClick = { viewModel.onAddItem(list.id) },
+                                enabled = !uiState.isSubmitting
+                            ) {
+                                Text("Add Item")
+                            }
 
-                        Spacer(modifier = Modifier.height(8.dp))
-                        if (list.items.isEmpty()) {
-                            Text("No items yet.")
-                        } else {
-                            list.items.forEach { item ->
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Checkbox(
-                                        checked = item.purchased,
-                                        onCheckedChange = { checked ->
-                                            viewModel.onTogglePurchased(list.id, item.id, checked)
-                                        }
-                                    )
-                                    Text("${item.name} · ${item.quantity} ${item.unit}")
+                            Spacer(modifier = Modifier.height(8.dp))
+                            if (list.items.isEmpty()) {
+                                Text("No items yet.")
+                            } else {
+                                list.items.forEach { item ->
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Checkbox(
+                                            checked = item.purchased,
+                                            onCheckedChange = { checked ->
+                                                viewModel.onTogglePurchased(list.id, item.id, checked)
+                                            }
+                                        )
+                                        Text("${item.name} · ${item.quantity} ${item.unit}")
+                                    }
                                 }
                             }
                         }
