@@ -9,10 +9,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.stugbygget.di.AppContainer
@@ -131,13 +132,23 @@ private fun MainNavigationScaffold(container: AppContainer) {
             }
         },
         bottomBar = {
-            NavigationBar {
-                primaryRoutes.take(5).forEach { route ->
-                    NavigationBarItem(
+            val selectedIndex = primaryRoutes.indexOfFirst { route -> route.route == currentRoute }
+            ScrollableTabRow(
+                selectedTabIndex = selectedIndex.coerceAtLeast(0)
+            ) {
+                primaryRoutes.forEach { route ->
+                    Tab(
                         selected = currentRoute == route.route,
-                        onClick = { navController.navigate(route.route) },
-                        icon = { Text(route.title.take(1)) },
-                        label = { Text(route.title) }
+                        onClick = {
+                            navController.navigate(route.route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        text = { Text(route.title) }
                     )
                 }
             }
