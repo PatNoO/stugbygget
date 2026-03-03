@@ -44,13 +44,6 @@ class GalleryViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun observePhotos() {
         viewModelScope.launch {
-            observePhotosUseCase(
-                projectId = projectId,
-                roomName = _uiState.value.selectedRoom,
-                phase = _uiState.value.selectedPhase
-            ).catch { throwable ->
-                _uiState.update {
-                    it.copy(isLoading = false, errorMessage = throwable.message ?: "Kunde inte ladda bilder")
             _uiState
                 .map { state ->
                     GalleryFilters(
@@ -61,7 +54,7 @@ class GalleryViewModel(
                 .distinctUntilChanged()
                 .flatMapLatest { filters ->
                     observePhotosUseCase(
-                        projectId = DEFAULT_PROJECT_ID,
+                        projectId = projectId,
                         roomName = filters.roomName,
                         phase = filters.phase
                     )
@@ -69,7 +62,10 @@ class GalleryViewModel(
                 .onStart { _uiState.update { it.copy(isLoading = true) } }
                 .catch { throwable ->
                     _uiState.update {
-                        it.copy(isLoading = false, errorMessage = throwable.message ?: "Failed to load photos.")
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = throwable.message ?: "Failed to load photos."
+                        )
                     }
                 }
                 .collect { photos ->
