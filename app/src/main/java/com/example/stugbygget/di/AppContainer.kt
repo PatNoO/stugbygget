@@ -68,7 +68,7 @@ import com.example.stugbygget.domain.usecase.ObserveBudgetOverviewUseCase
 import com.example.stugbygget.domain.usecase.ObserveTodosUseCase
 import com.example.stugbygget.domain.usecase.SaveMeasurementUseCase
 import com.example.stugbygget.domain.usecase.SaveRoomLayoutUseCase
-import com.example.stugbygget.domain.usecase.SignInWithGoogleUseCase
+import com.example.stugbygget.domain.usecase.SignInWithEmailPasswordUseCase
 import com.example.stugbygget.domain.usecase.SignOutUseCase
 import com.example.stugbygget.domain.usecase.StreamAssistantReplyUseCase
 import com.example.stugbygget.domain.usecase.PlanLogisticsWithRouteUseCase
@@ -191,8 +191,8 @@ class AppContainer(
     val observeAuthUserUseCase: ObserveAuthUserUseCase by lazy {
         ObserveAuthUserUseCase(authRepository)
     }
-    val signInWithGoogleUseCase: SignInWithGoogleUseCase by lazy {
-        SignInWithGoogleUseCase(authRepository)
+    val signInWithEmailPasswordUseCase: SignInWithEmailPasswordUseCase by lazy {
+        SignInWithEmailPasswordUseCase(authRepository)
     }
     val signOutUseCase: SignOutUseCase by lazy {
         SignOutUseCase(authRepository)
