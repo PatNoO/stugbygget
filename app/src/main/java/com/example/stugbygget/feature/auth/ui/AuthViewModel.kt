@@ -71,7 +71,7 @@ class AuthViewModel(
         viewModelScope.launch {
             runCatching { signOutUseCase() }
                 .onFailure { throwable ->
-                    _uiState.update { it.copy(errorMessage = throwable.message ?: "Kunde inte logga ut") }
+                    _uiState.update { it.copy(errorMessage = throwable.message ?: "Could not sign out.") }
                 }
         }
     }

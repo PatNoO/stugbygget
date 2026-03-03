@@ -16,6 +16,7 @@ Last verified: 2026-03-03
 - [x] Remote Config key/range ownership documented (`docs/remote_config_keys.md`).
 - [x] Maps API fallback strategy defined for missing key/failure.
 - [ ] Production Remote Config values verified in Firebase console.
+- [ ] Firebase Email/Password sign-in verified enabled in Firebase Console.
 
 ## Performance / Reliability
 
@@ -33,3 +34,4 @@ Required before broad release:
 2. CI instrumentation smoke lane.
 3. Final production Firebase/Remote Config verification.
 4. Deploy and validate callable AI proxy secret configuration (`CLAUDE_API_KEY`) in Firebase Functions.
+5. Final operator validation of Firebase Email/Password sign-in setting.
