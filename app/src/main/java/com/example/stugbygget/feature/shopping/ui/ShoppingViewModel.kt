@@ -71,14 +71,17 @@ class ShoppingViewModel(
 
     fun onCreateList() {
         val state = _uiState.value
-        if (state.listNameInput.isBlank()) return
-        val currentUserId = currentUserIdProvider()
-        if (currentUserId.isNullOrBlank()) {
-            _uiState.update { it.copy(errorMessage = "Sign in again to create shopping lists.") }
         if (state.listNameInput.isBlank()) {
             _uiState.update { it.copy(errorMessage = "List name is required.") }
             return
         }
+
+        val currentUserId = currentUserIdProvider()
+        if (currentUserId.isNullOrBlank()) {
+            _uiState.update { it.copy(errorMessage = "Sign in again to create shopping lists.") }
+            return
+        }
+
         viewModelScope.launch {
             _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
             runCatching {
@@ -104,6 +107,7 @@ class ShoppingViewModel(
     fun onAddItem(listId: String) {
         val state = _uiState.value
         val draft = state.itemDrafts.draftFor(listId)
+
         if (draft.name.isBlank()) {
             _uiState.update { it.copy(errorMessage = "Item name is required.") }
             return
@@ -129,9 +133,7 @@ class ShoppingViewModel(
                 _uiState.update { current ->
                     current.copy(
                         isSubmitting = false,
-                        itemDrafts = current.itemDrafts + (
-                            listId to ShoppingItemDraftUiState()
-                            )
+                        itemDrafts = current.itemDrafts + (listId to ShoppingItemDraftUiState())
                     )
                 }
             }.onFailure { throwable ->
@@ -155,7 +157,9 @@ class ShoppingViewModel(
                     purchased = purchased
                 )
             }.onFailure { throwable ->
-                _uiState.update { it.copy(errorMessage = throwable.message ?: "Failed to update item.") }
+                _uiState.update {
+                    it.copy(errorMessage = throwable.message ?: "Failed to update item.")
+                }
             }
         }
     }
@@ -169,17 +173,17 @@ class ShoppingViewModel(
                     }
                 }
                 .collect { lists ->
-                    _uiState.update {
-                        it.copy(
+                    _uiState.update { state ->
+                        state.copy(
                             isLoading = false,
                             shoppingLists = lists,
                             itemDrafts = lists.associate { list ->
-                                list.id to it.itemDrafts.draftFor(list.id)
+                                list.id to state.itemDrafts.draftFor(list.id)
                             },
                             errorMessage = null
                         )
                     }
-            }
+                }
         }
     }
 }
