@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 
 class PlanningViewModel(
     observePhasesUseCase: ObservePhasesUseCase,
-    projectId: String
+    projectId: String,
     private val buildPlanningOverviewUseCase: BuildPlanningOverviewUseCase
 ) : ViewModel() {
 
