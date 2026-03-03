@@ -23,10 +23,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.stugbygget.di.AppContainer
-import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import kotlin.math.roundToInt
 
 @Composable
 fun PlanningScreen(container: AppContainer) {
@@ -71,9 +69,6 @@ fun PlanningScreen(container: AppContainer) {
 
         else -> {
             val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-            val totalProgress = uiState.phases.map { it.progress }.average().roundToInt()
-            val maxEndDate = uiState.phases.maxOfOrNull { it.endDate } ?: Instant.now()
-            val daysLeft = (maxEndDate.epochSecond - Instant.now().epochSecond) / 86_400L
             LazyColumn(modifier = Modifier.fillMaxSize()) {
                 item {
                     Column(
@@ -82,12 +77,16 @@ fun PlanningScreen(container: AppContainer) {
                             .padding(16.dp)
                     ) {
                         Text(
-                            text = "Total progress: $totalProgress%",
+                            text = "Total progress: ${uiState.totalProgressPercent}%",
                             style = MaterialTheme.typography.titleMedium
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = if (daysLeft > 0) "$daysLeft dagar kvar" else "Fasplanen är passerad",
+                            text = if (!uiState.isSchedulePassed) {
+                                "${uiState.daysLeft} dagar kvar"
+                            } else {
+                                "Fasplanen är passerad"
+                            },
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }

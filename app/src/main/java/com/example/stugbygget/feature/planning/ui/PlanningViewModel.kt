@@ -2,6 +2,7 @@ package com.example.stugbygget.feature.planning.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.stugbygget.domain.usecase.BuildPlanningOverviewUseCase
 import com.example.stugbygget.domain.usecase.ObservePhasesUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -11,7 +12,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class PlanningViewModel(
-    observePhasesUseCase: ObservePhasesUseCase
+    observePhasesUseCase: ObservePhasesUseCase,
+    private val buildPlanningOverviewUseCase: BuildPlanningOverviewUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(PlanningUiState())
@@ -29,10 +31,14 @@ class PlanningViewModel(
                     }
                 }
                 .collect { phases ->
+                    val overview = buildPlanningOverviewUseCase(phases)
                     _uiState.update {
                         it.copy(
                             isLoading = false,
                             phases = phases,
+                            totalProgressPercent = overview.totalProgressPercent,
+                            daysLeft = overview.daysLeft,
+                            isSchedulePassed = overview.isSchedulePassed,
                             errorMessage = null
                         )
                     }

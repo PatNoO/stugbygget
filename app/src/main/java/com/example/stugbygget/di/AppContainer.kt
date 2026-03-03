@@ -73,6 +73,7 @@ import com.example.stugbygget.domain.usecase.StreamAssistantReplyUseCase
 import com.example.stugbygget.domain.usecase.PlanLogisticsWithRouteUseCase
 import com.example.stugbygget.domain.usecase.RunNotificationPipelineUseCase
 import com.example.stugbygget.domain.usecase.BuildNotificationEventsUseCase
+import com.example.stugbygget.domain.usecase.BuildPlanningOverviewUseCase
 import com.example.stugbygget.domain.usecase.DispatchNotificationEventsUseCase
 import com.example.stugbygget.domain.usecase.FetchRuntimeConfigUseCase
 import com.example.stugbygget.domain.usecase.UpdateNotificationSettingsUseCase
@@ -200,6 +201,9 @@ class AppContainer(
     }
     val observePhasesUseCase: ObservePhasesUseCase by lazy {
         ObservePhasesUseCase(phaseRepository)
+    }
+    val buildPlanningOverviewUseCase: BuildPlanningOverviewUseCase by lazy {
+        BuildPlanningOverviewUseCase()
     }
     val observeTodosUseCase: ObserveTodosUseCase by lazy {
         ObserveTodosUseCase(todoRepository)
