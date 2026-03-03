@@ -27,29 +27,54 @@ class ShoppingViewModel(
     }
 
     fun onListNameChanged(value: String) {
-        _uiState.update { it.copy(listNameInput = value) }
+        _uiState.update { it.copy(listNameInput = value, errorMessage = null) }
     }
 
     fun onPhaseChanged(value: String) {
-        _uiState.update { it.copy(phaseInput = value) }
+        _uiState.update { it.copy(phaseInput = value, errorMessage = null) }
     }
 
-    fun onItemNameChanged(value: String) {
-        _uiState.update { it.copy(itemNameInput = value) }
+    fun onItemNameChanged(listId: String, value: String) {
+        _uiState.update { state ->
+            state.copy(
+                errorMessage = null,
+                itemDrafts = state.itemDrafts + (
+                    listId to state.itemDrafts.draftFor(listId).copy(name = value)
+                    )
+            )
+        }
     }
 
-    fun onItemQuantityChanged(value: String) {
-        _uiState.update { it.copy(itemQuantityInput = value) }
+    fun onItemQuantityChanged(listId: String, value: String) {
+        _uiState.update { state ->
+            state.copy(
+                errorMessage = null,
+                itemDrafts = state.itemDrafts + (
+                    listId to state.itemDrafts.draftFor(listId).copy(quantity = value)
+                    )
+            )
+        }
     }
 
-    fun onItemUnitChanged(value: String) {
-        _uiState.update { it.copy(itemUnitInput = value) }
+    fun onItemUnitChanged(listId: String, value: String) {
+        _uiState.update { state ->
+            state.copy(
+                errorMessage = null,
+                itemDrafts = state.itemDrafts + (
+                    listId to state.itemDrafts.draftFor(listId).copy(unit = value)
+                    )
+            )
+        }
     }
 
     fun onCreateList() {
         val state = _uiState.value
-        if (state.listNameInput.isBlank()) return
+        if (state.listNameInput.isBlank()) {
+            _uiState.update { it.copy(errorMessage = "List name is required.") }
+            return
+        }
         viewModelScope.launch {
+            _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
             runCatching {
                 createShoppingListUseCase(
                     projectId = DEFAULT_PROJECT_ID,
@@ -58,37 +83,58 @@ class ShoppingViewModel(
                     createdBy = DEFAULT_USER_ID
                 )
             }.onSuccess {
-                _uiState.update { it.copy(listNameInput = "") }
+                _uiState.update { it.copy(listNameInput = "", isSubmitting = false) }
             }.onFailure { throwable ->
-                _uiState.update { it.copy(errorMessage = throwable.message ?: "Failed to create list.") }
+                _uiState.update {
+                    it.copy(
+                        isSubmitting = false,
+                        errorMessage = throwable.message ?: "Failed to create list."
+                    )
+                }
             }
         }
     }
 
     fun onAddItem(listId: String) {
         val state = _uiState.value
-        val quantity = state.itemQuantityInput.toDoubleOrNull() ?: 1.0
-        if (state.itemNameInput.isBlank()) return
+        val draft = state.itemDrafts.draftFor(listId)
+        if (draft.name.isBlank()) {
+            _uiState.update { it.copy(errorMessage = "Item name is required.") }
+            return
+        }
+
+        val quantity = draft.quantity.toDoubleOrNull()
+        if (quantity == null || quantity <= 0.0) {
+            _uiState.update { it.copy(errorMessage = "Quantity must be greater than zero.") }
+            return
+        }
 
         viewModelScope.launch {
+            _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
             runCatching {
                 addShoppingItemUseCase(
                     projectId = DEFAULT_PROJECT_ID,
                     listId = listId,
-                    name = state.itemNameInput,
+                    name = draft.name,
                     quantity = quantity,
-                    unit = state.itemUnitInput
+                    unit = draft.unit.ifBlank { "pcs" }
                 )
             }.onSuccess {
-                _uiState.update {
-                    it.copy(
-                        itemNameInput = "",
-                        itemQuantityInput = "1",
-                        itemUnitInput = "pcs"
+                _uiState.update { current ->
+                    current.copy(
+                        isSubmitting = false,
+                        itemDrafts = current.itemDrafts + (
+                            listId to ShoppingItemDraftUiState()
+                            )
                     )
                 }
             }.onFailure { throwable ->
-                _uiState.update { it.copy(errorMessage = throwable.message ?: "Failed to add item.") }
+                _uiState.update {
+                    it.copy(
+                        isSubmitting = false,
+                        errorMessage = throwable.message ?: "Failed to add item."
+                    )
+                }
             }
         }
     }
@@ -121,6 +167,9 @@ class ShoppingViewModel(
                         it.copy(
                             isLoading = false,
                             shoppingLists = lists,
+                            itemDrafts = lists.associate { list ->
+                                list.id to it.itemDrafts.draftFor(list.id)
+                            },
                             errorMessage = null
                         )
                     }
@@ -132,4 +181,8 @@ class ShoppingViewModel(
         private const val DEFAULT_PROJECT_ID = "default-project"
         private const val DEFAULT_USER_ID = "team-user"
     }
+}
+
+private fun Map<String, ShoppingItemDraftUiState>.draftFor(listId: String): ShoppingItemDraftUiState {
+    return this[listId] ?: ShoppingItemDraftUiState()
 }
