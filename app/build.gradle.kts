@@ -23,11 +23,6 @@ android {
 
         val googleWebClientId = (project.findProperty("GOOGLE_WEB_CLIENT_ID") as? String).orEmpty()
         buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
-        val claudeApiKey = (project.findProperty("CLAUDE_API_KEY") as? String).orEmpty()
-        buildConfigField("String", "CLAUDE_API_KEY", "\"$claudeApiKey\"")
-        val claudeBaseUrl = (project.findProperty("CLAUDE_BASE_URL") as? String)
-            ?: "https://api.anthropic.com/"
-        buildConfigField("String", "CLAUDE_BASE_URL", "\"$claudeBaseUrl\"")
         val mapsApiKey = (project.findProperty("MAPS_API_KEY") as? String).orEmpty()
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
         val projectId = (project.findProperty("PROJECT_ID") as? String)
