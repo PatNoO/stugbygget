@@ -1,15 +1,15 @@
 package com.example.stugbygget.feature.armeasure.ui
 
-import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stugbygget.domain.model.MeasurementType
 import com.example.stugbygget.domain.usecase.CalculateMeasurementDistanceUseCase
 import com.example.stugbygget.domain.usecase.ExportMeasurementToRoomPlannerUseCase
+import com.example.stugbygget.domain.usecase.IsArSupportedUseCase
 import com.example.stugbygget.domain.usecase.RoomDimensionTarget
 import com.example.stugbygget.domain.usecase.SaveMeasurementUseCase
-import com.google.ar.core.ArCoreApk
-import com.google.ar.core.Session
+import com.example.stugbygget.domain.usecase.StartArSessionUseCase
+import com.example.stugbygget.domain.usecase.StopArSessionUseCase
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +17,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 class ArMeasureViewModel(
-    private val appContext: Context,
+    private val isArSupportedUseCase: IsArSupportedUseCase,
+    private val startArSessionUseCase: StartArSessionUseCase,
+    private val stopArSessionUseCase: StopArSessionUseCase,
     private val calculateMeasurementDistanceUseCase: CalculateMeasurementDistanceUseCase,
     private val saveMeasurementUseCase: SaveMeasurementUseCase,
     private val exportMeasurementToRoomPlannerUseCase: ExportMeasurementToRoomPlannerUseCase
@@ -25,8 +27,6 @@ class ArMeasureViewModel(
 
     private val _uiState = MutableStateFlow(ArMeasureUiState())
     val uiState: StateFlow<ArMeasureUiState> = _uiState.asStateFlow()
-
-    private var arSession: Session? = null
 
     fun onCameraPermissionResult(granted: Boolean) {
         _uiState.update { it.copy(hasCameraPermission = granted) }
@@ -102,8 +102,7 @@ class ArMeasureViewModel(
     }
 
     private fun initializeArSession() {
-        val availability = ArCoreApk.getInstance().checkAvailability(appContext)
-        if (!availability.isSupported) {
+        if (!isArSupportedUseCase()) {
             _uiState.update {
                 it.copy(
                     isArSupported = false,
@@ -114,11 +113,7 @@ class ArMeasureViewModel(
             return
         }
 
-        runCatching {
-            Session(appContext)
-        }.onSuccess { session ->
-            arSession?.close()
-            arSession = session
+        startArSessionUseCase().onSuccess {
             _uiState.update {
                 it.copy(
                     isArSupported = true,
@@ -160,8 +155,7 @@ class ArMeasureViewModel(
     }
 
     override fun onCleared() {
-        arSession?.close()
-        arSession = null
+        stopArSessionUseCase()
         super.onCleared()
     }
 
