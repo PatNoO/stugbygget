@@ -21,8 +21,6 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        val googleWebClientId = (project.findProperty("GOOGLE_WEB_CLIENT_ID") as? String).orEmpty()
-        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
         val mapsApiKey = (project.findProperty("MAPS_API_KEY") as? String).orEmpty()
         buildConfigField("String", "MAPS_API_KEY", "\"$mapsApiKey\"")
         val projectId = (project.findProperty("PROJECT_ID") as? String)
@@ -68,7 +66,6 @@ dependencies {
     implementation(libs.firebase.storage)
     implementation(libs.firebase.functions)
     implementation(libs.firebase.config)
-    implementation(libs.play.services.auth)
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)
@@ -78,8 +75,6 @@ dependencies {
     implementation(libs.androidx.camera.view)
     implementation(libs.google.arcore)
     implementation(libs.androidx.credentials)
-    implementation(libs.androidx.credentials.play.services.auth)
-    implementation(libs.googleid)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
