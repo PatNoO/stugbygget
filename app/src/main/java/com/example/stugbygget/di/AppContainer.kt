@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.stugbygget.BuildConfig
 import com.example.stugbygget.core.offline.ConnectivityMonitor
 import com.example.stugbygget.core.offline.OfflineSyncCoordinator
+import com.example.stugbygget.data.ar.ArCoreSessionRepository
 import com.example.stugbygget.data.firebase.auth.FirebaseAuthRepository
 import com.example.stugbygget.data.firebase.auth.FirebaseProjectSessionRepository
 import com.example.stugbygget.data.firebase.config.FirebaseRuntimeConfigRepository
@@ -27,6 +28,7 @@ import com.example.stugbygget.data.remote.claude.ClaudeChatRepository
 import com.example.stugbygget.data.remote.maps.GoogleDirectionsService
 import com.example.stugbygget.data.remote.maps.GoogleRouteRepository
 import com.example.stugbygget.domain.repository.AuthRepository
+import com.example.stugbygget.domain.repository.ArSessionRepository
 import com.example.stugbygget.domain.repository.ChatRepository
 import com.example.stugbygget.domain.repository.ShoppingRepository
 import com.example.stugbygget.domain.repository.BudgetRepository
@@ -58,6 +60,7 @@ import com.example.stugbygget.domain.usecase.ObserveAuthUserUseCase
 import com.example.stugbygget.domain.usecase.GetRouteMetricsUseCase
 import com.example.stugbygget.domain.usecase.GetNotificationSettingsUseCase
 import com.example.stugbygget.domain.usecase.GetRuntimeConfigUseCase
+import com.example.stugbygget.domain.usecase.IsArSupportedUseCase
 import com.example.stugbygget.domain.usecase.ObservePhotosUseCase
 import com.example.stugbygget.domain.usecase.ObservePhasesUseCase
 import com.example.stugbygget.domain.usecase.ObserveRoomLayoutUseCase
@@ -72,9 +75,12 @@ import com.example.stugbygget.domain.usecase.StreamAssistantReplyUseCase
 import com.example.stugbygget.domain.usecase.PlanLogisticsWithRouteUseCase
 import com.example.stugbygget.domain.usecase.RunNotificationPipelineUseCase
 import com.example.stugbygget.domain.usecase.BuildNotificationEventsUseCase
+import com.example.stugbygget.domain.usecase.BuildPlanningOverviewUseCase
 import com.example.stugbygget.domain.usecase.DispatchNotificationEventsUseCase
 import com.example.stugbygget.domain.usecase.FetchRuntimeConfigUseCase
 import com.example.stugbygget.domain.usecase.UpdateNotificationSettingsUseCase
+import com.example.stugbygget.domain.usecase.StartArSessionUseCase
+import com.example.stugbygget.domain.usecase.StopArSessionUseCase
 import com.example.stugbygget.domain.usecase.ToggleShoppingItemPurchasedUseCase
 import com.example.stugbygget.domain.usecase.ToggleTodoUseCase
 import com.example.stugbygget.domain.usecase.UploadPhotoUseCase
@@ -116,6 +122,8 @@ class AppContainer(
             firebaseAuth = firebaseAuth,
             configuredProjectId = BuildConfig.PROJECT_ID
         )
+    val arSessionRepository: ArSessionRepository by lazy {
+        ArCoreSessionRepository(applicationContext)
     }
     val phaseRepository: PhaseRepository by lazy { FirestorePhaseRepository(firestore) }
     val todoRepository: TodoRepository by lazy { FirestoreTodoRepository(firestore, offlineSyncCoordinator) }
@@ -201,6 +209,9 @@ class AppContainer(
     val observePhasesUseCase: ObservePhasesUseCase by lazy {
         ObservePhasesUseCase(phaseRepository)
     }
+    val buildPlanningOverviewUseCase: BuildPlanningOverviewUseCase by lazy {
+        BuildPlanningOverviewUseCase()
+    }
     val observeTodosUseCase: ObserveTodosUseCase by lazy {
         ObserveTodosUseCase(todoRepository)
     }
@@ -285,6 +296,15 @@ class AppContainer(
     }
     val moveFurnitureUseCase: MoveFurnitureUseCase by lazy {
         MoveFurnitureUseCase()
+    }
+    val isArSupportedUseCase: IsArSupportedUseCase by lazy {
+        IsArSupportedUseCase(arSessionRepository)
+    }
+    val startArSessionUseCase: StartArSessionUseCase by lazy {
+        StartArSessionUseCase(arSessionRepository)
+    }
+    val stopArSessionUseCase: StopArSessionUseCase by lazy {
+        StopArSessionUseCase(arSessionRepository)
     }
     val measurementUnitConverter: MeasurementUnitConverter by lazy {
         MeasurementUnitConverter()

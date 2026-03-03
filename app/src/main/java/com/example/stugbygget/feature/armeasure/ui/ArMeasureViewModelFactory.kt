@@ -11,7 +11,9 @@ class ArMeasureViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ArMeasureViewModel::class.java)) {
             return ArMeasureViewModel(
-                appContext = container.applicationContext,
+                isArSupportedUseCase = container.isArSupportedUseCase,
+                startArSessionUseCase = container.startArSessionUseCase,
+                stopArSessionUseCase = container.stopArSessionUseCase,
                 calculateMeasurementDistanceUseCase = container.calculateMeasurementDistanceUseCase,
                 saveMeasurementUseCase = container.saveMeasurementUseCase,
                 exportMeasurementToRoomPlannerUseCase = container.exportMeasurementToRoomPlannerUseCase,

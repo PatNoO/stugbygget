@@ -19,11 +19,10 @@ class FirestoreShoppingRepository(
         val query = firestore.collection("projects")
             .document(projectId)
             .collection("shopping_lists")
-        var cachedLists: List<ShoppingList> = emptyList()
 
         val registration = query.addSnapshotListener { snapshot, error ->
             if (error != null) {
-                trySend(cachedLists)
+                close(error)
                 return@addSnapshotListener
             }
             val lists = snapshot?.documents.orEmpty()
@@ -32,7 +31,6 @@ class FirestoreShoppingRepository(
                     runCatching { ShoppingDocumentMapper.fromMap(doc.id, data) }.getOrNull()
                 }
                 .sortedByDescending { it.updatedAt }
-            cachedLists = lists
             trySend(lists)
         }
 
