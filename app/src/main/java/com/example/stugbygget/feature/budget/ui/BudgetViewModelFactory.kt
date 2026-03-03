@@ -11,7 +11,8 @@ class BudgetViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(BudgetViewModel::class.java)) {
             return BudgetViewModel(
-                observeBudgetOverviewUseCase = container.observeBudgetOverviewUseCase
+                observeBudgetOverviewUseCase = container.observeBudgetOverviewUseCase,
+                projectId = container.projectSessionRepository.getProjectId()
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

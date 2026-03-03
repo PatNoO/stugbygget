@@ -17,7 +17,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class GalleryViewModel(
-    private val observePhotosUseCase: ObservePhotosUseCase
+    private val observePhotosUseCase: ObservePhotosUseCase,
+    private val projectId: String
 ) : ViewModel() {
 
     private data class GalleryFilters(
@@ -43,6 +44,13 @@ class GalleryViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun observePhotos() {
         viewModelScope.launch {
+            observePhotosUseCase(
+                projectId = projectId,
+                roomName = _uiState.value.selectedRoom,
+                phase = _uiState.value.selectedPhase
+            ).catch { throwable ->
+                _uiState.update {
+                    it.copy(isLoading = false, errorMessage = throwable.message ?: "Kunde inte ladda bilder")
             _uiState
                 .map { state ->
                     GalleryFilters(
@@ -75,9 +83,5 @@ class GalleryViewModel(
                     }
                 }
         }
-    }
-
-    companion object {
-        private const val DEFAULT_PROJECT_ID = "default-project"
     }
 }

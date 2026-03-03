@@ -12,7 +12,8 @@ class AiChatViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(AiChatViewModel::class.java)) {
             return AiChatViewModel(
-                streamAssistantReplyUseCase = container.streamAssistantReplyUseCase
+                streamAssistantReplyUseCase = container.streamAssistantReplyUseCase,
+                projectId = container.projectSessionRepository.getProjectId()
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

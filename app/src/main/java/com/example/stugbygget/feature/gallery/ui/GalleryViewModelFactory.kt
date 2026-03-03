@@ -12,7 +12,8 @@ class GalleryViewModelFactory(
         if (modelClass.isAssignableFrom(GalleryViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
             return GalleryViewModel(
-                observePhotosUseCase = container.observePhotosUseCase
+                observePhotosUseCase = container.observePhotosUseCase,
+                projectId = container.projectSessionRepository.getProjectId()
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

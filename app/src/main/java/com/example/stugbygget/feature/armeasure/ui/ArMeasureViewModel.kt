@@ -22,7 +22,8 @@ class ArMeasureViewModel(
     private val stopArSessionUseCase: StopArSessionUseCase,
     private val calculateMeasurementDistanceUseCase: CalculateMeasurementDistanceUseCase,
     private val saveMeasurementUseCase: SaveMeasurementUseCase,
-    private val exportMeasurementToRoomPlannerUseCase: ExportMeasurementToRoomPlannerUseCase
+    private val exportMeasurementToRoomPlannerUseCase: ExportMeasurementToRoomPlannerUseCase,
+    private val projectId: String
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ArMeasureUiState())
@@ -76,7 +77,7 @@ class ArMeasureViewModel(
             _uiState.update { it.copy(isSaving = true, errorMessage = null, statusMessage = null) }
             runCatching {
                 saveMeasurementUseCase(
-                    projectId = DEFAULT_PROJECT_ID,
+                    projectId = projectId,
                     label = state.measurementLabel.ifBlank { "Measured distance" },
                     valueMeters = distance,
                     type = type
@@ -161,7 +162,6 @@ class ArMeasureViewModel(
 
     companion object {
         private const val PIXELS_TO_METERS = 0.0025f
-        private const val DEFAULT_PROJECT_ID = "default-project"
         private const val DEFAULT_ROOM_ID = "default-room"
     }
 }

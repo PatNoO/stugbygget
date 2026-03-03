@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 
 class PlanningViewModel(
     observePhasesUseCase: ObservePhasesUseCase,
+    projectId: String
     private val buildPlanningOverviewUseCase: BuildPlanningOverviewUseCase
 ) : ViewModel() {
 
@@ -21,7 +22,7 @@ class PlanningViewModel(
 
     init {
         viewModelScope.launch {
-            observePhasesUseCase(DEFAULT_PROJECT_ID)
+            observePhasesUseCase(projectId)
                 .catch { throwable ->
                     _uiState.update {
                         it.copy(
@@ -44,9 +45,5 @@ class PlanningViewModel(
                     }
                 }
         }
-    }
-
-    companion object {
-        private const val DEFAULT_PROJECT_ID = "default-project"
     }
 }

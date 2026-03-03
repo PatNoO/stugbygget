@@ -17,7 +17,9 @@ class ShoppingViewModel(
     private val observeShoppingListsUseCase: ObserveShoppingListsUseCase,
     private val createShoppingListUseCase: CreateShoppingListUseCase,
     private val addShoppingItemUseCase: AddShoppingItemUseCase,
-    private val toggleShoppingItemPurchasedUseCase: ToggleShoppingItemPurchasedUseCase
+    private val toggleShoppingItemPurchasedUseCase: ToggleShoppingItemPurchasedUseCase,
+    private val projectId: String,
+    private val currentUserIdProvider: () -> String?
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ShoppingUiState())
     val uiState: StateFlow<ShoppingUiState> = _uiState.asStateFlow()
@@ -69,6 +71,10 @@ class ShoppingViewModel(
 
     fun onCreateList() {
         val state = _uiState.value
+        if (state.listNameInput.isBlank()) return
+        val currentUserId = currentUserIdProvider()
+        if (currentUserId.isNullOrBlank()) {
+            _uiState.update { it.copy(errorMessage = "Sign in again to create shopping lists.") }
         if (state.listNameInput.isBlank()) {
             _uiState.update { it.copy(errorMessage = "List name is required.") }
             return
@@ -77,10 +83,10 @@ class ShoppingViewModel(
             _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
             runCatching {
                 createShoppingListUseCase(
-                    projectId = DEFAULT_PROJECT_ID,
+                    projectId = projectId,
                     name = state.listNameInput,
                     phaseId = state.phaseInput,
-                    createdBy = DEFAULT_USER_ID
+                    createdBy = currentUserId
                 )
             }.onSuccess {
                 _uiState.update { it.copy(listNameInput = "", isSubmitting = false) }
@@ -113,7 +119,7 @@ class ShoppingViewModel(
             _uiState.update { it.copy(isSubmitting = true, errorMessage = null) }
             runCatching {
                 addShoppingItemUseCase(
-                    projectId = DEFAULT_PROJECT_ID,
+                    projectId = projectId,
                     listId = listId,
                     name = draft.name,
                     quantity = quantity,
@@ -143,7 +149,7 @@ class ShoppingViewModel(
         viewModelScope.launch {
             runCatching {
                 toggleShoppingItemPurchasedUseCase(
-                    projectId = DEFAULT_PROJECT_ID,
+                    projectId = projectId,
                     listId = listId,
                     itemId = itemId,
                     purchased = purchased
@@ -156,7 +162,7 @@ class ShoppingViewModel(
 
     private fun observeLists() {
         viewModelScope.launch {
-            observeShoppingListsUseCase(DEFAULT_PROJECT_ID)
+            observeShoppingListsUseCase(projectId)
                 .catch { throwable ->
                     _uiState.update {
                         it.copy(isLoading = false, errorMessage = throwable.message ?: "Failed to load lists.")
@@ -173,13 +179,8 @@ class ShoppingViewModel(
                             errorMessage = null
                         )
                     }
-                }
+            }
         }
-    }
-
-    companion object {
-        private const val DEFAULT_PROJECT_ID = "default-project"
-        private const val DEFAULT_USER_ID = "team-user"
     }
 }
 

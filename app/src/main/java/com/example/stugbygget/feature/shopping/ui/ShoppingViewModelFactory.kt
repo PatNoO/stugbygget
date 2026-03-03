@@ -14,7 +14,9 @@ class ShoppingViewModelFactory(
                 observeShoppingListsUseCase = container.observeShoppingListsUseCase,
                 createShoppingListUseCase = container.createShoppingListUseCase,
                 addShoppingItemUseCase = container.addShoppingItemUseCase,
-                toggleShoppingItemPurchasedUseCase = container.toggleShoppingItemPurchasedUseCase
+                toggleShoppingItemPurchasedUseCase = container.toggleShoppingItemPurchasedUseCase,
+                projectId = container.projectSessionRepository.getProjectId(),
+                currentUserIdProvider = container.projectSessionRepository::getCurrentUserId
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

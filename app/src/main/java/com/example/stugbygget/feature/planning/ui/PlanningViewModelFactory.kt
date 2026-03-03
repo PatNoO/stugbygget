@@ -13,6 +13,7 @@ class PlanningViewModelFactory(
             @Suppress("UNCHECKED_CAST")
             return PlanningViewModel(
                 observePhasesUseCase = container.observePhasesUseCase,
+                projectId = container.projectSessionRepository.getProjectId()
                 buildPlanningOverviewUseCase = container.buildPlanningOverviewUseCase
             ) as T
         }

@@ -18,7 +18,8 @@ import kotlinx.coroutines.launch
 
 class TodosViewModel(
     private val observeTodosUseCase: ObserveTodosUseCase,
-    private val toggleTodoUseCase: ToggleTodoUseCase
+    private val toggleTodoUseCase: ToggleTodoUseCase,
+    private val projectId: String
 ) : ViewModel() {
 
     private data class TodoFilters(
@@ -44,7 +45,7 @@ class TodosViewModel(
     fun onTodoToggle(todoId: String, checked: Boolean) {
         viewModelScope.launch {
             runCatching {
-                toggleTodoUseCase(DEFAULT_PROJECT_ID, todoId, checked)
+                toggleTodoUseCase(projectId, todoId, checked)
             }.onFailure { throwable ->
                 _uiState.update { it.copy(errorMessage = throwable.message ?: "Kunde inte uppdatera todo") }
             }
@@ -54,6 +55,13 @@ class TodosViewModel(
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun observeTodos() {
         viewModelScope.launch {
+            observeTodosUseCase(
+                projectId = projectId,
+                phaseId = _uiState.value.selectedPhase,
+                assignee = _uiState.value.selectedAssignee
+            ).catch { throwable ->
+                _uiState.update {
+                    it.copy(isLoading = false, errorMessage = throwable.message ?: "Kunde inte ladda todos")
             _uiState
                 .map { state ->
                     TodoFilters(
@@ -87,9 +95,5 @@ class TodosViewModel(
                     }
                 }
         }
-    }
-
-    companion object {
-        private const val DEFAULT_PROJECT_ID = "default-project"
     }
 }
