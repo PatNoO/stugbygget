@@ -1,8 +1,8 @@
-# AGENTS.md - AI-First Workflow
+# CLAUDE.md - AI-Assisted Development Workflow
 StugBygget (Android)
 
-> This document defines how Codex should work in this repository.
-> Human review is mandatory before merge.
+> This document defines how Claude Code should work in this repository.
+> Claude Code works interactively with the developer — changes are reviewed in real time before committing.
 
 ---
 
@@ -32,7 +32,20 @@ Core modules:
 - DI: Hilt
 - Backend: Firebase Auth + Firestore + Storage + Cloud Functions
 - Integrations: Retrofit (Claude API), Google Maps SDK, ARCore, CameraX
-- AI Agent: Codex (primary)
+- AI Assistant: Claude Code (interactive CLI)
+
+---
+
+# How Claude Code Works Here
+
+Claude Code is an interactive tool — it reads, edits, and runs code **together with the developer** in a live conversation. This is different from batch-style agents that run unattended.
+
+Guidelines for our collaboration:
+- Claude reads existing code before suggesting or making changes.
+- Changes are shown to the developer before committing — nothing is pushed silently.
+- If a task is ambiguous, Claude asks for clarification rather than guessing.
+- Scope stays tight: only implement what is discussed and agreed upon.
+- If a task is UI-only, use mock/placeholder data and add `// TODO: wire to backend` markers.
 
 ---
 
@@ -105,45 +118,31 @@ Rules:
 
 ---
 
-# Delivery Workflow
-
-When implementing a task:
-1. Read the task description and acceptance criteria.
-2. Keep scope tight; do not add unrelated changes.
-3. Confirm acceptance criteria coverage in the PR.
-4. Use the ticket format in [TICKET_TEMPLATES.md](/Users/mrnoordh/AndroidStudioProjects/stugbygget/TICKET_TEMPLATES.md) when creating or refining tickets.
-
-If a task is UI-only:
-- Use mock/placeholder data.
-- Add TODO markers for later backend wiring.
-
----
-
 # Branch Naming
 
 Format:
 
 ```text
-codex/<TASK-ID>-short-description
+claude/<TASK-ID>-short-description
 ```
 
 Examples:
-- codex/SOM-12-planning-timeline-progress
-- codex/SOM-21-shopping-budget-sync
+- claude/SB12-planning-timeline-progress
+- claude/SB21-shopping-budget-sync
 
 ---
 
 # Commit Rules
 
-All commits must start with:
+All commits made with Claude Code assistance must start with:
 
 ```text
-[codex]
+[claude]
 ```
 
 Examples:
-- [codex] SOM-12 Implement planning timeline progress
-- [codex] Add transport recommendation use case
+- [claude] SB12 Implement planning timeline progress
+- [claude] Add transport recommendation use case
 
 Rules:
 - Imperative tense.
@@ -157,7 +156,7 @@ Rules:
 ## PR Title
 
 ```text
-[codex] <TASK-ID> Title Case Summary
+[claude] <TASK-ID> Title Case Summary
 ```
 
 ## PR Description Template (REQUIRED)
@@ -191,13 +190,15 @@ Short explanation of what was implemented.
 
 ---
 
-# AI Restrictions
+# Claude Code Restrictions
 
-Codex must NOT:
-- Modify authentication/security behavior without explicit instruction.
-- Change Firestore schema silently.
-- Introduce new dependencies without documenting why in PR.
+Claude must NOT:
+- Modify authentication/security behavior without explicit instruction and developer confirmation.
+- Change Firestore schema silently — always discuss and document schema changes first.
+- Introduce new dependencies without explaining why and getting approval.
 - Hardcode production secrets or API keys.
+- Push to remote or create PRs without explicit developer instruction.
+- Take destructive actions (delete files, reset branches, force push) without confirmation.
 
 ---
 
