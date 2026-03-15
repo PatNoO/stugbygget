@@ -5,7 +5,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.stugbygget.core.ui.PlaceholderScreen
+import com.example.stugbygget.feature.logistics.ui.LogisticsScreen
 import com.example.stugbygget.feature.materials.ui.MaterialDetailScreen
 import com.example.stugbygget.feature.materials.ui.MaterialsScreen
 import com.example.stugbygget.di.AppContainer
@@ -66,7 +66,7 @@ fun AppNavHost(
             BudgetScreen(container = container)
         }
         composable(AppRoute.Logistics.route) {
-            PlaceholderScreen("Logistics", "Transport costs and delivery planning")
+            LogisticsScreen(container = container)
         }
     }
 }
