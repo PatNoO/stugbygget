@@ -12,10 +12,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -116,16 +118,18 @@ private fun GalleryContent(
 ) {
     val grouped = uiState.photos.groupBy { it.phase }
 
-    LazyColumn(
+    LazyVerticalStaggeredGrid(
+        columns = StaggeredGridCells.Fixed(2),
         contentPadding = PaddingValues(18.dp),
-        verticalArrangement = Arrangement.spacedBy(0.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalItemSpacing = 10.dp,
     ) {
         // ── Header ──
-        item {
+        item(span = StaggeredGridItemSpan.FullLine) {
             SommarHeaderCard(
                 gradient = SommarGradients.lakeBlue,
-                title = "Photo Gallery",
-                modifier = Modifier.padding(bottom = 18.dp),
+                title = "Renovation Journey 📸",
+                modifier = Modifier.padding(bottom = 8.dp),
             ) {
                 Text(
                     text = "${uiState.photos.size} photos · Before · During · After",
@@ -135,11 +139,11 @@ private fun GalleryContent(
         }
 
         // ── Room filter chips ──
-        item {
+        item(span = StaggeredGridItemSpan.FullLine) {
             val rooms = listOf(null) + uiState.availableRooms
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.padding(bottom = 8.dp),
+                modifier = Modifier.padding(bottom = 4.dp),
             ) {
                 items(rooms) { room ->
                     SommarFilterChip(
@@ -153,11 +157,11 @@ private fun GalleryContent(
         }
 
         // ── Phase filter chips ──
-        item {
+        item(span = StaggeredGridItemSpan.FullLine) {
             val phases = listOf(null) + PhotoPhase.entries
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.padding(bottom = 16.dp),
+                modifier = Modifier.padding(bottom = 8.dp),
             ) {
                 items(phases) { phase ->
                     SommarFilterChip(
@@ -172,7 +176,7 @@ private fun GalleryContent(
 
         // ── Empty state ──
         if (uiState.photos.isEmpty()) {
-            item {
+            item(span = StaggeredGridItemSpan.FullLine) {
                 SommarInfoBox(
                     emoji = "📸",
                     title = if (uiState.selectedRoom != null || uiState.selectedPhase != null)
@@ -192,18 +196,20 @@ private fun GalleryContent(
         PhotoPhase.entries.forEach { phase ->
             val photosInPhase = grouped[phase].orEmpty()
             if (photosInPhase.isNotEmpty()) {
-                item {
+                item(span = StaggeredGridItemSpan.FullLine) {
                     SommarSectionTitle(
                         text = phaseLabel(phase),
                         color = phaseColor(phase),
-                        modifier = Modifier.padding(top = 8.dp),
+                        modifier = Modifier.padding(top = 4.dp),
                     )
                 }
-                itemsIndexed(photosInPhase) { index, photo ->
-                    PhotoCard(
-                        photo = photo,
-                        modifier = Modifier.staggeredFadeIn(index),
-                    )
+                photosInPhase.forEachIndexed { index, photo ->
+                    item {
+                        PhotoCard(
+                            photo = photo,
+                            modifier = Modifier.staggeredFadeIn(index),
+                        )
+                    }
                 }
             }
         }
@@ -218,7 +224,7 @@ private fun PhotoCard(
     val month = monthFormatter.format(photo.takenAt)
     val color = phaseColor(photo.phase)
 
-    SommarCard(modifier = modifier.padding(bottom = 10.dp)) {
+    SommarCard(modifier = modifier) {
         // ── Photo image ──
         SubcomposeAsyncImage(
             model = photo.downloadUrl,
@@ -226,47 +232,43 @@ private fun PhotoCard(
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()
-                .aspectRatio(16f / 9f)
+                .aspectRatio(1f)
                 .clip(SommarShapes.thumbnail),
             error = {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(16f / 9f)
+                        .aspectRatio(1f)
                         .background(color.copy(alpha = 0.08f)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("📷", style = MaterialTheme.typography.displaySmall)
+                    Text("📷", style = MaterialTheme.typography.headlineLarge)
                 }
             },
         )
 
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(8.dp))
 
-        // ── Meta row ──
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = photo.description.ifBlank { photo.roomName },
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 2,
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = "$month · ${photo.roomName}",
-                    style = MonoStyles.dataSmall.copy(color = TextLight),
-                )
-            }
-            SommarBadge(
-                text = phaseLabel(photo.phase),
-                color = color,
-                backgroundColor = color.copy(alpha = 0.08f),
-                borderColor = color.copy(alpha = 0.2f),
-            )
-        }
+        // ── Phase badge ──
+        SommarBadge(
+            text = phaseLabel(photo.phase).uppercase(),
+            color = color,
+            backgroundColor = color.copy(alpha = 0.08f),
+            borderColor = color.copy(alpha = 0.2f),
+        )
+
+        Spacer(Modifier.height(4.dp))
+
+        // ── Description & meta ──
+        Text(
+            text = photo.description.ifBlank { photo.roomName },
+            style = MaterialTheme.typography.bodySmall,
+            maxLines = 2,
+        )
+        Spacer(Modifier.height(2.dp))
+        Text(
+            text = "$month · ${photo.roomName}",
+            style = MonoStyles.dataSmall.copy(color = TextLight),
+        )
     }
 }
