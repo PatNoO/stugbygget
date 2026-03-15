@@ -5,18 +5,19 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.stugbygget.core.ui.PlaceholderScreen
-import com.example.stugbygget.feature.materials.ui.MaterialDetailScreen
-import com.example.stugbygget.feature.materials.ui.MaterialsScreen
 import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.feature.aichat.ui.AiChatScreen
 import com.example.stugbygget.feature.armeasure.ui.ArMeasureScreen
 import com.example.stugbygget.feature.budget.ui.BudgetScreen
 import com.example.stugbygget.feature.gallery.ui.GalleryScreen
+import com.example.stugbygget.feature.logistics.ui.LogisticsScreen
+import com.example.stugbygget.feature.materials.ui.MaterialDetailScreen
+import com.example.stugbygget.feature.materials.ui.MaterialsScreen
 import com.example.stugbygget.feature.planning.ui.PlanningScreen
 import com.example.stugbygget.feature.roomplanner.ui.RoomPlannerScreen
 import com.example.stugbygget.feature.shopping.ui.ShoppingScreen
 import com.example.stugbygget.feature.todos.ui.TodosScreen
+import com.example.stugbygget.ui.theme.SommarTransitions
 
 @Composable
 fun AppNavHost(
@@ -27,7 +28,11 @@ fun AppNavHost(
     NavHost(
         navController = navController,
         startDestination = AppRoute.Planning.route,
-        modifier = modifier
+        modifier = modifier,
+        enterTransition = { SommarTransitions.enterTransition },
+        exitTransition = { SommarTransitions.exitTransition },
+        popEnterTransition = { SommarTransitions.popEnterTransition },
+        popExitTransition = { SommarTransitions.popExitTransition },
     ) {
         composable(AppRoute.Planning.route) {
             PlanningScreen(container = container)
@@ -66,7 +71,7 @@ fun AppNavHost(
             BudgetScreen(container = container)
         }
         composable(AppRoute.Logistics.route) {
-            PlaceholderScreen("Logistics", "Transport costs and delivery planning")
+            LogisticsScreen(container = container)
         }
     }
 }
