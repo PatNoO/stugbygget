@@ -1,8 +1,8 @@
 package com.example.stugbygget.feature.budget.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,128 +11,285 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.stugbygget.di.AppContainer
+import com.example.stugbygget.domain.model.CategoryBudget
+import com.example.stugbygget.domain.model.PhaseBudget
+import com.example.stugbygget.ui.components.SommarBadge
+import com.example.stugbygget.ui.components.SommarCard
+import com.example.stugbygget.ui.components.SommarHeaderCard
+import com.example.stugbygget.ui.components.SommarInfoBox
+import com.example.stugbygget.ui.components.SommarProgressBar
+import com.example.stugbygget.ui.components.SommarSectionTitle
+import com.example.stugbygget.ui.theme.FaluRed
+import com.example.stugbygget.ui.theme.LakeBlue
+import com.example.stugbygget.ui.theme.MeadowGreen
+import com.example.stugbygget.ui.theme.MidsummerGold
+import com.example.stugbygget.ui.theme.MonoStyles
+import com.example.stugbygget.ui.theme.SommarGradients
+import com.example.stugbygget.ui.theme.TextLight
+import com.example.stugbygget.ui.theme.WoodWarm
+import com.example.stugbygget.ui.theme.staggeredFadeIn
 
 @Composable
 fun BudgetScreen(container: AppContainer) {
     val viewModel: BudgetViewModel = viewModel(factory = BudgetViewModelFactory(container))
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    when {
-        uiState.isLoading -> {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) { CircularProgressIndicator() }
-        }
+    if (uiState.isLoading) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) { CircularProgressIndicator(color = MidsummerGold) }
+        return
+    }
 
-        uiState.errorMessage != null -> {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+    if (uiState.errorMessage != null) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            SommarInfoBox(
+                emoji = "⚠️",
+                title = "Budget Error",
+                text = uiState.errorMessage ?: "Unknown error",
+                accentColor = FaluRed,
+            )
+        }
+        return
+    }
+
+    if (uiState.overview == null) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            SommarInfoBox(
+                emoji = "💰",
+                title = "No budget data yet",
+                text = "Add phases and expenses to see your budget here.",
+                accentColor = MidsummerGold,
+            )
+        }
+        return
+    }
+
+    val overview = uiState.overview!!
+    val totalProgress = if (overview.totalBudget <= 0.0) 0f
+    else (overview.totalSpent / overview.totalBudget).toFloat().coerceIn(0f, 1f)
+    val isOverBudget = overview.totalSpent > overview.totalBudget
+
+    LazyColumn(
+        contentPadding = PaddingValues(18.dp),
+        verticalArrangement = Arrangement.spacedBy(0.dp),
+    ) {
+        // ── Header ──
+        item {
+            SommarHeaderCard(
+                gradient = SommarGradients.midsummerGold,
+                title = "Budget 💰",
+                modifier = Modifier.padding(bottom = 16.dp),
             ) {
-                Text("Budget Error", style = MaterialTheme.typography.titleLarge)
-                Text(uiState.errorMessage ?: "")
+                Text(
+                    text = "${overview.totalSpent.toInt()} / ${overview.totalBudget.toInt()} SEK spent",
+                    style = MonoStyles.dataSmall.copy(color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.85f)),
+                )
             }
         }
 
-        uiState.overview == null -> {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) { Text("No budget data yet.") }
+        // ── Overview card ──
+        item {
+            SommarCard(modifier = Modifier.padding(bottom = 16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text("Total budget", style = MaterialTheme.typography.titleSmall)
+                    if (isOverBudget) {
+                        SommarBadge(
+                            text = "Over budget",
+                            color = FaluRed,
+                            backgroundColor = FaluRed.copy(alpha = 0.08f),
+                            borderColor = FaluRed.copy(alpha = 0.2f),
+                        )
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+                SommarProgressBar(
+                    progress = totalProgress,
+                    color = if (isOverBudget) FaluRed else MidsummerGold,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    Text(
+                        text = "Spent: ${overview.totalSpent.toInt()} SEK",
+                        style = MonoStyles.dataSmall.copy(color = TextLight),
+                    )
+                    Text(
+                        text = "Budget: ${overview.totalBudget.toInt()} SEK",
+                        style = MonoStyles.dataSmall.copy(color = TextLight),
+                    )
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "Estimated final: ${overview.estimatedFinalCost.toInt()} SEK",
+                    style = MonoStyles.dataSmall.copy(color = TextLight),
+                )
+            }
         }
 
-        else -> {
-            val overview = uiState.overview!!
-            val totalProgress = if (overview.totalBudget <= 0.0) 0f
-            else (overview.totalSpent / overview.totalBudget).toFloat().coerceIn(0f, 1f)
+        // ── Phase breakdown ──
+        item {
+            SommarSectionTitle(
+                text = "Phase Breakdown",
+                modifier = Modifier.padding(bottom = 8.dp),
+            )
+        }
 
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                item {
-                    Text("Budget Dashboard", style = MaterialTheme.typography.headlineSmall)
-                    Text("Track total budget, phase spend, and projected final cost.")
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text("Total Budget: ${overview.totalBudget.toInt()} SEK")
-                            Text("Spent: ${overview.totalSpent.toInt()} SEK")
-                            Text("Estimated Final: ${overview.estimatedFinalCost.toInt()} SEK")
-                            Spacer(modifier = Modifier.height(8.dp))
-                            LinearProgressIndicator(progress = { totalProgress }, modifier = Modifier.fillMaxWidth())
-                        }
-                    }
-                }
-
-                item { Text("Phase Breakdown", style = MaterialTheme.typography.titleMedium) }
-                items(overview.phaseBudgets, key = { it.phaseId }) { phase ->
-                    val progress = if (phase.budgeted <= 0.0) 0f
-                    else (phase.spent / phase.budgeted).toFloat().coerceAtLeast(0f)
-                    val warning = uiState.overspentPhaseIds.contains(phase.phaseId)
-
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(if (warning) Color(0xFFFFF1F0) else Color.Transparent)
-                                .padding(12.dp)
-                        ) {
-                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                Text(phase.phaseId)
-                                Text("${phase.spent.toInt()} / ${phase.budgeted.toInt()} SEK")
-                            }
-                            Spacer(modifier = Modifier.height(6.dp))
-                            LinearProgressIndicator(
-                                progress = { progress.coerceIn(0f, 1f) },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            if (warning) {
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Text(
-                                    "Warning: phase is over budget.",
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        }
-                    }
-                }
-
-                item { Text("Category Spend", style = MaterialTheme.typography.titleMedium) }
-                items(overview.categoryBudgets, key = { it.category }) { category ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(category.category)
-                        Text("${category.spent.toInt()} SEK")
-                    }
-                }
+        if (overview.phaseBudgets.isEmpty()) {
+            item {
+                SommarInfoBox(
+                    emoji = "📋",
+                    title = "No phases yet",
+                    text = "Phase budget data will appear here.",
+                    accentColor = MidsummerGold,
+                )
             }
+        } else {
+            itemsIndexed(overview.phaseBudgets, key = { _, p -> p.phaseId }) { index, phase ->
+                PhaseBudgetCard(
+                    phase = phase,
+                    isOverspent = uiState.overspentPhaseIds.contains(phase.phaseId),
+                    modifier = Modifier.staggeredFadeIn(index),
+                )
+            }
+        }
+
+        // ── Category breakdown ──
+        item {
+            SommarSectionTitle(
+                text = "Category Spend",
+                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
+            )
+        }
+
+        if (overview.categoryBudgets.isEmpty()) {
+            item {
+                SommarInfoBox(
+                    emoji = "🏷️",
+                    title = "No category data",
+                    text = "Category spend will appear as expenses are recorded.",
+                    accentColor = LakeBlue,
+                )
+            }
+        } else {
+            items(overview.categoryBudgets, key = { it.category }) { category ->
+                CategoryBudgetRow(category = category)
+            }
+        }
+    }
+}
+
+@Composable
+private fun PhaseBudgetCard(
+    phase: PhaseBudget,
+    isOverspent: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val progress = if (phase.budgeted <= 0.0) 0f
+    else (phase.spent / phase.budgeted).toFloat().coerceAtLeast(0f)
+    val progressClamped = progress.coerceIn(0f, 1f)
+    val barColor = when {
+        isOverspent -> FaluRed
+        progress > 0.8f -> MidsummerGold
+        else -> MeadowGreen
+    }
+
+    SommarCard(modifier = modifier.padding(bottom = 10.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(phase.phaseId, style = MaterialTheme.typography.titleSmall)
+            if (isOverspent) {
+                SommarBadge(
+                    text = "⚠ Over budget",
+                    color = FaluRed,
+                    backgroundColor = FaluRed.copy(alpha = 0.08f),
+                    borderColor = FaluRed.copy(alpha = 0.2f),
+                )
+            }
+        }
+        Spacer(Modifier.height(8.dp))
+        SommarProgressBar(
+            progress = progressClamped,
+            color = barColor,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(Modifier.height(6.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            Text(
+                text = "Spent: ${phase.spent.toInt()} SEK",
+                style = MonoStyles.dataSmall.copy(color = TextLight),
+            )
+            Text(
+                text = "Budgeted: ${phase.budgeted.toInt()} SEK",
+                style = MonoStyles.dataSmall.copy(color = TextLight),
+            )
+        }
+    }
+}
+
+@Composable
+private fun CategoryBudgetRow(category: CategoryBudget) {
+    val accentColor = when (category.category.uppercase()) {
+        "MATERIALS" -> WoodWarm
+        "CONTRACTORS" -> LakeBlue
+        "TRANSPORT" -> MidsummerGold
+        else -> MeadowGreen
+    }
+    SommarCard(modifier = Modifier.padding(bottom = 8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            SommarBadge(
+                text = category.category,
+                color = accentColor,
+                backgroundColor = accentColor.copy(alpha = 0.08f),
+                borderColor = accentColor.copy(alpha = 0.2f),
+            )
+            Text(
+                text = "${category.spent.toInt()} SEK",
+                style = MonoStyles.data.copy(color = accentColor),
+            )
         }
     }
 }
