@@ -8,6 +8,9 @@ sealed class AppRoute(val route: String, val title: String) {
     data object RoomPlanner : AppRoute("room_planner", "Room Planner")
     data object ArMeasure : AppRoute("ar_measure", "AR Measure")
     data object Materials : AppRoute("materials", "Materials")
+    object MaterialDetail : AppRoute("materials/{materialId}", "Material") {
+        fun createRoute(materialId: String) = "materials/$materialId"
+    }
     data object Shopping : AppRoute("shopping", "Shopping")
     data object Budget : AppRoute("budget", "Budget")
     data object Logistics : AppRoute("logistics", "Logistics")
