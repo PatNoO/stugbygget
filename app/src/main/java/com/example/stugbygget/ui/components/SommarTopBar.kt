@@ -24,8 +24,6 @@ import com.example.stugbygget.ui.theme.MeadowGreen
 import com.example.stugbygget.ui.theme.MidsummerGold
 import com.example.stugbygget.ui.theme.MonoStyles
 import com.example.stugbygget.ui.theme.SommarShapes
-import com.example.stugbygget.ui.theme.TextLight
-import com.example.stugbygget.ui.theme.TextMedium
 
 /**
  * App top bar with logo and optional trailing slot.
@@ -56,7 +54,7 @@ fun SommarTopBar(
             )
             Text(
                 text = "Summer 2026 — Renovation in progress",
-                style = MonoStyles.dataSmall.copy(color = TextLight),
+                style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 modifier = Modifier.padding(top = 2.dp),
             )
         }
@@ -86,7 +84,7 @@ fun SommarTopBar(
 fun SommarSectionTitle(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = TextLight,
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant,
 ) {
     Text(
         text = text.uppercase(),
@@ -126,7 +124,7 @@ fun SommarInfoBox(
             Text(
                 text = text,
                 style = MaterialTheme.typography.bodySmall.copy(
-                    color = TextMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     lineHeight = MaterialTheme.typography.bodyMedium.lineHeight,
                 ),
             )

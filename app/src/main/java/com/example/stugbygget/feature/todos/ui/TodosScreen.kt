@@ -50,8 +50,6 @@ import com.example.stugbygget.ui.theme.MonoStyles
 import com.example.stugbygget.ui.theme.Sand
 import com.example.stugbygget.ui.theme.SommarGradients
 import com.example.stugbygget.ui.theme.StugbyggetShapes
-import com.example.stugbygget.ui.theme.TextDark
-import com.example.stugbygget.ui.theme.TextLight
 import com.example.stugbygget.ui.theme.cardShadow
 import com.example.stugbygget.ui.theme.staggeredFadeIn
 
@@ -234,7 +232,7 @@ private fun TodoRow(
             Text(
                 text = todo.text,
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    color = if (todo.done) TextLight else TextDark,
+                    color = if (todo.done) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
                     textDecoration = if (todo.done) TextDecoration.LineThrough else null,
                 ),
             )
@@ -245,7 +243,7 @@ private fun TodoRow(
             ) {
                 Text(
                     text = todo.phaseId,
-                    style = MonoStyles.dataSmall.copy(color = TextLight),
+                    style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 )
                 Text("•", style = MonoStyles.dataSmall.copy(color = Sand))
                 Text(

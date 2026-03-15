@@ -37,7 +37,6 @@ import com.example.stugbygget.ui.theme.MeadowGreen
 import com.example.stugbygget.ui.theme.MidsummerGold
 import com.example.stugbygget.ui.theme.MonoStyles
 import com.example.stugbygget.ui.theme.SommarGradients
-import com.example.stugbygget.ui.theme.TextLight
 import com.example.stugbygget.ui.theme.WoodWarm
 import com.example.stugbygget.ui.theme.staggeredFadeIn
 
@@ -145,17 +144,17 @@ fun BudgetScreen(container: AppContainer) {
                 ) {
                     Text(
                         text = "Spent: ${overview.totalSpent.toInt()} SEK",
-                        style = MonoStyles.dataSmall.copy(color = TextLight),
+                        style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                     )
                     Text(
                         text = "Budget: ${overview.totalBudget.toInt()} SEK",
-                        style = MonoStyles.dataSmall.copy(color = TextLight),
+                        style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                     )
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = "Estimated final: ${overview.estimatedFinalCost.toInt()} SEK",
-                    style = MonoStyles.dataSmall.copy(color = TextLight),
+                    style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 )
             }
         }
@@ -256,11 +255,11 @@ private fun PhaseBudgetCard(
         ) {
             Text(
                 text = "Spent: ${phase.spent.toInt()} SEK",
-                style = MonoStyles.dataSmall.copy(color = TextLight),
+                style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
             )
             Text(
                 text = "Budgeted: ${phase.budgeted.toInt()} SEK",
-                style = MonoStyles.dataSmall.copy(color = TextLight),
+                style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
             )
         }
     }

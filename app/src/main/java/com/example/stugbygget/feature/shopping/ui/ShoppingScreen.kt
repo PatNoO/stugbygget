@@ -51,8 +51,6 @@ import com.example.stugbygget.ui.theme.MonoStyles
 import com.example.stugbygget.ui.theme.SommarGradients
 import com.example.stugbygget.ui.theme.SommarShapes
 import com.example.stugbygget.ui.theme.StugbyggetShapes
-import com.example.stugbygget.ui.theme.TextDark
-import com.example.stugbygget.ui.theme.TextLight
 import com.example.stugbygget.ui.theme.staggeredFadeIn
 
 @Composable
@@ -201,12 +199,12 @@ private fun ShoppingListCard(
                 Text(list.name, style = MaterialTheme.typography.titleSmall)
                 Text(
                     text = "$purchasedCount / ${list.items.size} items · ${list.totalEstimate.toInt()} SEK est.",
-                    style = MonoStyles.dataSmall.copy(color = TextLight),
+                    style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 )
             }
             Text(
                 text = if (isExpanded) "▲" else "▼",
-                style = MaterialTheme.typography.labelMedium.copy(color = TextLight),
+                style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
             )
         }
 
@@ -218,7 +216,7 @@ private fun ShoppingListCard(
         if (list.items.isEmpty()) {
             Text(
                 text = "No items yet — add one below.",
-                style = MaterialTheme.typography.bodySmall.copy(color = TextLight),
+                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
             )
         } else {
             list.items.forEach { item ->
@@ -244,7 +242,7 @@ private fun ShoppingListCard(
             ) {
                 Text(
                     text = "Estimated total",
-                    style = MonoStyles.dataSmall.copy(color = TextLight),
+                    style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 )
                 Text(
                     text = "${list.totalEstimate.toInt()} SEK",
@@ -320,13 +318,13 @@ private fun ShoppingItemRow(
             Text(
                 text = item.name,
                 style = MaterialTheme.typography.bodyMedium.copy(
-                    color = if (item.purchased) TextLight else TextDark,
+                    color = if (item.purchased) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
                     textDecoration = if (item.purchased) TextDecoration.LineThrough else null,
                 ),
             )
             Text(
                 text = "${item.quantity} ${item.unit}${item.purchasedPrice?.let { " · ${it.toInt()} SEK paid" } ?: ""}",
-                style = MonoStyles.dataSmall.copy(color = TextLight),
+                style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
             )
         }
         if (item.purchased) {
@@ -355,12 +353,12 @@ private fun StyledInput(
             .padding(horizontal = 10.dp, vertical = 8.dp),
     ) {
         if (value.isEmpty()) {
-            Text(placeholder, style = MaterialTheme.typography.bodySmall.copy(color = TextLight))
+            Text(placeholder, style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant))
         }
         BasicTextField(
             value = value,
             onValueChange = onValueChange,
-            textStyle = MaterialTheme.typography.bodySmall.copy(color = TextDark),
+            textStyle = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface),
             cursorBrush = SolidColor(MeadowGreen),
             modifier = Modifier.fillMaxWidth(),
         )

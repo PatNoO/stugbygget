@@ -37,7 +37,6 @@ import com.example.stugbygget.ui.theme.FaluRed
 import com.example.stugbygget.ui.theme.Fraunces
 import com.example.stugbygget.ui.theme.MeadowGreen
 import com.example.stugbygget.ui.theme.MonoStyles
-import com.example.stugbygget.ui.theme.TextLight
 import com.example.stugbygget.ui.theme.fadeUpIn
 import com.example.stugbygget.ui.theme.staggeredFadeIn
 import java.time.ZoneId
@@ -137,7 +136,7 @@ private fun PlanningContent(uiState: PlanningUiState) {
                         Text(
                             text = "Complete",
                             style = MaterialTheme.typography.bodySmall,
-                            color = TextLight,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
@@ -222,7 +221,7 @@ private fun PhaseRow(
                 SommarBadge(text = phase.room)
                 SommarBadge(
                     text = "${dateFormatter.format(phase.startDate)} — ${dateFormatter.format(phase.endDate)}",
-                    color = TextLight,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Spacer(Modifier.height(10.dp))

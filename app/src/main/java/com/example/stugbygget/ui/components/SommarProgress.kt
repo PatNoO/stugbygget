@@ -28,10 +28,8 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.example.stugbygget.ui.theme.Border
 import com.example.stugbygget.ui.theme.Fraunces
 import com.example.stugbygget.ui.theme.MeadowGreen
-import com.example.stugbygget.ui.theme.ParchmentSoft
 import com.example.stugbygget.ui.theme.SommarShapes
 
 private val EaseOutCubic = CubicBezierEasing(0.33f, 1f, 0.68f, 1f)
@@ -49,7 +47,7 @@ fun SommarProgressRing(
     size: Dp = 56.dp,
     strokeWidth: Dp = 5.dp,
     color: Color = MaterialTheme.colorScheme.primary,
-    trackColor: Color = Border,
+    trackColor: Color = MaterialTheme.colorScheme.outline,
     label: String? = null,
 ) {
     val animatedProgress by animateFloatAsState(
@@ -109,7 +107,7 @@ fun SommarProgressBar(
     progress: Float,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.primary,
-    trackColor: Color = ParchmentSoft,
+    trackColor: Color = MaterialTheme.colorScheme.surfaceVariant,
     height: Dp = 6.dp,
 ) {
     val animatedProgress by animateFloatAsState(
@@ -176,7 +174,7 @@ fun SommarTimelineIcon(
                 modifier = Modifier
                     .width(2.dp)
                     .height(20.dp)
-                    .background(if (isComplete) MeadowGreen else Border),
+                    .background(if (isComplete) MeadowGreen else MaterialTheme.colorScheme.outline),
             )
         }
     }

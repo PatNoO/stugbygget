@@ -58,8 +58,6 @@ import com.example.stugbygget.ui.theme.MidsummerGold
 import com.example.stugbygget.ui.theme.MonoStyles
 import com.example.stugbygget.ui.theme.SommarGradients
 import com.example.stugbygget.ui.theme.StugbyggetShapes
-import com.example.stugbygget.ui.theme.TextDark
-import com.example.stugbygget.ui.theme.TextLight
 import com.example.stugbygget.ui.theme.fadeUpIn
 
 private val MEASUREMENT_TYPES = listOf("WALL", "WINDOW", "DOOR", "CUSTOM")
@@ -199,7 +197,7 @@ fun ArMeasureScreen(container: AppContainer) {
                 ) {
                     Text(
                         text = "Distance",
-                        style = MonoStyles.dataSmall.copy(color = TextLight),
+                        style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                     )
                     Text(
                         text = "%.2f m".format(uiState.measuredDistanceMeters),
@@ -210,7 +208,7 @@ fun ArMeasureScreen(container: AppContainer) {
         } else {
             Text(
                 text = "Tap two points in the camera view to measure a distance.",
-                style = MaterialTheme.typography.bodySmall.copy(color = TextLight),
+                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 modifier = Modifier.padding(bottom = 12.dp),
             )
         }
@@ -228,13 +226,13 @@ fun ArMeasureScreen(container: AppContainer) {
             if (uiState.measurementLabel.isEmpty()) {
                 Text(
                     text = "e.g. Wall A-B",
-                    style = MaterialTheme.typography.bodyMedium.copy(color = TextLight),
+                    style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 )
             }
             BasicTextField(
                 value = uiState.measurementLabel,
                 onValueChange = viewModel::onMeasurementLabelChanged,
-                textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextDark),
+                textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
                 cursorBrush = SolidColor(LakeBlue),
             )
         }
@@ -269,7 +267,7 @@ fun ArMeasureScreen(container: AppContainer) {
                 text = "Measure",
                 onClick = viewModel::onSaveMeasurement,
                 color = if (uiState.measuredDistanceMeters != null && !uiState.isSaving)
-                    LakeBlue else TextLight,
+                    LakeBlue else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -284,13 +282,13 @@ fun ArMeasureScreen(container: AppContainer) {
             SommarOutlineButton(
                 text = "→ Room width",
                 onClick = viewModel::onExportToRoomWidth,
-                color = if (uiState.measuredDistanceMeters != null) MeadowGreen else TextLight,
+                color = if (uiState.measuredDistanceMeters != null) MeadowGreen else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.weight(1f),
             )
             SommarOutlineButton(
                 text = "→ Room height",
                 onClick = viewModel::onExportToRoomHeight,
-                color = if (uiState.measuredDistanceMeters != null) MeadowGreen else TextLight,
+                color = if (uiState.measuredDistanceMeters != null) MeadowGreen else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.weight(1f),
             )
         }
@@ -340,7 +338,7 @@ fun ArMeasureScreen(container: AppContainer) {
             ) {
                 Text(
                     text = "Total area",
-                    style = MaterialTheme.typography.bodyMedium.copy(color = TextLight),
+                    style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 )
                 Text(
                     text = "— m²",
@@ -352,7 +350,7 @@ fun ArMeasureScreen(container: AppContainer) {
             }
             Text(
                 text = "Add WALL measurements to calculate room area.",
-                style = MaterialTheme.typography.bodySmall.copy(color = TextLight),
+                style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 modifier = Modifier.padding(top = 4.dp),
             )
         }
@@ -363,5 +361,5 @@ private fun typeChipColor(type: String): Color = when (type) {
     "WALL" -> LakeBlue
     "WINDOW" -> MidsummerGold
     "DOOR" -> FaluRed
-    else -> TextLight
+    else -> MaterialTheme.colorScheme.onSurfaceVariant
 }
