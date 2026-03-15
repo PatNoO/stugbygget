@@ -20,6 +20,8 @@ google-services.json
 
 # Secrets
 secrets.properties
+*.env
+.env*
 
 # Log files
 *.log
