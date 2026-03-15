@@ -25,8 +25,8 @@ import androidx.compose.ui.unit.dp
 import com.example.stugbygget.ui.theme.Fraunces
 import com.example.stugbygget.ui.theme.SommarGradients
 import com.example.stugbygget.ui.theme.SommarShapes
-import com.example.stugbygget.ui.theme.TextLight
 import com.example.stugbygget.ui.theme.cardShadow
+import com.example.stugbygget.ui.theme.fadeUpIn
 import com.example.stugbygget.ui.theme.headerShadow
 
 /**
@@ -73,6 +73,7 @@ fun SommarHeaderCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .fadeUpIn()
             .headerShadow()
             .clip(SommarShapes.headerCard)
             .background(gradient)
@@ -159,7 +160,7 @@ fun SommarStatCard(
         Text(
             text = label,
             style = MaterialTheme.typography.bodySmall,
-            color = TextLight,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 4.dp),
         )
     }
