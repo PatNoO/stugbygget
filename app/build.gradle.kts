@@ -74,7 +74,6 @@ dependencies {
     implementation(libs.androidx.camera.lifecycle)
     implementation(libs.androidx.camera.view)
     implementation(libs.google.arcore)
-    implementation(libs.androidx.credentials)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
