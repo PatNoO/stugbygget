@@ -5,6 +5,9 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.stugbygget.feature.logistics.ui.LogisticsScreen
+import com.example.stugbygget.feature.materials.ui.MaterialDetailScreen
+import com.example.stugbygget.feature.materials.ui.MaterialsScreen
 import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.feature.aichat.ui.AiChatScreen
 import com.example.stugbygget.feature.armeasure.ui.ArMeasureScreen
