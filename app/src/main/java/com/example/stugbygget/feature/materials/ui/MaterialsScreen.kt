@@ -45,8 +45,6 @@ import com.example.stugbygget.ui.theme.MidsummerGold
 import com.example.stugbygget.ui.theme.MonoStyles
 import com.example.stugbygget.ui.theme.SommarGradients
 import com.example.stugbygget.ui.theme.StugbyggetShapes
-import com.example.stugbygget.ui.theme.TextDark
-import com.example.stugbygget.ui.theme.TextLight
 import com.example.stugbygget.ui.theme.WoodWarm
 import com.example.stugbygget.ui.theme.staggeredFadeIn
 
@@ -131,13 +129,13 @@ private fun MaterialsContent(
                 if (uiState.searchQuery.isEmpty()) {
                     Text(
                         text = "Search materials…",
-                        style = MaterialTheme.typography.bodyMedium.copy(color = TextLight),
+                        style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                     )
                 }
                 BasicTextField(
                     value = uiState.searchQuery,
                     onValueChange = onSearchChanged,
-                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextDark),
+                    textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
                     cursorBrush = SolidColor(FaluRed),
                     modifier = Modifier.fillMaxWidth(),
                 )
@@ -202,14 +200,14 @@ private fun MaterialCard(
                     )
                     Text(
                         text = "${material.coveragePerUnit} ${material.unitType.name.lowercase()} / unit",
-                        style = MonoStyles.dataSmall.copy(color = TextLight),
+                        style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                     )
                 }
             }
             Spacer(Modifier.width(8.dp))
             Text(
                 text = "→",
-                style = MaterialTheme.typography.titleMedium.copy(color = TextLight),
+                style = MaterialTheme.typography.titleMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
             )
         }
     }

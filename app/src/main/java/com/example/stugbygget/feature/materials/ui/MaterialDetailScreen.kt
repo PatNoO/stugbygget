@@ -48,8 +48,6 @@ import com.example.stugbygget.ui.theme.MidsummerGold
 import com.example.stugbygget.ui.theme.MonoStyles
 import com.example.stugbygget.ui.theme.SommarGradients
 import com.example.stugbygget.ui.theme.StugbyggetShapes
-import com.example.stugbygget.ui.theme.TextDark
-import com.example.stugbygget.ui.theme.TextLight
 import com.example.stugbygget.ui.theme.staggeredFadeIn
 
 @Composable
@@ -154,7 +152,7 @@ private fun MaterialDetailContent(
             SommarCard(modifier = Modifier.padding(bottom = 20.dp)) {
                 Text(
                     text = "Enter area (m²)",
-                    style = MonoStyles.dataSmall.copy(color = TextLight),
+                    style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 )
                 Spacer(Modifier.height(8.dp))
                 Box(
@@ -168,13 +166,13 @@ private fun MaterialDetailContent(
                     if (uiState.areaInput.isEmpty()) {
                         Text(
                             text = "e.g. 48",
-                            style = MaterialTheme.typography.bodyMedium.copy(color = TextLight),
+                            style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                         )
                     }
                     BasicTextField(
                         value = uiState.areaInput,
                         onValueChange = onAreaInputChanged,
-                        textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextDark),
+                        textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
                         cursorBrush = SolidColor(FaluRed),
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -189,7 +187,7 @@ private fun MaterialDetailContent(
                     ) {
                         Text(
                             text = "Units needed",
-                            style = MonoStyles.dataSmall.copy(color = TextLight),
+                            style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                         )
                         Text(
                             text = "${uiState.calculatedUnits} ${material.unitType.name.lowercase()}",
@@ -198,7 +196,7 @@ private fun MaterialDetailContent(
                     }
                     Text(
                         text = "Formula: ⌈(${uiState.areaInput} / ${material.coveragePerUnit}) × ${1.0 + material.wasteMargin}⌉",
-                        style = MonoStyles.dataSmall.copy(color = TextLight),
+                        style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                         modifier = Modifier.padding(top = 4.dp),
                     )
                 }

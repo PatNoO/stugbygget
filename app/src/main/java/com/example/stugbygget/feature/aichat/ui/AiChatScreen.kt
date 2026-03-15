@@ -48,8 +48,6 @@ import com.example.stugbygget.ui.theme.MonoStyles
 import com.example.stugbygget.ui.theme.SommarGradients
 import com.example.stugbygget.ui.theme.SommarShapes
 import com.example.stugbygget.ui.theme.StugbyggetShapes
-import com.example.stugbygget.ui.theme.TextDark
-import com.example.stugbygget.ui.theme.TextLight
 import kotlinx.coroutines.launch
 
 @Composable
@@ -187,7 +185,7 @@ private fun ChatBubble(message: ChatMessageUiModel) {
                     Spacer(Modifier.height(4.dp))
                     Text(
                         text = markdownToAnnotatedString(message.text),
-                        style = MaterialTheme.typography.bodyMedium.copy(color = TextDark),
+                        style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
                     )
                 }
             }
@@ -213,7 +211,7 @@ private fun ThinkingBubble() {
         Spacer(Modifier.width(8.dp))
         Text(
             text = "Stugan AI is thinking…",
-            style = MonoStyles.dataSmall.copy(color = TextLight),
+            style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
         )
     }
 }
@@ -247,7 +245,7 @@ private fun InputBar(
             if (draft.isEmpty()) {
                 Text(
                     text = "Ask a renovation question…",
-                    style = MaterialTheme.typography.bodyMedium.copy(color = TextLight),
+                    style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 )
             }
             BasicTextField(
@@ -255,7 +253,7 @@ private fun InputBar(
                 onValueChange = onDraftChanged,
                 enabled = !isSending,
                 maxLines = 4,
-                textStyle = MaterialTheme.typography.bodyMedium.copy(color = TextDark),
+                textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
                 cursorBrush = SolidColor(FaluRed),
             )
         }
