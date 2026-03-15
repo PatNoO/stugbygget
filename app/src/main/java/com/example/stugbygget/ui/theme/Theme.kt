@@ -52,7 +52,7 @@ fun StugbyggetTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = StugbyggetTypography,
         content = content
     )
 }
