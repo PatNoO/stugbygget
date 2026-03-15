@@ -48,7 +48,6 @@ import com.example.stugbygget.ui.theme.LakeBlue
 import com.example.stugbygget.ui.theme.MonoStyles
 import com.example.stugbygget.ui.theme.SommarGradients
 import com.example.stugbygget.ui.theme.SommarShapes
-import com.example.stugbygget.ui.theme.TextLight
 import com.example.stugbygget.ui.theme.staggeredFadeIn
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -268,7 +267,7 @@ private fun PhotoCard(
         Spacer(Modifier.height(2.dp))
         Text(
             text = "$month · ${photo.roomName}",
-            style = MonoStyles.dataSmall.copy(color = TextLight),
+            style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
         )
     }
 }

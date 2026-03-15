@@ -24,8 +24,6 @@ import com.example.stugbygget.ui.theme.BorderLight
 import com.example.stugbygget.ui.theme.ParchmentSoft
 import com.example.stugbygget.ui.theme.SommarGradients
 import com.example.stugbygget.ui.theme.SommarShapes
-import com.example.stugbygget.ui.theme.TextLight
-import com.example.stugbygget.ui.theme.TextMedium
 import com.example.stugbygget.ui.theme.buttonShadow
 
 /**
@@ -39,7 +37,7 @@ import com.example.stugbygget.ui.theme.buttonShadow
 fun SommarBadge(
     text: String,
     modifier: Modifier = Modifier,
-    color: Color = TextMedium,
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant,
     backgroundColor: Color = ParchmentSoft,
     borderColor: Color = BorderLight,
 ) {
@@ -76,7 +74,7 @@ fun SommarFilterChip(
     Text(
         text = text,
         style = MaterialTheme.typography.labelMedium,
-        color = if (selected) activeColor else TextMedium,
+        color = if (selected) activeColor else MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = modifier
             .clip(SommarShapes.badge)
             .background(if (selected) activeColor.copy(alpha = 0.08f) else MaterialTheme.colorScheme.surface)
@@ -117,7 +115,7 @@ fun SommarButton(
         Text(
             text = text,
             style = MaterialTheme.typography.labelLarge,
-            color = if (enabled) Color.White else TextLight,
+            color = if (enabled) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

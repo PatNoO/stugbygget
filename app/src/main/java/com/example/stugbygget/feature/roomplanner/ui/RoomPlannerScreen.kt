@@ -50,8 +50,6 @@ import com.example.stugbygget.ui.theme.MonoStyles
 import com.example.stugbygget.ui.theme.SommarGradients
 import com.example.stugbygget.ui.theme.SommarShapes
 import com.example.stugbygget.ui.theme.StugbyggetShapes
-import com.example.stugbygget.ui.theme.TextDark
-import com.example.stugbygget.ui.theme.TextLight
 import com.example.stugbygget.ui.theme.WoodWarm
 import com.example.stugbygget.ui.theme.fadeUpIn
 import kotlin.math.roundToInt
@@ -353,13 +351,13 @@ private fun PlacedFurnitureBadge(
         Text(
             text = item.label,
             style = MonoStyles.dataSmall.copy(
-                color = if (isSelected) LakeBlue else TextDark,
+                color = if (isSelected) LakeBlue else MaterialTheme.colorScheme.onSurface,
             ),
         )
         Spacer(Modifier.width(6.dp))
         Text(
             text = "×",
-            style = MaterialTheme.typography.labelMedium.copy(color = TextLight),
+            style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
             // TODO: implement removeFurniture in ViewModel and wire here
         )
     }
@@ -381,7 +379,7 @@ private fun CatalogueCard(
                 )
                 Text(
                     text = "${item.widthCm / 100.0}m × ${item.depthCm / 100.0}m",
-                    style = MonoStyles.dataSmall.copy(color = TextLight),
+                    style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 )
             }
         }

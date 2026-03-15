@@ -66,6 +66,7 @@ dependencies {
     implementation(libs.firebase.storage)
     implementation(libs.firebase.functions)
     implementation(libs.firebase.config)
+    implementation(libs.firebase.messaging)
     implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.gson)

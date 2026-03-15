@@ -77,21 +77,22 @@ const PRICE_DROP_THRESHOLD_PCT = 5;
 /**
  * Scheduled daily price scraper.
  * Runs at 06:00 every day, fetches prices for every material in every project,
+ * Runs at 06:00 Stockholm time, fetches prices for every material in every project,
  * calculates a day-over-day delta, and triggers FCM notifications for drops > 5%.
  */
 exports.ingestPrices = onSchedule("0 6 * * *", async () => {
   const projectsSnapshot = await firestore.collection("projects").get();
 
-  logger.info("Starting daily price ingestion", { projectCount: projectsSnapshot.size });
+  logger.info("Starting daily price ingestion", { projectCount: projectDocs.length });
 
-  for (const projectDoc of projectsSnapshot.docs) {
+  for (const projectDoc of projectDocs) {
     await ingestProjectPrices(projectDoc.id);
   }
 });
 
 /**
  * Fetches the most recent price document for a given material + store combination.
- * Returns null on first run (no previous price exists).
+ * Returns null if no previous price exists (first run).
  */
 async function getPreviousPrice(pricesRef, materialId, store) {
   const snapshot = await pricesRef
@@ -105,15 +106,17 @@ async function getPreviousPrice(pricesRef, materialId, store) {
 }
 
 /**
- * Sends an FCM multicast notification to all users with a registered token.
- * Token-level failures are logged but do not throw.
+ * Sends an FCM push notification to all users with a registered token.
+ * Failures per-token are logged but do not throw.
  */
 async function notifyPriceDrop(materialName, store, oldPrice, newPrice) {
   const usersSnapshot = await firestore.collection("users").get();
-  const tokens = usersSnapshot.docs.map((doc) => doc.get("fcmToken")).filter(Boolean);
+  const tokens = usersSnapshot.docs
+    .map((doc) => doc.get("fcmToken"))
+    .filter(Boolean);
 
   if (tokens.length === 0) {
-    logger.info("No FCM tokens — skipping price drop notification", { materialName, store });
+    logger.info("No FCM tokens found — skipping price drop notification", { materialName, store });
     return;
   }
 
@@ -132,12 +135,12 @@ async function notifyPriceDrop(materialName, store, oldPrice, newPrice) {
   };
 
   try {
-    const result = await admin.messaging().sendEachForMulticast(message);
+    const response = await admin.messaging().sendEachForMulticast(message);
     logger.info("FCM price-drop notification sent", {
       materialName,
       store,
-      successCount: result.successCount,
-      failureCount: result.failureCount
+      successCount: response.successCount,
+      failureCount: response.failureCount
     });
   } catch (error) {
     logger.error("FCM notification failed", { materialName, store, error: error?.message });
@@ -166,7 +169,7 @@ async function ingestProjectPrices(projectId) {
 
         const batch = firestore.batch();
         for (const entry of result) {
-          // ── Delta calculation (null on first run) ──
+          // ── Delta calculation ──
           const previousPrice = await getPreviousPrice(pricesRef, material.id, entry.store);
           let priceChangePct = null;
           let priceDrop = false;
@@ -195,6 +198,7 @@ async function ingestProjectPrices(projectId) {
             priceDrop
           });
 
+          // ── FCM notification on significant price drop ──
           if (priceDrop) {
             await notifyPriceDrop(material.name, entry.store, previousPrice, entry.amount);
           }
