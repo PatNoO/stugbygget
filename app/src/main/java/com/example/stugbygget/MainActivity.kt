@@ -35,7 +35,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -55,7 +54,6 @@ import com.example.stugbygget.navigation.AppNavHost
 import com.example.stugbygget.navigation.primaryRoutes
 import com.example.stugbygget.ui.components.SommarTopBar
 import com.example.stugbygget.navigation.AppRoute
-import com.example.stugbygget.ui.components.SommarTopBar
 import com.example.stugbygget.ui.theme.Border
 import com.example.stugbygget.ui.theme.CreamBackground
 import com.example.stugbygget.ui.theme.FaluRed
@@ -180,6 +178,7 @@ private fun MainNavigationScaffold(
             restoreState = true
         }
         onNavigationConsumed()
+    }
     var showMoreSheet by rememberSaveable { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
