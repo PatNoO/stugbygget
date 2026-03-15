@@ -9,21 +9,38 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,7 +54,15 @@ import com.example.stugbygget.feature.auth.ui.SignInScreen
 import com.example.stugbygget.navigation.AppNavHost
 import com.example.stugbygget.navigation.primaryRoutes
 import com.example.stugbygget.ui.components.SommarTopBar
+import com.example.stugbygget.navigation.AppRoute
+import com.example.stugbygget.ui.components.SommarTopBar
+import com.example.stugbygget.ui.theme.Border
+import com.example.stugbygget.ui.theme.CreamBackground
+import com.example.stugbygget.ui.theme.FaluRed
+import com.example.stugbygget.ui.theme.MonoStyles
+import com.example.stugbygget.ui.theme.SommarShapes
 import com.example.stugbygget.ui.theme.StugbyggetTheme
+import com.example.stugbygget.ui.theme.TextMedium
 
 class MainActivity : ComponentActivity() {
 
@@ -116,6 +141,24 @@ private fun AppContent(
     }
 }
 
+private data class NavItem(val emoji: String, val label: String, val route: String)
+
+private val primaryNavItems = listOf(
+    NavItem("📅", "Plan", AppRoute.Planning.route),
+    NavItem("✅", "Todos", AppRoute.Todos.route),
+    NavItem("📸", "Photos", AppRoute.Gallery.route),
+    NavItem("🤖", "AI", AppRoute.AiChat.route),
+)
+
+private val moreNavItems = listOf(
+    NavItem("🔧", "Room Planner", AppRoute.RoomPlanner.route),
+    NavItem("📐", "Measure", AppRoute.ArMeasure.route),
+    NavItem("🔗", "Materials", AppRoute.Materials.route),
+    NavItem("📊", "Budget", AppRoute.Budget.route),
+    NavItem("🚛", "Transport", AppRoute.Logistics.route),
+)
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MainNavigationScaffold(
     container: AppContainer,
@@ -137,6 +180,19 @@ private fun MainNavigationScaffold(
             restoreState = true
         }
         onNavigationConsumed()
+    var showMoreSheet by rememberSaveable { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    val isMoreSelected = moreNavItems.any { it.route == currentRoute }
+
+    fun navigateTo(route: String) {
+        navController.navigate(route) {
+            popUpTo(navController.graph.findStartDestination().id) {
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
     }
 
     Scaffold(
@@ -166,26 +222,12 @@ private fun MainNavigationScaffold(
             }
         },
         bottomBar = {
-            val selectedIndex = primaryRoutes.indexOfFirst { route -> route.route == currentRoute }
-            ScrollableTabRow(
-                selectedTabIndex = selectedIndex.coerceAtLeast(0)
-            ) {
-                primaryRoutes.forEach { route ->
-                    Tab(
-                        selected = currentRoute == route.route,
-                        onClick = {
-                            navController.navigate(route.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
-                                }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        text = { Text(route.title) }
-                    )
-                }
-            }
+            SommarBottomBar(
+                currentRoute = currentRoute,
+                isMoreSelected = isMoreSelected,
+                onTabClick = { route -> navigateTo(route) },
+                onMoreClick = { showMoreSheet = true },
+            )
         }
     ) { innerPadding ->
         AppNavHost(
@@ -193,5 +235,132 @@ private fun MainNavigationScaffold(
             container = container,
             modifier = Modifier.padding(innerPadding)
         )
+    }
+
+    if (showMoreSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showMoreSheet = false },
+            sheetState = sheetState,
+            containerColor = CreamBackground,
+        ) {
+            Column(modifier = Modifier.padding(bottom = 24.dp)) {
+                Text(
+                    text = "More",
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
+                )
+                moreNavItems.forEach { item ->
+                    MoreSheetItem(
+                        item = item,
+                        selected = currentRoute == item.route,
+                        onClick = {
+                            showMoreSheet = false
+                            navigateTo(item.route)
+                        },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SommarBottomBar(
+    currentRoute: String?,
+    isMoreSelected: Boolean,
+    onTabClick: (String) -> Unit,
+    onMoreClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(CreamBackground)
+            .border(width = 1.dp, color = Border)
+            .navigationBarsPadding()
+            .height(64.dp),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+    ) {
+        primaryNavItems.forEach { item ->
+            NavTabItem(
+                emoji = item.emoji,
+                label = item.label,
+                selected = currentRoute == item.route,
+                modifier = Modifier.weight(1f),
+                onClick = { onTabClick(item.route) },
+            )
+        }
+        NavTabItem(
+            emoji = "☰",
+            label = "More",
+            selected = isMoreSelected,
+            modifier = Modifier.weight(1f),
+            onClick = onMoreClick,
+        )
+    }
+}
+
+@Composable
+private fun NavTabItem(
+    emoji: String,
+    label: String,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    val contentColor = if (selected) FaluRed else TextMedium
+
+    Column(
+        modifier = modifier
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        Text(text = emoji, style = MaterialTheme.typography.titleSmall)
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall.copy(color = contentColor),
+        )
+        Spacer(Modifier.height(4.dp))
+        Box(
+            modifier = Modifier
+                .size(if (selected) 4.dp else 0.dp)
+                .clip(CircleShape)
+                .background(FaluRed)
+        )
+    }
+}
+
+@Composable
+private fun MoreSheetItem(
+    item: NavItem,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .background(if (selected) FaluRed.copy(alpha = 0.06f) else CreamBackground)
+            .padding(horizontal = 20.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        Text(item.emoji, style = MaterialTheme.typography.titleMedium)
+        Text(
+            text = item.label,
+            style = MonoStyles.dataSmall.copy(
+                color = if (selected) FaluRed else TextMedium,
+            ),
+            modifier = Modifier.weight(1f),
+        )
+        if (selected) {
+            Box(
+                modifier = Modifier
+                    .size(6.dp)
+                    .clip(CircleShape)
+                    .background(FaluRed)
+            )
+        }
     }
 }
