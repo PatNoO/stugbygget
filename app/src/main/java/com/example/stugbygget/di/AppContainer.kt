@@ -43,9 +43,12 @@ import com.example.stugbygget.domain.repository.RoomDimensionsRepository
 import com.example.stugbygget.domain.repository.RoomLayoutRepository
 import com.example.stugbygget.domain.repository.RouteRepository
 import com.example.stugbygget.domain.repository.RuntimeConfigRepository
+import com.example.stugbygget.domain.repository.MaterialRepository
 import com.example.stugbygget.domain.repository.TodoRepository
+import com.example.stugbygget.data.firebase.firestore.FirestoreMaterialRepository
 import com.example.stugbygget.domain.usecase.DeletePhotoUseCase
 import com.example.stugbygget.domain.usecase.DeleteTodoUseCase
+import com.example.stugbygget.domain.usecase.CalculateMaterialQuantityUseCase
 import com.example.stugbygget.domain.usecase.CalculateMeasurementDistanceUseCase
 import com.example.stugbygget.domain.usecase.CompareShoppingPricesUseCase
 import com.example.stugbygget.domain.usecase.AddShoppingItemUseCase
@@ -60,7 +63,9 @@ import com.example.stugbygget.domain.usecase.GetRouteMetricsUseCase
 import com.example.stugbygget.domain.usecase.GetNotificationSettingsUseCase
 import com.example.stugbygget.domain.usecase.GetRuntimeConfigUseCase
 import com.example.stugbygget.domain.usecase.IsArSupportedUseCase
+import com.example.stugbygget.domain.usecase.ObserveMaterialsUseCase
 import com.example.stugbygget.domain.usecase.ObservePhotosUseCase
+import com.example.stugbygget.domain.usecase.ObservePriceQuotesUseCase
 import com.example.stugbygget.domain.usecase.ObservePhasesUseCase
 import com.example.stugbygget.domain.usecase.ObserveRoomLayoutUseCase
 import com.example.stugbygget.domain.usecase.ObserveShoppingListsUseCase
@@ -135,6 +140,9 @@ class AppContainer(
     val photoRepository: PhotoRepository by lazy { FirestorePhotoRepository(firestore, storage) }
     val measurementRepository: MeasurementRepository by lazy {
         FirestoreMeasurementRepository(firestore, offlineSyncCoordinator)
+    }
+    val materialRepository: MaterialRepository by lazy {
+        FirestoreMaterialRepository(firestore)
     }
     val priceRecommendationRepository: PriceRecommendationRepository by lazy {
         FirestorePriceRecommendationRepository(firestore)
@@ -263,6 +271,15 @@ class AppContainer(
     }
     val deleteTodoUseCase: DeleteTodoUseCase by lazy {
         DeleteTodoUseCase(todoRepository)
+    }
+    val observeMaterialsUseCase: ObserveMaterialsUseCase by lazy {
+        ObserveMaterialsUseCase(materialRepository)
+    }
+    val observePriceQuotesUseCase: ObservePriceQuotesUseCase by lazy {
+        ObservePriceQuotesUseCase(materialRepository)
+    }
+    val calculateMaterialQuantityUseCase: CalculateMaterialQuantityUseCase by lazy {
+        CalculateMaterialQuantityUseCase()
     }
     val observePhotosUseCase: ObservePhotosUseCase by lazy {
         ObservePhotosUseCase(photoRepository)

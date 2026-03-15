@@ -6,6 +6,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.stugbygget.core.ui.PlaceholderScreen
+import com.example.stugbygget.feature.materials.ui.MaterialDetailScreen
+import com.example.stugbygget.feature.materials.ui.MaterialsScreen
 import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.feature.aichat.ui.AiChatScreen
 import com.example.stugbygget.feature.armeasure.ui.ArMeasureScreen
@@ -46,7 +48,16 @@ fun AppNavHost(
             ArMeasureScreen(container = container)
         }
         composable(AppRoute.Materials.route) {
-            PlaceholderScreen("Materials", "Material catalog and quantity calculations")
+            MaterialsScreen(
+                container = container,
+                onMaterialClick = { materialId ->
+                    navController.navigate(AppRoute.MaterialDetail.createRoute(materialId))
+                },
+            )
+        }
+        composable(AppRoute.MaterialDetail.route) { backStackEntry ->
+            val materialId = backStackEntry.arguments?.getString("materialId") ?: ""
+            MaterialDetailScreen(container = container, materialId = materialId)
         }
         composable(AppRoute.Shopping.route) {
             ShoppingScreen(container = container)
