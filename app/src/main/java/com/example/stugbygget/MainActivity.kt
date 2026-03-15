@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -18,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.example.stugbygget.ui.components.SommarTopBar
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -84,37 +86,26 @@ private fun MainNavigationScaffold(
 
     Scaffold(
         topBar = {
-            if (!syncState.isOnline || syncState.pendingWrites > 0 || syncState.isSyncing) {
-                val text = when {
-                    !syncState.isOnline -> "Offline mode: writes will sync when online."
-                    syncState.isSyncing -> "Syncing pending changes..."
-                    else -> "Pending writes: ${syncState.pendingWrites}"
-                }
-                Surface(color = MaterialTheme.colorScheme.secondaryContainer) {
-                    androidx.compose.foundation.layout.Row(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = text,
-                            color = MaterialTheme.colorScheme.onSecondaryContainer,
-                            modifier = Modifier.weight(1f)
-                        )
+            Column {
+                SommarTopBar(
+                    trailing = {
                         TextButton(onClick = onSignOut) {
                             Text("Sign out")
                         }
                     }
-                }
-            } else {
-                Surface(color = MaterialTheme.colorScheme.surface) {
-                    androidx.compose.foundation.layout.Row(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        horizontalArrangement = androidx.compose.foundation.layout.Arrangement.End
-                    ) {
-                        TextButton(onClick = onSignOut) {
-                            Text("Sign out")
-                        }
+                )
+                if (!syncState.isOnline || syncState.pendingWrites > 0 || syncState.isSyncing) {
+                    val text = when {
+                        !syncState.isOnline -> "Offline mode: writes will sync when online."
+                        syncState.isSyncing -> "Syncing pending changes..."
+                        else -> "Pending writes: ${syncState.pendingWrites}"
+                    }
+                    Surface(color = MaterialTheme.colorScheme.secondaryContainer) {
+                        Text(
+                            text = text,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+                        )
                     }
                 }
             }
