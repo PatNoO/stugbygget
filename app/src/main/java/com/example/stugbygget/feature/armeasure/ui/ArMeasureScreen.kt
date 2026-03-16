@@ -357,6 +357,7 @@ fun ArMeasureScreen(container: AppContainer) {
     }
 }
 
+@Composable
 private fun typeChipColor(type: String): Color = when (type) {
     "WALL" -> LakeBlue
     "WINDOW" -> MidsummerGold
