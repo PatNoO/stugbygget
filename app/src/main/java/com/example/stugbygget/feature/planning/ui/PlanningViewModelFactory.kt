@@ -14,7 +14,8 @@ class PlanningViewModelFactory(
             return PlanningViewModel(
                 observePhasesUseCase = container.observePhasesUseCase,
                 projectId = container.projectSessionRepository.getProjectId(),
-                buildPlanningOverviewUseCase = container.buildPlanningOverviewUseCase
+                buildPlanningOverviewUseCase = container.buildPlanningOverviewUseCase,
+                upsertPhaseUseCase = container.upsertPhaseUseCase,
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
