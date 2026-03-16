@@ -1,6 +1,7 @@
 package com.example.stugbygget.feature.todos.ui
 
 import com.example.stugbygget.domain.model.TodoItem
+import com.example.stugbygget.domain.model.TodoPriority
 
 data class TodosUiState(
     val isLoading: Boolean = true,
@@ -9,5 +10,13 @@ data class TodosUiState(
     val selectedAssignee: String? = null,
     val availablePhases: List<String> = emptyList(),
     val availableAssignees: List<String> = emptyList(),
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    // Add-todo sheet state
+    val showAddSheet: Boolean = false,
+    val draftText: String = "",
+    val draftAssignee: String = "",
+    val draftPriority: TodoPriority = TodoPriority.MEDIUM,
+    val draftPhaseId: String = "",
+    val isAddingTodo: Boolean = false,
+    val addError: String? = null,
 )

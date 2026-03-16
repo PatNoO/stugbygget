@@ -14,6 +14,7 @@ class TodosViewModelFactory(
             return TodosViewModel(
                 observeTodosUseCase = container.observeTodosUseCase,
                 toggleTodoUseCase = container.toggleTodoUseCase,
+                upsertTodoUseCase = container.upsertTodoUseCase,
                 projectId = container.projectSessionRepository.getProjectId()
             ) as T
         }
