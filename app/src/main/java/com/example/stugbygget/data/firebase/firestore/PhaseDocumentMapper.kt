@@ -3,6 +3,7 @@ package com.example.stugbygget.data.firebase.firestore
 import com.example.stugbygget.domain.model.RenovationPhase
 import com.google.firebase.Timestamp
 import java.time.Instant
+import java.util.Date
 
 object PhaseDocumentMapper {
 
@@ -23,6 +24,16 @@ object PhaseDocumentMapper {
             icon = map["icon"] as? String ?: "🔧"
         )
     }
+
+    fun toMap(phase: RenovationPhase): Map<String, Any> = mapOf(
+        "name" to phase.name,
+        "room" to phase.room,
+        "startDate" to Timestamp(Date.from(phase.startDate)),
+        "endDate" to Timestamp(Date.from(phase.endDate)),
+        "progress" to phase.progress,
+        "color" to phase.color,
+        "icon" to phase.icon,
+    )
 
     fun mockPhase(id: String = "phase-1"): RenovationPhase = RenovationPhase(
         id = id,

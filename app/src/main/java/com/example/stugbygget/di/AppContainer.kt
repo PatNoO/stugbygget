@@ -88,6 +88,7 @@ import com.example.stugbygget.domain.usecase.StopArSessionUseCase
 import com.example.stugbygget.domain.usecase.ToggleShoppingItemPurchasedUseCase
 import com.example.stugbygget.domain.usecase.ToggleTodoUseCase
 import com.example.stugbygget.domain.usecase.UploadPhotoUseCase
+import com.example.stugbygget.domain.usecase.UpsertPhaseUseCase
 import com.example.stugbygget.domain.usecase.UpsertTodoUseCase
 import com.example.stugbygget.feature.roomplanner.ui.defaultFurniture
 import com.google.firebase.auth.FirebaseAuth
@@ -265,6 +266,9 @@ class AppContainer(
     }
     val upsertTodoUseCase: UpsertTodoUseCase by lazy {
         UpsertTodoUseCase(todoRepository)
+    }
+    val upsertPhaseUseCase: UpsertPhaseUseCase by lazy {
+        UpsertPhaseUseCase(phaseRepository)
     }
     val toggleTodoUseCase: ToggleTodoUseCase by lazy {
         ToggleTodoUseCase(todoRepository)

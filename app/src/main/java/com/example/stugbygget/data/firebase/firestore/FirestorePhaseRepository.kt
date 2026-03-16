@@ -7,6 +7,7 @@ import com.google.firebase.firestore.Query
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
 
 class FirestorePhaseRepository(
     private val firestore: FirebaseFirestore
@@ -32,5 +33,14 @@ class FirestorePhaseRepository(
         }
 
         awaitClose { registration.remove() }
+    }
+
+    override suspend fun upsertPhase(projectId: String, phase: RenovationPhase) {
+        firestore.collection("projects")
+            .document(projectId)
+            .collection("phases")
+            .document(phase.id)
+            .set(PhaseDocumentMapper.toMap(phase))
+            .await()
     }
 }

@@ -1,6 +1,7 @@
 package com.example.stugbygget.feature.planning.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -9,12 +10,17 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -26,13 +32,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.domain.model.RenovationPhase
 import com.example.stugbygget.ui.components.SommarBadge
+import com.example.stugbygget.ui.components.SommarButton
 import com.example.stugbygget.ui.components.SommarCard
 import com.example.stugbygget.ui.components.SommarInfoBox
+import com.example.stugbygget.ui.components.SommarOutlineButton
 import com.example.stugbygget.ui.components.SommarProgressBar
 import com.example.stugbygget.ui.components.SommarProgressRing
 import com.example.stugbygget.ui.components.SommarSectionTitle
 import com.example.stugbygget.ui.components.SommarStatCard
 import com.example.stugbygget.ui.components.SommarTimelineIcon
+import com.example.stugbygget.ui.theme.CreamBackground
 import com.example.stugbygget.ui.theme.FaluRed
 import com.example.stugbygget.ui.theme.Fraunces
 import com.example.stugbygget.ui.theme.MeadowGreen
@@ -53,56 +62,197 @@ private fun phaseColor(hex: String): Color = try {
     FaluRed
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlanningScreen(container: AppContainer) {
     val viewModel: PlanningViewModel = viewModel(
         factory = PlanningViewModelFactory(container)
     )
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    when {
-        uiState.isLoading -> {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                CircularProgressIndicator(color = FaluRed)
+    Box(modifier = Modifier.fillMaxSize()) {
+        when {
+            uiState.isLoading -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    CircularProgressIndicator(color = FaluRed)
+                }
             }
+
+            uiState.errorMessage != null -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    SommarInfoBox(
+                        emoji = "⚠️",
+                        title = "Error",
+                        text = uiState.errorMessage ?: "Something went wrong.",
+                        accentColor = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+
+            uiState.phases.isEmpty() -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    SommarInfoBox(
+                        emoji = "📋",
+                        title = "No phases yet",
+                        text = "Renovation phases will appear here once added to the project.",
+                    )
+                }
+            }
+
+            else -> PlanningContent(uiState)
         }
 
-        uiState.errorMessage != null -> {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.Center,
-            ) {
-                SommarInfoBox(
-                    emoji = "⚠️",
-                    title = "Error",
-                    text = uiState.errorMessage ?: "Something went wrong.",
-                    accentColor = MaterialTheme.colorScheme.error,
+        // FAB
+        SommarButton(
+            text = "+ Add phase",
+            onClick = viewModel::onShowAddSheet,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(20.dp),
+        )
+    }
+
+    if (uiState.showAddSheet) {
+        ModalBottomSheet(
+            onDismissRequest = viewModel::onDismissAddSheet,
+            sheetState = sheetState,
+            containerColor = CreamBackground,
+        ) {
+            AddPhaseSheet(
+                uiState = uiState,
+                onNameChanged = viewModel::onDraftNameChanged,
+                onRoomChanged = viewModel::onDraftRoomChanged,
+                onStartDateChanged = viewModel::onDraftStartDateChanged,
+                onEndDateChanged = viewModel::onDraftEndDateChanged,
+                onColorChanged = viewModel::onDraftColorChanged,
+                onIconChanged = viewModel::onDraftIconChanged,
+                onSubmit = viewModel::onSubmitPhase,
+                onDismiss = viewModel::onDismissAddSheet,
+            )
+        }
+    }
+}
+
+@Composable
+private fun AddPhaseSheet(
+    uiState: PlanningUiState,
+    onNameChanged: (String) -> Unit,
+    onRoomChanged: (String) -> Unit,
+    onStartDateChanged: (String) -> Unit,
+    onEndDateChanged: (String) -> Unit,
+    onColorChanged: (String) -> Unit,
+    onIconChanged: (String) -> Unit,
+    onSubmit: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .padding(bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            text = "New phase",
+            style = MaterialTheme.typography.titleMedium.copy(fontFamily = Fraunces),
+            modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
+        )
+
+        OutlinedTextField(
+            value = uiState.draftName,
+            onValueChange = onNameChanged,
+            label = { Text("Phase name *") },
+            singleLine = true,
+            isError = uiState.addError != null && uiState.draftName.isBlank(),
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        OutlinedTextField(
+            value = uiState.draftRoom,
+            onValueChange = onRoomChanged,
+            label = { Text("Room *") },
+            singleLine = true,
+            isError = uiState.addError != null && uiState.draftRoom.isBlank(),
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            OutlinedTextField(
+                value = uiState.draftStartDate,
+                onValueChange = onStartDateChanged,
+                label = { Text("Start date (YYYY-MM-DD)") },
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+            )
+            OutlinedTextField(
+                value = uiState.draftEndDate,
+                onValueChange = onEndDateChanged,
+                label = { Text("End date (YYYY-MM-DD)") },
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+            )
+        }
+
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            OutlinedTextField(
+                value = uiState.draftColor,
+                onValueChange = onColorChanged,
+                label = { Text("Color (hex)") },
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+            )
+            OutlinedTextField(
+                value = uiState.draftIcon,
+                onValueChange = onIconChanged,
+                label = { Text("Icon (emoji)") },
+                singleLine = true,
+                modifier = Modifier.weight(1f),
+            )
+        }
+
+        if (uiState.addError != null) {
+            Text(
+                text = uiState.addError,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+
+        Spacer(Modifier.height(4.dp))
+
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            SommarOutlineButton(
+                text = "Cancel",
+                onClick = onDismiss,
+                modifier = Modifier.weight(1f),
+            )
+            if (uiState.isAddingPhase) {
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = FaluRed, modifier = Modifier.size(28.dp))
+                }
+            } else {
+                SommarButton(
+                    text = "Add phase",
+                    onClick = onSubmit,
+                    modifier = Modifier.weight(1f),
                 )
             }
         }
-
-        uiState.phases.isEmpty() -> {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.Center,
-            ) {
-                SommarInfoBox(
-                    emoji = "📋",
-                    title = "No phases yet",
-                    text = "Renovation phases will appear here once added to the project.",
-                )
-            }
-        }
-
-        else -> PlanningContent(uiState)
     }
 }
 
