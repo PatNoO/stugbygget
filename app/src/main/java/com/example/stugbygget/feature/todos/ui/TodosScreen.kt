@@ -20,8 +20,12 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -36,11 +40,14 @@ import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.domain.model.TodoItem
 import com.example.stugbygget.domain.model.TodoPriority
 import com.example.stugbygget.ui.components.SommarBadge
+import com.example.stugbygget.ui.components.SommarButton
 import com.example.stugbygget.ui.components.SommarFilterChip
 import com.example.stugbygget.ui.components.SommarHeaderCard
 import com.example.stugbygget.ui.components.SommarInfoBox
+import com.example.stugbygget.ui.components.SommarOutlineButton
 import com.example.stugbygget.ui.components.SommarProgressRing
 import com.example.stugbygget.ui.theme.Border
+import com.example.stugbygget.ui.theme.CreamBackground
 import com.example.stugbygget.ui.theme.FaluRed
 import com.example.stugbygget.ui.theme.Fraunces
 import com.example.stugbygget.ui.theme.LakeBlue
@@ -59,43 +66,193 @@ private fun priorityColor(priority: TodoPriority) = when (priority) {
     TodoPriority.LOW -> MeadowGreen
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TodosScreen(container: AppContainer) {
     val viewModel: TodosViewModel = viewModel(factory = TodosViewModelFactory(container))
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    when {
-        uiState.isLoading -> {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                CircularProgressIndicator(color = MeadowGreen)
+    Box(modifier = Modifier.fillMaxSize()) {
+        when {
+            uiState.isLoading -> {
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    CircularProgressIndicator(color = MeadowGreen)
+                }
             }
+
+            uiState.errorMessage != null -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    SommarInfoBox(
+                        emoji = "⚠️",
+                        title = "Error",
+                        text = uiState.errorMessage ?: "Something went wrong.",
+                        accentColor = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+
+            else -> TodosContent(
+                uiState = uiState,
+                onAssigneeSelected = viewModel::onAssigneeFilterSelected,
+                onTodoToggle = { id, checked -> viewModel.onTodoToggle(id, checked) },
+            )
         }
 
-        uiState.errorMessage != null -> {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.Center,
-            ) {
-                SommarInfoBox(
-                    emoji = "⚠️",
-                    title = "Error",
-                    text = uiState.errorMessage ?: "Something went wrong.",
-                    accentColor = MaterialTheme.colorScheme.error,
+        // FAB
+        SommarButton(
+            text = "+ Add task",
+            onClick = viewModel::onShowAddSheet,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(20.dp),
+        )
+    }
+
+    if (uiState.showAddSheet) {
+        ModalBottomSheet(
+            onDismissRequest = viewModel::onDismissAddSheet,
+            sheetState = sheetState,
+            containerColor = CreamBackground,
+        ) {
+            AddTodoSheet(
+                uiState = uiState,
+                onTextChanged = viewModel::onDraftTextChanged,
+                onAssigneeChanged = viewModel::onDraftAssigneeChanged,
+                onPriorityChanged = viewModel::onDraftPriorityChanged,
+                onPhaseIdChanged = viewModel::onDraftPhaseIdChanged,
+                onSubmit = viewModel::onSubmitTodo,
+                onDismiss = viewModel::onDismissAddSheet,
+            )
+        }
+    }
+}
+
+@Composable
+private fun AddTodoSheet(
+    uiState: TodosUiState,
+    onTextChanged: (String) -> Unit,
+    onAssigneeChanged: (String) -> Unit,
+    onPriorityChanged: (TodoPriority) -> Unit,
+    onPhaseIdChanged: (String) -> Unit,
+    onSubmit: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .padding(bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            text = "New task",
+            style = MaterialTheme.typography.titleMedium.copy(fontFamily = Fraunces),
+            modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
+        )
+
+        // Task text
+        OutlinedTextField(
+            value = uiState.draftText,
+            onValueChange = onTextChanged,
+            label = { Text("Task description *") },
+            singleLine = true,
+            isError = uiState.addError != null && uiState.draftText.isBlank(),
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        // Assignee
+        OutlinedTextField(
+            value = uiState.draftAssignee,
+            onValueChange = onAssigneeChanged,
+            label = { Text("Assignee") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        // Phase id — suggests from existing phases
+        val phaseOptions = if (uiState.availablePhases.isNotEmpty()) uiState.availablePhases else emptyList()
+        if (phaseOptions.isNotEmpty()) {
+            Text(
+                text = "Phase",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                items(phaseOptions) { phase ->
+                    SommarFilterChip(
+                        text = phase,
+                        selected = uiState.draftPhaseId == phase,
+                        onClick = { onPhaseIdChanged(if (uiState.draftPhaseId == phase) "" else phase) },
+                        activeColor = LakeBlue,
+                    )
+                }
+            }
+        } else {
+            OutlinedTextField(
+                value = uiState.draftPhaseId,
+                onValueChange = onPhaseIdChanged,
+                label = { Text("Phase (optional)") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
+        // Priority chips
+        Text(
+            text = "Priority",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            TodoPriority.entries.forEach { priority ->
+                SommarFilterChip(
+                    text = priority.name,
+                    selected = uiState.draftPriority == priority,
+                    onClick = { onPriorityChanged(priority) },
+                    activeColor = priorityColor(priority),
                 )
             }
         }
 
-        else -> TodosContent(
-            uiState = uiState,
-            onAssigneeSelected = viewModel::onAssigneeFilterSelected,
-            onTodoToggle = { id, checked -> viewModel.onTodoToggle(id, checked) },
-        )
+        // Error
+        if (uiState.addError != null) {
+            Text(
+                text = uiState.addError,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+
+        Spacer(Modifier.height(4.dp))
+
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            SommarOutlineButton(
+                text = "Cancel",
+                onClick = onDismiss,
+                modifier = Modifier.weight(1f),
+            )
+            if (uiState.isAddingTodo) {
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = MeadowGreen, modifier = Modifier.size(28.dp))
+                }
+            } else {
+                SommarButton(
+                    text = "Add task",
+                    onClick = onSubmit,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
     }
 }
 

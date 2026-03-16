@@ -2,8 +2,13 @@ package com.example.stugbygget.feature.todos.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.stugbygget.domain.model.TodoItem
+import com.example.stugbygget.domain.model.TodoPriority
 import com.example.stugbygget.domain.usecase.ObserveTodosUseCase
 import com.example.stugbygget.domain.usecase.ToggleTodoUseCase
+import com.example.stugbygget.domain.usecase.UpsertTodoUseCase
+import java.time.Instant
+import java.util.UUID
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,6 +24,7 @@ import kotlinx.coroutines.launch
 class TodosViewModel(
     private val observeTodosUseCase: ObserveTodosUseCase,
     private val toggleTodoUseCase: ToggleTodoUseCase,
+    private val upsertTodoUseCase: UpsertTodoUseCase,
     private val projectId: String
 ) : ViewModel() {
 
@@ -40,6 +46,44 @@ class TodosViewModel(
 
     fun onAssigneeFilterSelected(assignee: String?) {
         _uiState.update { it.copy(selectedAssignee = assignee) }
+    }
+
+    fun onShowAddSheet() {
+        _uiState.update { it.copy(showAddSheet = true, draftText = "", draftAssignee = "", draftPriority = TodoPriority.MEDIUM, draftPhaseId = "", addError = null) }
+    }
+
+    fun onDismissAddSheet() {
+        _uiState.update { it.copy(showAddSheet = false, addError = null) }
+    }
+
+    fun onDraftTextChanged(text: String) = _uiState.update { it.copy(draftText = text, addError = null) }
+    fun onDraftAssigneeChanged(value: String) = _uiState.update { it.copy(draftAssignee = value) }
+    fun onDraftPriorityChanged(priority: TodoPriority) = _uiState.update { it.copy(draftPriority = priority) }
+    fun onDraftPhaseIdChanged(value: String) = _uiState.update { it.copy(draftPhaseId = value) }
+
+    fun onSubmitTodo() {
+        val state = _uiState.value
+        if (state.draftText.isBlank()) {
+            _uiState.update { it.copy(addError = "Task description is required.") }
+            return
+        }
+        viewModelScope.launch {
+            _uiState.update { it.copy(isAddingTodo = true, addError = null) }
+            val now = Instant.now()
+            val todo = TodoItem(
+                id = UUID.randomUUID().toString(),
+                text = state.draftText.trim(),
+                done = false,
+                phaseId = state.draftPhaseId.trim(),
+                assignee = state.draftAssignee.trim(),
+                priority = state.draftPriority,
+                createdAt = now,
+                updatedAt = now,
+            )
+            runCatching { upsertTodoUseCase(projectId, todo) }
+                .onSuccess { _uiState.update { it.copy(isAddingTodo = false, showAddSheet = false) } }
+                .onFailure { e -> _uiState.update { it.copy(isAddingTodo = false, addError = e.message ?: "Failed to save todo.") } }
+        }
     }
 
     fun onTodoToggle(todoId: String, checked: Boolean) {
