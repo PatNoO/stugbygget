@@ -14,6 +14,7 @@ import com.example.stugbygget.data.firebase.firestore.FirestoreProjectContextPro
 import com.example.stugbygget.data.firebase.firestore.FirestoreShoppingRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreTodoRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreBudgetRepository
+import com.example.stugbygget.data.firebase.firestore.FirestoreContactRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreLogisticsRepository
 import com.example.stugbygget.data.local.LocalNotificationSettingsRepository
 import com.example.stugbygget.data.local.RouteCacheDataSource
@@ -29,6 +30,7 @@ import com.example.stugbygget.domain.repository.PhaseRepository
 import com.example.stugbygget.domain.repository.PhotoRepository
 import com.example.stugbygget.domain.repository.ProjectSessionRepository
 import com.example.stugbygget.domain.repository.PriceRecommendationRepository
+import com.example.stugbygget.domain.repository.ContactRepository
 import com.example.stugbygget.domain.repository.LogisticsRepository
 import com.example.stugbygget.domain.repository.NotificationDispatchGateway
 import com.example.stugbygget.domain.repository.NotificationSettingsRepository
@@ -37,6 +39,7 @@ import com.example.stugbygget.domain.repository.RuntimeConfigRepository
 import com.example.stugbygget.domain.repository.MaterialRepository
 import com.example.stugbygget.domain.repository.TodoRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreMaterialRepository
+import com.example.stugbygget.domain.usecase.DeleteContactUseCase
 import com.example.stugbygget.domain.usecase.DeletePhotoUseCase
 import com.example.stugbygget.domain.usecase.DeleteTodoUseCase
 import com.example.stugbygget.domain.usecase.CalculateMaterialQuantityUseCase
@@ -45,6 +48,8 @@ import com.example.stugbygget.domain.usecase.AddShoppingItemUseCase
 import com.example.stugbygget.domain.usecase.CreateShoppingListUseCase
 import com.example.stugbygget.domain.usecase.CalculateLogisticsRecommendationUseCase
 import com.example.stugbygget.domain.usecase.ObserveAuthUserUseCase
+import com.example.stugbygget.domain.usecase.ObserveContactsUseCase
+import com.example.stugbygget.domain.usecase.UpsertContactUseCase
 import com.example.stugbygget.domain.usecase.GetRouteMetricsUseCase
 import com.example.stugbygget.domain.usecase.GetNotificationSettingsUseCase
 import com.example.stugbygget.domain.usecase.GetRuntimeConfigUseCase
@@ -114,6 +119,7 @@ class AppContainer(
     }
     val budgetRepository: BudgetRepository by lazy { FirestoreBudgetRepository(firestore) }
     val logisticsRepository: LogisticsRepository by lazy { FirestoreLogisticsRepository(firestore) }
+    val contactRepository: ContactRepository by lazy { FirestoreContactRepository(firestore) }
     val photoRepository: PhotoRepository by lazy { FirestorePhotoRepository(firestore, storage) }
     val materialRepository: MaterialRepository by lazy {
         FirestoreMaterialRepository(firestore)
@@ -263,5 +269,14 @@ class AppContainer(
     }
     val getRuntimeConfigUseCase: GetRuntimeConfigUseCase by lazy {
         GetRuntimeConfigUseCase(runtimeConfigRepository)
+    }
+    val observeContactsUseCase: ObserveContactsUseCase by lazy {
+        ObserveContactsUseCase(contactRepository)
+    }
+    val upsertContactUseCase: UpsertContactUseCase by lazy {
+        UpsertContactUseCase(contactRepository)
+    }
+    val deleteContactUseCase: DeleteContactUseCase by lazy {
+        DeleteContactUseCase(contactRepository)
     }
 }
