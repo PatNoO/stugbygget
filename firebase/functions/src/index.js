@@ -76,16 +76,15 @@ const PRICE_DROP_THRESHOLD_PCT = 5;
 
 /**
  * Scheduled daily price scraper.
- * Runs at 06:00 every day, fetches prices for every material in every project,
  * Runs at 06:00 Stockholm time, fetches prices for every material in every project,
  * calculates a day-over-day delta, and triggers FCM notifications for drops > 5%.
  */
 exports.ingestPrices = onSchedule("0 6 * * *", async () => {
   const projectsSnapshot = await firestore.collection("projects").get();
 
-  logger.info("Starting daily price ingestion", { projectCount: projectDocs.length });
+  logger.info("Starting daily price ingestion", { projectCount: projectsSnapshot.size });
 
-  for (const projectDoc of projectDocs) {
+  for (const projectDoc of projectsSnapshot.docs) {
     await ingestProjectPrices(projectDoc.id);
   }
 });
