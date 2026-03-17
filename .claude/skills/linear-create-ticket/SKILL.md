@@ -2,7 +2,7 @@
 name: linear-create-ticket
 description: "Create a Linear ticket end-to-end: classify type, resolve team/project/labels, draft title and description from the canonical template, then post the ticket. Use when asked to create, open, or add a Linear ticket (e.g. 'Create a ticket for …')."
 argument-hint: "Short description of what the ticket is for"
-allowed-tools: mcp__linear__list_teams, mcp__linear__list_projects, mcp__linear__list_issue_labels, mcp__linear__list_issue_statuses, mcp__linear__save_issue, mcp__linear__list_users
+allowed-tools: mcp__linear__list_teams, mcp__linear__list_projects, mcp__linear__list_issue_labels, mcp__linear__list_issue_statuses, mcp__linear__save_issue, mcp__linear__list_users, mcp__linear__list_issues
 disable-model-invocation: false
 ---
 
@@ -38,6 +38,24 @@ Use `mcp__linear__list_projects` to look up the right project if the user mentio
 
 Default team: **StugBygget** (or the first team found if the workspace only has one).
 Default project: **StugBygget** — always assign every ticket to the StugBygget project unless the user explicitly specifies a different one.
+
+---
+
+## Step 2b — Determine the next SB number
+
+Every ticket title must be prefixed with `SB<N>` (e.g. `SB75 Implement Contact List feature`).
+
+To find the correct next number:
+
+1. Call `mcp__linear__list_issues` with `project: "StugBygget"`, `limit: 250`, `orderBy: "createdAt"`.
+2. Scan all returned issue titles for the pattern `SB(\d+)` at the start of the title.
+3. Take the highest number found — call it `MAX`.
+4. The next SB number is `MAX + 1`.
+
+Use this number to prefix the ticket title: `SB<MAX+1> <drafted title>`
+Use this number in the suggested branch name: `claude/SB<MAX+1>-short-description`
+
+If no SB-prefixed titles are found, start from `SB1`.
 
 ---
 
@@ -90,7 +108,7 @@ Out of scope:
 
 ### UI/UX Reference
 - <Figma link or screenshot if available, otherwise omit line>
-- Relevant module: <planning / todos / gallery / ai-chat / room-planner / ar-measure / materials / shopping / budget / logistics>
+- Relevant module: <planning / todos / gallery / ai-chat / materials / shopping / budget / contacts>
 - Key interaction decision(s): <describe>
 
 ### Technical Notes
@@ -198,7 +216,7 @@ priority     → mapped priority number (step 4)
 After creating the ticket, reply with:
 
 ```
-✅ Ticket created: <TICKET-ID> — <Title>
+✅ Ticket created: <SB-NUMBER> (<LINEAR-ID>) — <Title>
 🔗 <Linear URL>
 
 **Type:** <feature / bug / chore / spike>
@@ -206,11 +224,13 @@ After creating the ticket, reply with:
 **Labels:** <labels>
 **Team:** <team>
 
-**Suggested branch name:** claude/<TICKET-ID-lowercase>-short-description
+**Suggested branch name:** claude/<SB-NUMBER-lowercase>-short-description
 ```
 
 The suggested branch name must follow CLAUDE.md convention:
-`claude/<TASK-ID>-short-description` — e.g. `claude/SB74-add-phase-progress-bar`
+`claude/<SB-NUMBER>-short-description` — e.g. `claude/SB75-implement-contact-list`
+
+Note: `<LINEAR-ID>` is the NOO-XXX identifier returned by Linear. `<SB-NUMBER>` is the SB-prefixed number determined in Step 2b and embedded in the title.
 
 If the user wants the ticket assigned, use `mcp__linear__list_users` to resolve the user ID before calling `save_issue`.
 
@@ -242,4 +262,5 @@ The workflow is complete only when all are true:
 - [ ] UI-only tickets note mock data and TODO markers.
 - [ ] Firestore schema changes flagged in Technical Notes.
 - [ ] Ticket posted successfully and Linear URL reported back.
-- [ ] Suggested branch name (following `claude/SB<ID>-...` convention) provided.
+- [ ] Next SB number determined from existing tickets (Step 2b) and embedded in the title.
+- [ ] Suggested branch name (following `claude/SB<N>-...` convention) provided.
