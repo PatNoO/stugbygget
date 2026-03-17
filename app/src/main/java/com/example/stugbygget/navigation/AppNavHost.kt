@@ -14,6 +14,7 @@ import com.example.stugbygget.feature.materials.ui.MaterialDetailScreen
 import com.example.stugbygget.feature.materials.ui.MaterialsScreen
 import com.example.stugbygget.feature.planning.ui.PlanningScreen
 import com.example.stugbygget.feature.shopping.ui.ShoppingScreen
+import com.example.stugbygget.feature.contacts.ui.ContactsScreen
 import com.example.stugbygget.feature.todos.ui.TodosScreen
 import com.example.stugbygget.ui.theme.SommarTransitions
 
@@ -64,6 +65,9 @@ fun AppNavHost(
         }
         composable(AppRoute.Logistics.route) {
             LogisticsScreen(container = container)
+        }
+        composable(AppRoute.Contacts.route) {
+            ContactsScreen(container = container)
         }
     }
 }
