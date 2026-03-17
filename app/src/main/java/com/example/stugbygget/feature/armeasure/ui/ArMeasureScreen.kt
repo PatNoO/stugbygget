@@ -272,27 +272,6 @@ fun ArMeasureScreen(container: AppContainer) {
             )
         }
 
-        // ── Export buttons ──
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp),
-        ) {
-            SommarOutlineButton(
-                text = "→ Room width",
-                onClick = viewModel::onExportToRoomWidth,
-                color = if (uiState.measuredDistanceMeters != null) MeadowGreen else MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f),
-            )
-            SommarOutlineButton(
-                text = "→ Room height",
-                onClick = viewModel::onExportToRoomHeight,
-                color = if (uiState.measuredDistanceMeters != null) MeadowGreen else MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f),
-            )
-        }
-
         // ── Status / error feedback ──
         uiState.statusMessage?.let { msg ->
             SommarInfoBox(

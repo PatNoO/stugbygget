@@ -4,9 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stugbygget.domain.model.MeasurementType
 import com.example.stugbygget.domain.usecase.CalculateMeasurementDistanceUseCase
-import com.example.stugbygget.domain.usecase.ExportMeasurementToRoomPlannerUseCase
 import com.example.stugbygget.domain.usecase.IsArSupportedUseCase
-import com.example.stugbygget.domain.usecase.RoomDimensionTarget
 import com.example.stugbygget.domain.usecase.SaveMeasurementUseCase
 import com.example.stugbygget.domain.usecase.StartArSessionUseCase
 import com.example.stugbygget.domain.usecase.StopArSessionUseCase
@@ -22,7 +20,6 @@ class ArMeasureViewModel(
     private val stopArSessionUseCase: StopArSessionUseCase,
     private val calculateMeasurementDistanceUseCase: CalculateMeasurementDistanceUseCase,
     private val saveMeasurementUseCase: SaveMeasurementUseCase,
-    private val exportMeasurementToRoomPlannerUseCase: ExportMeasurementToRoomPlannerUseCase,
     private val projectId: String
 ) : ViewModel() {
 
@@ -94,14 +91,6 @@ class ArMeasureViewModel(
         }
     }
 
-    fun onExportToRoomWidth() {
-        exportMeasurement(RoomDimensionTarget.WIDTH)
-    }
-
-    fun onExportToRoomHeight() {
-        exportMeasurement(RoomDimensionTarget.HEIGHT)
-    }
-
     private fun initializeArSession() {
         if (!isArSupportedUseCase()) {
             _uiState.update {
@@ -133,28 +122,6 @@ class ArMeasureViewModel(
         }
     }
 
-    private fun exportMeasurement(target: RoomDimensionTarget) {
-        val distance = _uiState.value.measuredDistanceMeters ?: return
-        runCatching {
-            exportMeasurementToRoomPlannerUseCase(
-                roomId = DEFAULT_ROOM_ID,
-                valueMeters = distance,
-                target = target
-            )
-        }.onSuccess { dims ->
-            _uiState.update {
-                it.copy(
-                    statusMessage = "Exported to room planner (${dims.widthCm}cm × ${dims.heightCm}cm).",
-                    errorMessage = null
-                )
-            }
-        }.onFailure { throwable ->
-            _uiState.update {
-                it.copy(errorMessage = throwable.message ?: "Failed to export measurement.")
-            }
-        }
-    }
-
     override fun onCleared() {
         stopArSessionUseCase()
         super.onCleared()
@@ -162,6 +129,5 @@ class ArMeasureViewModel(
 
     companion object {
         private const val PIXELS_TO_METERS = 0.0025f
-        private const val DEFAULT_ROOM_ID = "default-room"
     }
 }

@@ -149,7 +149,6 @@ private val primaryNavItems = listOf(
 )
 
 private val moreNavItems = listOf(
-    NavItem("🔧", "Room Planner", AppRoute.RoomPlanner.route),
     NavItem("📐", "Measure", AppRoute.ArMeasure.route),
     NavItem("🔗", "Materials", AppRoute.Materials.route),
     NavItem("📊", "Budget", AppRoute.Budget.route),
