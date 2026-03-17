@@ -7,7 +7,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.feature.aichat.ui.AiChatScreen
-import com.example.stugbygget.feature.armeasure.ui.ArMeasureScreen
 import com.example.stugbygget.feature.budget.ui.BudgetScreen
 import com.example.stugbygget.feature.gallery.ui.GalleryScreen
 import com.example.stugbygget.feature.logistics.ui.LogisticsScreen
@@ -44,9 +43,6 @@ fun AppNavHost(
         }
         composable(AppRoute.AiChat.route) {
             AiChatScreen(container = container)
-        }
-        composable(AppRoute.ArMeasure.route) {
-            ArMeasureScreen(container = container)
         }
         composable(AppRoute.Materials.route) {
             MaterialsScreen(

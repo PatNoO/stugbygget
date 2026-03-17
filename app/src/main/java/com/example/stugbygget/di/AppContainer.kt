@@ -4,12 +4,10 @@ import android.content.Context
 import com.example.stugbygget.BuildConfig
 import com.example.stugbygget.core.offline.ConnectivityMonitor
 import com.example.stugbygget.core.offline.OfflineSyncCoordinator
-import com.example.stugbygget.data.ar.ArCoreSessionRepository
 import com.example.stugbygget.data.firebase.auth.FirebaseAuthRepository
 import com.example.stugbygget.data.firebase.auth.FirebaseProjectSessionRepository
 import com.example.stugbygget.data.firebase.config.FirebaseRuntimeConfigRepository
 import com.example.stugbygget.data.firebase.firestore.FirestorePhaseRepository
-import com.example.stugbygget.data.firebase.firestore.FirestoreMeasurementRepository
 import com.example.stugbygget.data.firebase.firestore.FirestorePhotoRepository
 import com.example.stugbygget.data.firebase.firestore.FirestorePriceRecommendationRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreProjectContextProvider
@@ -24,14 +22,12 @@ import com.example.stugbygget.data.remote.claude.ClaudeChatRepository
 import com.example.stugbygget.data.remote.maps.GoogleDirectionsService
 import com.example.stugbygget.data.remote.maps.GoogleRouteRepository
 import com.example.stugbygget.domain.repository.AuthRepository
-import com.example.stugbygget.domain.repository.ArSessionRepository
 import com.example.stugbygget.domain.repository.ChatRepository
 import com.example.stugbygget.domain.repository.ShoppingRepository
 import com.example.stugbygget.domain.repository.BudgetRepository
 import com.example.stugbygget.domain.repository.PhaseRepository
 import com.example.stugbygget.domain.repository.PhotoRepository
 import com.example.stugbygget.domain.repository.ProjectSessionRepository
-import com.example.stugbygget.domain.repository.MeasurementRepository
 import com.example.stugbygget.domain.repository.PriceRecommendationRepository
 import com.example.stugbygget.domain.repository.LogisticsRepository
 import com.example.stugbygget.domain.repository.NotificationDispatchGateway
@@ -44,17 +40,14 @@ import com.example.stugbygget.data.firebase.firestore.FirestoreMaterialRepositor
 import com.example.stugbygget.domain.usecase.DeletePhotoUseCase
 import com.example.stugbygget.domain.usecase.DeleteTodoUseCase
 import com.example.stugbygget.domain.usecase.CalculateMaterialQuantityUseCase
-import com.example.stugbygget.domain.usecase.CalculateMeasurementDistanceUseCase
 import com.example.stugbygget.domain.usecase.CompareShoppingPricesUseCase
 import com.example.stugbygget.domain.usecase.AddShoppingItemUseCase
 import com.example.stugbygget.domain.usecase.CreateShoppingListUseCase
 import com.example.stugbygget.domain.usecase.CalculateLogisticsRecommendationUseCase
-import com.example.stugbygget.domain.usecase.MeasurementUnitConverter
 import com.example.stugbygget.domain.usecase.ObserveAuthUserUseCase
 import com.example.stugbygget.domain.usecase.GetRouteMetricsUseCase
 import com.example.stugbygget.domain.usecase.GetNotificationSettingsUseCase
 import com.example.stugbygget.domain.usecase.GetRuntimeConfigUseCase
-import com.example.stugbygget.domain.usecase.IsArSupportedUseCase
 import com.example.stugbygget.domain.usecase.ObserveMaterialsUseCase
 import com.example.stugbygget.domain.usecase.ObservePhotosUseCase
 import com.example.stugbygget.domain.usecase.ObservePriceQuotesUseCase
@@ -62,7 +55,6 @@ import com.example.stugbygget.domain.usecase.ObservePhasesUseCase
 import com.example.stugbygget.domain.usecase.ObserveShoppingListsUseCase
 import com.example.stugbygget.domain.usecase.ObserveBudgetOverviewUseCase
 import com.example.stugbygget.domain.usecase.ObserveTodosUseCase
-import com.example.stugbygget.domain.usecase.SaveMeasurementUseCase
 import com.example.stugbygget.domain.usecase.SignInWithEmailPasswordUseCase
 import com.example.stugbygget.domain.usecase.SignOutUseCase
 import com.example.stugbygget.domain.usecase.StreamAssistantReplyUseCase
@@ -73,8 +65,6 @@ import com.example.stugbygget.domain.usecase.BuildPlanningOverviewUseCase
 import com.example.stugbygget.domain.usecase.DispatchNotificationEventsUseCase
 import com.example.stugbygget.domain.usecase.FetchRuntimeConfigUseCase
 import com.example.stugbygget.domain.usecase.UpdateNotificationSettingsUseCase
-import com.example.stugbygget.domain.usecase.StartArSessionUseCase
-import com.example.stugbygget.domain.usecase.StopArSessionUseCase
 import com.example.stugbygget.domain.usecase.ToggleShoppingItemPurchasedUseCase
 import com.example.stugbygget.domain.usecase.ToggleTodoUseCase
 import com.example.stugbygget.domain.usecase.UploadPhotoUseCase
@@ -117,9 +107,6 @@ class AppContainer(
             configuredProjectId = BuildConfig.PROJECT_ID
         )
     }
-    val arSessionRepository: ArSessionRepository by lazy {
-        ArCoreSessionRepository(applicationContext)
-    }
     val phaseRepository: PhaseRepository by lazy { FirestorePhaseRepository(firestore) }
     val todoRepository: TodoRepository by lazy { FirestoreTodoRepository(firestore, offlineSyncCoordinator) }
     val shoppingRepository: ShoppingRepository by lazy {
@@ -128,9 +115,6 @@ class AppContainer(
     val budgetRepository: BudgetRepository by lazy { FirestoreBudgetRepository(firestore) }
     val logisticsRepository: LogisticsRepository by lazy { FirestoreLogisticsRepository(firestore) }
     val photoRepository: PhotoRepository by lazy { FirestorePhotoRepository(firestore, storage) }
-    val measurementRepository: MeasurementRepository by lazy {
-        FirestoreMeasurementRepository(firestore, offlineSyncCoordinator)
-    }
     val materialRepository: MaterialRepository by lazy {
         FirestoreMaterialRepository(firestore)
     }
@@ -273,24 +257,6 @@ class AppContainer(
     }
     val streamAssistantReplyUseCase: StreamAssistantReplyUseCase by lazy {
         StreamAssistantReplyUseCase(chatRepository)
-    }
-    val isArSupportedUseCase: IsArSupportedUseCase by lazy {
-        IsArSupportedUseCase(arSessionRepository)
-    }
-    val startArSessionUseCase: StartArSessionUseCase by lazy {
-        StartArSessionUseCase(arSessionRepository)
-    }
-    val stopArSessionUseCase: StopArSessionUseCase by lazy {
-        StopArSessionUseCase(arSessionRepository)
-    }
-    val measurementUnitConverter: MeasurementUnitConverter by lazy {
-        MeasurementUnitConverter()
-    }
-    val calculateMeasurementDistanceUseCase: CalculateMeasurementDistanceUseCase by lazy {
-        CalculateMeasurementDistanceUseCase()
-    }
-    val saveMeasurementUseCase: SaveMeasurementUseCase by lazy {
-        SaveMeasurementUseCase(measurementRepository, measurementUnitConverter)
     }
     val fetchRuntimeConfigUseCase: FetchRuntimeConfigUseCase by lazy {
         FetchRuntimeConfigUseCase(runtimeConfigRepository)

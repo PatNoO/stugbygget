@@ -15,15 +15,6 @@ class FirestoreProjectContextProvider(
             listOf("Rivning", "Tak", "El", "Fasad")
         }
 
-        val measurementSnapshot = basePath.collection("measurements").limit(5).get().await()
-        val measurements = measurementSnapshot.documents.mapNotNull { doc ->
-            val label = doc.getString("label") ?: return@mapNotNull null
-            val valueCm = doc.getLong("valueCm") ?: return@mapNotNull null
-            "$label: ${valueCm / 100.0} m"
-        }.ifEmpty {
-            listOf("Kök vägg A-B: 4.85 m")
-        }
-
         val budgetDoc = basePath.collection("budget").document("overview").get().await()
         val totalBudget = budgetDoc.getDouble("totalBudget")
         val budgetSummary = if (totalBudget != null) {
@@ -38,7 +29,6 @@ class FirestoreProjectContextProvider(
         return ProjectChatContext(
             projectName = projectName,
             phaseNames = phases,
-            measurements = measurements,
             budgetSummary = budgetSummary
         )
     }

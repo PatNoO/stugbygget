@@ -13,6 +13,5 @@ enum class ChatRole {
 data class ProjectChatContext(
     val projectName: String,
     val phaseNames: List<String>,
-    val measurements: List<String>,
     val budgetSummary: String
 )
