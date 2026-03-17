@@ -16,7 +16,6 @@ class ArMeasureViewModelFactory(
                 stopArSessionUseCase = container.stopArSessionUseCase,
                 calculateMeasurementDistanceUseCase = container.calculateMeasurementDistanceUseCase,
                 saveMeasurementUseCase = container.saveMeasurementUseCase,
-                exportMeasurementToRoomPlannerUseCase = container.exportMeasurementToRoomPlannerUseCase,
                 projectId = container.projectSessionRepository.getProjectId()
             ) as T
         }

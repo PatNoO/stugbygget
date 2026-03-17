@@ -5,7 +5,6 @@ sealed class AppRoute(val route: String, val title: String) {
     data object Todos : AppRoute("todos", "Todos")
     data object Gallery : AppRoute("gallery", "Gallery")
     data object AiChat : AppRoute("ai_chat", "Stugan AI")
-    data object RoomPlanner : AppRoute("room_planner", "Room Planner")
     data object ArMeasure : AppRoute("ar_measure", "AR Measure")
     data object Materials : AppRoute("materials", "Materials")
     object MaterialDetail : AppRoute("materials/{materialId}", "Material") {
@@ -21,7 +20,6 @@ val primaryRoutes = listOf(
     AppRoute.Todos,
     AppRoute.Gallery,
     AppRoute.AiChat,
-    AppRoute.RoomPlanner,
     AppRoute.ArMeasure,
     AppRoute.Materials,
     AppRoute.Shopping,

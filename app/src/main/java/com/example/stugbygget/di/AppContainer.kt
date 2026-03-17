@@ -17,9 +17,6 @@ import com.example.stugbygget.data.firebase.firestore.FirestoreShoppingRepositor
 import com.example.stugbygget.data.firebase.firestore.FirestoreTodoRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreBudgetRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreLogisticsRepository
-import com.example.stugbygget.data.local.LocalRoomDimensionsRepository
-import com.example.stugbygget.data.local.LocalRoomLayoutDataSource
-import com.example.stugbygget.data.local.LocalRoomLayoutRepository
 import com.example.stugbygget.data.local.LocalNotificationSettingsRepository
 import com.example.stugbygget.data.local.RouteCacheDataSource
 import com.example.stugbygget.data.local.AndroidNotificationDispatcher
@@ -39,8 +36,6 @@ import com.example.stugbygget.domain.repository.PriceRecommendationRepository
 import com.example.stugbygget.domain.repository.LogisticsRepository
 import com.example.stugbygget.domain.repository.NotificationDispatchGateway
 import com.example.stugbygget.domain.repository.NotificationSettingsRepository
-import com.example.stugbygget.domain.repository.RoomDimensionsRepository
-import com.example.stugbygget.domain.repository.RoomLayoutRepository
 import com.example.stugbygget.domain.repository.RouteRepository
 import com.example.stugbygget.domain.repository.RuntimeConfigRepository
 import com.example.stugbygget.domain.repository.MaterialRepository
@@ -54,10 +49,7 @@ import com.example.stugbygget.domain.usecase.CompareShoppingPricesUseCase
 import com.example.stugbygget.domain.usecase.AddShoppingItemUseCase
 import com.example.stugbygget.domain.usecase.CreateShoppingListUseCase
 import com.example.stugbygget.domain.usecase.CalculateLogisticsRecommendationUseCase
-import com.example.stugbygget.domain.usecase.ExportMeasurementToRoomPlannerUseCase
-import com.example.stugbygget.domain.usecase.GetRoomDimensionsUseCase
 import com.example.stugbygget.domain.usecase.MeasurementUnitConverter
-import com.example.stugbygget.domain.usecase.MoveFurnitureUseCase
 import com.example.stugbygget.domain.usecase.ObserveAuthUserUseCase
 import com.example.stugbygget.domain.usecase.GetRouteMetricsUseCase
 import com.example.stugbygget.domain.usecase.GetNotificationSettingsUseCase
@@ -67,12 +59,10 @@ import com.example.stugbygget.domain.usecase.ObserveMaterialsUseCase
 import com.example.stugbygget.domain.usecase.ObservePhotosUseCase
 import com.example.stugbygget.domain.usecase.ObservePriceQuotesUseCase
 import com.example.stugbygget.domain.usecase.ObservePhasesUseCase
-import com.example.stugbygget.domain.usecase.ObserveRoomLayoutUseCase
 import com.example.stugbygget.domain.usecase.ObserveShoppingListsUseCase
 import com.example.stugbygget.domain.usecase.ObserveBudgetOverviewUseCase
 import com.example.stugbygget.domain.usecase.ObserveTodosUseCase
 import com.example.stugbygget.domain.usecase.SaveMeasurementUseCase
-import com.example.stugbygget.domain.usecase.SaveRoomLayoutUseCase
 import com.example.stugbygget.domain.usecase.SignInWithEmailPasswordUseCase
 import com.example.stugbygget.domain.usecase.SignOutUseCase
 import com.example.stugbygget.domain.usecase.StreamAssistantReplyUseCase
@@ -90,7 +80,6 @@ import com.example.stugbygget.domain.usecase.ToggleTodoUseCase
 import com.example.stugbygget.domain.usecase.UploadPhotoUseCase
 import com.example.stugbygget.domain.usecase.UpsertPhaseUseCase
 import com.example.stugbygget.domain.usecase.UpsertTodoUseCase
-import com.example.stugbygget.feature.roomplanner.ui.defaultFurniture
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.functions.FirebaseFunctions
@@ -169,26 +158,14 @@ class AppContainer(
             contextProvider = projectContextProvider
         )
     }
-    val roomLayoutDataSource: LocalRoomLayoutDataSource by lazy {
-        LocalRoomLayoutDataSource(applicationContext)
-    }
     val routeCacheDataSource: RouteCacheDataSource by lazy {
         RouteCacheDataSource(applicationContext)
-    }
-    val roomDimensionsRepository: RoomDimensionsRepository by lazy {
-        LocalRoomDimensionsRepository(applicationContext)
     }
     val notificationSettingsRepository: NotificationSettingsRepository by lazy {
         LocalNotificationSettingsRepository(applicationContext)
     }
     val notificationDispatchGateway: NotificationDispatchGateway by lazy {
         AndroidNotificationDispatcher(applicationContext)
-    }
-    val roomLayoutRepository: RoomLayoutRepository by lazy {
-        LocalRoomLayoutRepository(
-            dataSource = roomLayoutDataSource,
-            defaultLayoutProvider = { defaultFurniture() }
-        )
     }
     val routeRepository: RouteRepository by lazy {
         GoogleRouteRepository(
@@ -297,18 +274,6 @@ class AppContainer(
     val streamAssistantReplyUseCase: StreamAssistantReplyUseCase by lazy {
         StreamAssistantReplyUseCase(chatRepository)
     }
-    val observeRoomLayoutUseCase: ObserveRoomLayoutUseCase by lazy {
-        ObserveRoomLayoutUseCase(roomLayoutRepository)
-    }
-    val saveRoomLayoutUseCase: SaveRoomLayoutUseCase by lazy {
-        SaveRoomLayoutUseCase(roomLayoutRepository)
-    }
-    val getRoomDimensionsUseCase: GetRoomDimensionsUseCase by lazy {
-        GetRoomDimensionsUseCase(roomDimensionsRepository)
-    }
-    val moveFurnitureUseCase: MoveFurnitureUseCase by lazy {
-        MoveFurnitureUseCase()
-    }
     val isArSupportedUseCase: IsArSupportedUseCase by lazy {
         IsArSupportedUseCase(arSessionRepository)
     }
@@ -326,9 +291,6 @@ class AppContainer(
     }
     val saveMeasurementUseCase: SaveMeasurementUseCase by lazy {
         SaveMeasurementUseCase(measurementRepository, measurementUnitConverter)
-    }
-    val exportMeasurementToRoomPlannerUseCase: ExportMeasurementToRoomPlannerUseCase by lazy {
-        ExportMeasurementToRoomPlannerUseCase(roomDimensionsRepository, measurementUnitConverter)
     }
     val fetchRuntimeConfigUseCase: FetchRuntimeConfigUseCase by lazy {
         FetchRuntimeConfigUseCase(runtimeConfigRepository)
