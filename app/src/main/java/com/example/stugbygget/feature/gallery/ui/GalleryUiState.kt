@@ -11,6 +11,9 @@ data class GalleryUiState(
     val selectedPhase: PhotoPhase? = null,
     val availableRooms: List<String> = emptyList(),
     val errorMessage: String? = null,
+    val viewingPhoto: PhotoItem? = null,
+    val pendingDeleteId: String? = null,
+    val isDeleting: Boolean = false,
     // Add-photo sheet state
     val showAddSheet: Boolean = false,
     val draftRoomName: String = "",

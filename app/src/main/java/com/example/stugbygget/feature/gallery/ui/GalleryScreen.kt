@@ -1,6 +1,7 @@
 package com.example.stugbygget.feature.gallery.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -29,6 +31,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -139,11 +142,37 @@ fun GalleryScreen(container: AppContainer) {
                 uiState = uiState,
                 onRoomSelected = viewModel::onRoomFilterSelected,
                 onPhaseSelected = viewModel::onPhaseFilterSelected,
+                onViewPhoto = viewModel::onViewPhoto,
                 contentPadding = innerPadding,
             )
         }
     }
 
+    if (uiState.viewingPhoto != null) {
+        PhotoViewerDialog(
+            photo = uiState.viewingPhoto,
+            isDeleting = uiState.isDeleting,
+            onDelete = { viewModel.onRequestDelete(uiState.viewingPhoto.id) },
+            onDismiss = viewModel::onDismissViewer,
+        )
+    }
+
+    if (uiState.pendingDeleteId != null) {
+        AlertDialog(
+            onDismissRequest = viewModel::onCancelDelete,
+            title = { Text("Delete photo?") },
+            text = { Text("This photo will be permanently deleted.") },
+            confirmButton = {
+                TextButton(onClick = viewModel::onConfirmDelete) {
+                    Text(stringResource(R.string.common_delete), color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::onCancelDelete) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            },
+        )
     if (uiState.showAddSheet) {
         ModalBottomSheet(
             onDismissRequest = viewModel::onDismissAddSheet,
@@ -247,6 +276,7 @@ private fun GalleryContent(
     uiState: GalleryUiState,
     onRoomSelected: (String?) -> Unit,
     onPhaseSelected: (PhotoPhase?) -> Unit,
+    onViewPhoto: (PhotoItem) -> Unit,
     contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     val grouped = uiState.photos.groupBy { it.phase }
@@ -345,6 +375,7 @@ private fun GalleryContent(
                     item {
                         PhotoCard(
                             photo = photo,
+                            onClick = { onViewPhoto(photo) },
                             modifier = Modifier.staggeredFadeIn(index),
                         )
                     }
@@ -355,14 +386,75 @@ private fun GalleryContent(
 }
 
 @Composable
+private fun PhotoViewerDialog(
+    photo: PhotoItem,
+    isDeleting: Boolean,
+    onDelete: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val month = monthFormatter.format(photo.takenAt)
+    val color = phaseColor(photo.phase)
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = CreamBackground,
+        title = { Text(photo.description.ifBlank { photo.roomName }) },
+        text = {
+            Column {
+                SubcomposeAsyncImage(
+                    model = photo.downloadUrl,
+                    contentDescription = photo.description.ifBlank { photo.roomName },
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .clip(SommarShapes.thumbnail),
+                    error = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                                .background(color.copy(alpha = 0.08f)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Text("📷", style = MaterialTheme.typography.headlineLarge)
+                        }
+                    },
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    text = "$month · ${photo.roomName}",
+                    style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
+                )
+            }
+        },
+        confirmButton = {
+            if (isDeleting) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.error)
+            } else {
+                TextButton(onClick = onDelete) {
+                    Text(stringResource(R.string.common_delete), color = MaterialTheme.colorScheme.error)
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.common_cancel))
+            }
+        },
+    )
+}
+
+@Composable
 private fun PhotoCard(
     photo: PhotoItem,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val month = monthFormatter.format(photo.takenAt)
     val color = phaseColor(photo.phase)
 
-    SommarCard(modifier = modifier) {
+    SommarCard(modifier = modifier.clickable(onClick = onClick)) {
         // ── Photo image ──
         SubcomposeAsyncImage(
             model = photo.downloadUrl,
