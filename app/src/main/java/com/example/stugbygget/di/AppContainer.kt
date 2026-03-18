@@ -37,6 +37,7 @@ import com.example.stugbygget.data.firebase.firestore.FirestoreMaterialRepositor
 import com.example.stugbygget.data.firebase.firestore.FirestoreOwnedMaterialRepository
 import com.example.stugbygget.domain.usecase.DeleteContactUseCase
 import com.example.stugbygget.domain.usecase.DeleteOwnedMaterialUseCase
+import com.example.stugbygget.domain.usecase.DeletePhaseUseCase
 import com.example.stugbygget.domain.usecase.DeletePhotoUseCase
 import com.example.stugbygget.domain.usecase.DeleteTodoUseCase
 import com.example.stugbygget.domain.usecase.CalculateMaterialQuantityUseCase
@@ -73,6 +74,8 @@ import com.example.stugbygget.domain.usecase.UpsertPhaseUseCase
 import com.example.stugbygget.domain.usecase.UpsertTodoUseCase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreSettings
+import com.google.firebase.firestore.PersistentCacheSettings
 import com.google.firebase.functions.FirebaseFunctions
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.storage.FirebaseStorage
@@ -94,7 +97,13 @@ class AppContainer(
     }
 
     val firebaseAuth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
-    val firestore: FirebaseFirestore by lazy { FirebaseFirestore.getInstance() }
+    val firestore: FirebaseFirestore by lazy {
+        FirebaseFirestore.getInstance().also { db ->
+            db.firestoreSettings = FirebaseFirestoreSettings.Builder()
+                .setLocalCacheSettings(PersistentCacheSettings.newBuilder().build())
+                .build()
+        }
+    }
     val storage: FirebaseStorage by lazy { FirebaseStorage.getInstance() }
     val functions: FirebaseFunctions by lazy { FirebaseFunctions.getInstance() }
     val remoteConfig: FirebaseRemoteConfig by lazy { FirebaseRemoteConfig.getInstance() }
@@ -201,6 +210,9 @@ class AppContainer(
     }
     val upsertPhaseUseCase: UpsertPhaseUseCase by lazy {
         UpsertPhaseUseCase(phaseRepository)
+    }
+    val deletePhaseUseCase: DeletePhaseUseCase by lazy {
+        DeletePhaseUseCase(phaseRepository)
     }
     val toggleTodoUseCase: ToggleTodoUseCase by lazy {
         ToggleTodoUseCase(todoRepository)

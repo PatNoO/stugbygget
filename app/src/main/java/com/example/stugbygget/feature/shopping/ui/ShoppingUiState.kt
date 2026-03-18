@@ -1,5 +1,6 @@
 package com.example.stugbygget.feature.shopping.ui
 
+import com.example.stugbygget.domain.model.PriceComparisonResult
 import com.example.stugbygget.domain.model.ShoppingList
 
 data class ShoppingItemDraftUiState(
@@ -15,5 +16,7 @@ data class ShoppingUiState(
     val shoppingLists: List<ShoppingList> = emptyList(),
     val listNameInput: String = "",
     val phaseInput: String = "general",
-    val itemDrafts: Map<String, ShoppingItemDraftUiState> = emptyMap()
+    val itemDrafts: Map<String, ShoppingItemDraftUiState> = emptyMap(),
+    val priceComparisons: Map<String, PriceComparisonResult> = emptyMap(),
+    val isComparingPrice: Map<String, Boolean> = emptyMap()
 )

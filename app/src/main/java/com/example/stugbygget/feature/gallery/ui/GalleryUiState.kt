@@ -18,6 +18,14 @@ data class GalleryUiState(
     val showUploadSheet: Boolean = false,
     val draftRoomName: String = "",
     val draftPhase: PhotoPhase = PhotoPhase.DURING,
+    val viewingPhoto: PhotoItem? = null,
+    val pendingDeleteId: String? = null,
+    val isDeleting: Boolean = false,
+    // Add-photo sheet state
+    val showAddSheet: Boolean = false,
+    val draftRoomName: String = "",
+    val draftPhase: PhotoPhase = PhotoPhase.DURING,
+    val draftPhotos: List<Pair<Uri, String>> = emptyList(),
     val isUploading: Boolean = false,
     val uploadError: String? = null,
 )
