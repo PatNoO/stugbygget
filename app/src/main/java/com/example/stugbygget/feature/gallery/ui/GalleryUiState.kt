@@ -9,5 +9,8 @@ data class GalleryUiState(
     val selectedRoom: String? = null,
     val selectedPhase: PhotoPhase? = null,
     val availableRooms: List<String> = emptyList(),
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val viewingPhoto: PhotoItem? = null,
+    val pendingDeleteId: String? = null,
+    val isDeleting: Boolean = false,
 )

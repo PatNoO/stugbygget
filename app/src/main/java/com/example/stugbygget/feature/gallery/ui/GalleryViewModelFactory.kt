@@ -13,6 +13,7 @@ class GalleryViewModelFactory(
             @Suppress("UNCHECKED_CAST")
             return GalleryViewModel(
                 observePhotosUseCase = container.observePhotosUseCase,
+                deletePhotoUseCase = container.deletePhotoUseCase,
                 projectId = container.projectSessionRepository.getProjectId()
             ) as T
         }
