@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stugbygget.domain.model.RenovationPhase
 import com.example.stugbygget.domain.usecase.BuildPlanningOverviewUseCase
+import com.example.stugbygget.domain.usecase.DeletePhaseUseCase
 import com.example.stugbygget.domain.usecase.ObservePhasesUseCase
 import com.example.stugbygget.domain.usecase.UpsertPhaseUseCase
 import java.time.Instant
@@ -23,6 +24,7 @@ class PlanningViewModel(
     projectId: String,
     private val buildPlanningOverviewUseCase: BuildPlanningOverviewUseCase,
     private val upsertPhaseUseCase: UpsertPhaseUseCase,
+    private val deletePhaseUseCase: DeletePhaseUseCase,
 ) : ViewModel() {
     private val _projectId = projectId
 
@@ -57,11 +59,47 @@ class PlanningViewModel(
     }
 
     fun onShowAddSheet() {
-        _uiState.update { it.copy(showAddSheet = true, draftName = "", draftRoom = "", draftStartDate = "", draftEndDate = "", draftColor = "#8B2E16", draftIcon = "🔧", addError = null) }
+        _uiState.update { it.copy(showAddSheet = true, editingPhase = null, draftName = "", draftRoom = "", draftStartDate = "", draftEndDate = "", draftColor = "#8B2E16", draftIcon = "🔧", addError = null) }
+    }
+
+    fun onShowEditSheet(phase: RenovationPhase) {
+        val startStr = phase.startDate.atOffset(ZoneOffset.UTC).toLocalDate().toString()
+        val endStr = phase.endDate.atOffset(ZoneOffset.UTC).toLocalDate().toString()
+        _uiState.update {
+            it.copy(
+                showAddSheet = true,
+                editingPhase = phase,
+                draftName = phase.name,
+                draftRoom = phase.room,
+                draftStartDate = startStr,
+                draftEndDate = endStr,
+                draftColor = phase.color,
+                draftIcon = phase.icon,
+                addError = null
+            )
+        }
     }
 
     fun onDismissAddSheet() {
-        _uiState.update { it.copy(showAddSheet = false, addError = null) }
+        _uiState.update { it.copy(showAddSheet = false, editingPhase = null, addError = null) }
+    }
+
+    fun onRequestDelete(phaseId: String) {
+        _uiState.update { it.copy(pendingDeleteId = phaseId) }
+    }
+
+    fun onCancelDelete() {
+        _uiState.update { it.copy(pendingDeleteId = null) }
+    }
+
+    fun onConfirmDelete() {
+        val phaseId = _uiState.value.pendingDeleteId ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeleting = true) }
+            runCatching { deletePhaseUseCase(_projectId, phaseId) }
+                .onSuccess { _uiState.update { it.copy(isDeleting = false, pendingDeleteId = null) } }
+                .onFailure { e -> _uiState.update { it.copy(isDeleting = false, pendingDeleteId = null, errorMessage = e.message ?: "Failed to delete phase.") } }
+        }
     }
 
     fun onDraftNameChanged(value: String) = _uiState.update { it.copy(draftName = value, addError = null) }
@@ -97,17 +135,17 @@ class PlanningViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isAddingPhase = true, addError = null) }
             val phase = RenovationPhase(
-                id = UUID.randomUUID().toString(),
+                id = state.editingPhase?.id ?: UUID.randomUUID().toString(),
                 name = state.draftName.trim(),
                 room = state.draftRoom.trim(),
                 startDate = startInstant,
                 endDate = endInstant,
-                progress = 0,
+                progress = state.editingPhase?.progress ?: 0,
                 color = state.draftColor.trim().ifBlank { "#8B2E16" },
                 icon = state.draftIcon.trim().ifBlank { "🔧" },
             )
             runCatching { upsertPhaseUseCase(_projectId, phase) }
-                .onSuccess { _uiState.update { it.copy(isAddingPhase = false, showAddSheet = false) } }
+                .onSuccess { _uiState.update { it.copy(isAddingPhase = false, showAddSheet = false, editingPhase = null) } }
                 .onFailure { e -> _uiState.update { it.copy(isAddingPhase = false, addError = e.message ?: "Failed to save phase.") } }
         }
     }
