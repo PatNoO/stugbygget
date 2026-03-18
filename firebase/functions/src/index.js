@@ -10,8 +10,27 @@ const firestore = admin.firestore();
 
 // ─────────────────────────────────────────────────────────────
 // generateAssistantReply — callable
-// Proxies messages to the Claude API on behalf of the Android app.
+// Proxies messages to the Vercel AI Gateway on behalf of the Android app.
+// Model is read at runtime from Firestore config/ai (field: model).
+// Schema change: requires Firestore document config/ai { model: string }.
 // ─────────────────────────────────────────────────────────────
+
+const FALLBACK_MODEL = "anthropic/claude-sonnet-4-6";
+
+/**
+ * Reads the active model from Firestore config/ai.
+ * Falls back to FALLBACK_MODEL if the document or field is missing.
+ */
+async function getActiveModel() {
+  try {
+    const configDoc = await firestore.collection("config").doc("ai").get();
+    const model = configDoc.exists ? configDoc.get("model") : null;
+    return typeof model === "string" && model.length > 0 ? model : FALLBACK_MODEL;
+  } catch (err) {
+    logger.warn("Could not read config/ai model — using fallback", { error: err?.message });
+    return FALLBACK_MODEL;
+  }
+}
 
 exports.generateAssistantReply = onCall(async (request) => {
   if (!request.auth) {
@@ -25,43 +44,53 @@ exports.generateAssistantReply = onCall(async (request) => {
     throw new HttpsError("invalid-argument", "projectId and messages are required.");
   }
 
-  const claudeApiKey = process.env.CLAUDE_API_KEY;
-  if (!claudeApiKey) {
-    throw new HttpsError("failed-precondition", "CLAUDE_API_KEY is not configured on backend.");
+  const gatewayApiKey = process.env.VERCEL_AI_GATEWAY_API_KEY;
+  if (!gatewayApiKey) {
+    throw new HttpsError("failed-precondition", "VERCEL_AI_GATEWAY_API_KEY is not configured on backend.");
   }
 
+  const gatewayUrl = process.env.VERCEL_AI_GATEWAY_URL;
+  if (!gatewayUrl) {
+    throw new HttpsError("failed-precondition", "VERCEL_AI_GATEWAY_URL is not configured on backend.");
+  }
+
+  const model = await getActiveModel();
+  logger.info("generateAssistantReply using model", { model, projectId });
+
+  // Build OpenAI-compatible messages array; prepend system prompt as system role message
+  const openAiMessages = [];
+  if (typeof system === "string" && system.length > 0) {
+    openAiMessages.push({ role: "system", content: system });
+  }
+  openAiMessages.push(...messages);
+
   try {
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
+    const response = await fetch(`${gatewayUrl}/v1/chat/completions`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "anthropic-version": "2023-06-01",
-        "x-api-key": claudeApiKey
+        "Authorization": `Bearer ${gatewayApiKey}`
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        max_tokens: 1024,
-        system: typeof system === "string" ? system : "",
-        messages
+        model,
+        messages: openAiMessages,
+        max_tokens: 1024
       })
     });
 
     if (!response.ok) {
       const errorBody = await response.text();
-      logger.error("Claude proxy request failed", { status: response.status, projectId, errorBody });
-      throw new HttpsError("internal", "Claude proxy request failed.");
+      logger.error("Vercel AI Gateway request failed", { status: response.status, projectId, errorBody });
+      throw new HttpsError("internal", "AI Gateway request failed.");
     }
 
     const payload = await response.json();
-    const text = (payload.content || [])
-      .filter((item) => item.type === "text")
-      .map((item) => item.text || "")
-      .join("")
-      .trim();
+    const text = (payload.choices?.[0]?.message?.content ?? "").trim();
 
     return { text: text || "Jag kunde inte generera ett svar just nu." };
   } catch (error) {
-    logger.error("Claude proxy failed", { projectId, message: error?.message });
+    if (error instanceof HttpsError) throw error;
+    logger.error("AI Gateway proxy failed", { projectId, message: error?.message });
     throw new HttpsError("internal", "Assistant proxy failed.");
   }
 });
