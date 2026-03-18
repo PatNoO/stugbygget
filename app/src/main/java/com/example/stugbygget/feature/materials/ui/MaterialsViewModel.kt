@@ -2,9 +2,13 @@ package com.example.stugbygget.feature.materials.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.stugbygget.domain.model.OwnedMaterial
 import com.example.stugbygget.domain.usecase.CalculateMaterialQuantityUseCase
+import com.example.stugbygget.domain.usecase.DeleteOwnedMaterialUseCase
 import com.example.stugbygget.domain.usecase.ObserveMaterialsUseCase
+import com.example.stugbygget.domain.usecase.ObserveOwnedMaterialsUseCase
 import com.example.stugbygget.domain.usecase.ObservePriceQuotesUseCase
+import com.example.stugbygget.domain.usecase.UpsertOwnedMaterialUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,6 +18,9 @@ import kotlinx.coroutines.launch
 
 class MaterialsViewModel(
     private val observeMaterialsUseCase: ObserveMaterialsUseCase,
+    private val observeOwnedMaterialsUseCase: ObserveOwnedMaterialsUseCase,
+    private val upsertOwnedMaterialUseCase: UpsertOwnedMaterialUseCase,
+    private val deleteOwnedMaterialUseCase: DeleteOwnedMaterialUseCase,
     private val projectId: String,
 ) : ViewModel() {
 
@@ -32,10 +39,74 @@ class MaterialsViewModel(
                     _uiState.update { it.copy(isLoading = false, materials = materials, errorMessage = null) }
                 }
         }
+        viewModelScope.launch {
+            observeOwnedMaterialsUseCase(projectId)
+                .catch { /* owned list is optional — ignore errors */ }
+                .collect { owned -> _uiState.update { it.copy(ownedMaterials = owned) } }
+        }
     }
 
     fun onSearchQueryChanged(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
+    }
+
+    // ── Owned materials ──
+
+    fun onShowOwnedAddSheet() {
+        _uiState.update {
+            it.copy(
+                showOwnedAddSheet = true,
+                draftOwnedName = "",
+                draftOwnedQuantity = "",
+                draftOwnedUnit = "",
+                draftOwnedNotes = "",
+                ownedAddError = null,
+            )
+        }
+    }
+
+    fun onDismissOwnedAddSheet() {
+        _uiState.update { it.copy(showOwnedAddSheet = false, ownedAddError = null) }
+    }
+
+    fun onDraftOwnedNameChanged(value: String) = _uiState.update { it.copy(draftOwnedName = value) }
+    fun onDraftOwnedQuantityChanged(value: String) = _uiState.update { it.copy(draftOwnedQuantity = value) }
+    fun onDraftOwnedUnitChanged(value: String) = _uiState.update { it.copy(draftOwnedUnit = value) }
+    fun onDraftOwnedNotesChanged(value: String) = _uiState.update { it.copy(draftOwnedNotes = value) }
+
+    fun onSubmitOwnedMaterial() {
+        val state = _uiState.value
+        if (state.draftOwnedName.isBlank()) {
+            _uiState.update { it.copy(ownedAddError = "Name is required.") }
+            return
+        }
+        val quantity = state.draftOwnedQuantity.toDoubleOrNull() ?: run {
+            _uiState.update { it.copy(ownedAddError = "Quantity must be a number.") }
+            return
+        }
+        _uiState.update { it.copy(isAddingOwned = true, ownedAddError = null) }
+        viewModelScope.launch {
+            runCatching {
+                upsertOwnedMaterialUseCase(
+                    projectId,
+                    OwnedMaterial(
+                        id = "",
+                        name = state.draftOwnedName.trim(),
+                        quantity = quantity,
+                        unit = state.draftOwnedUnit.trim(),
+                        notes = state.draftOwnedNotes.trim(),
+                    ),
+                )
+            }.onSuccess {
+                _uiState.update { it.copy(isAddingOwned = false, showOwnedAddSheet = false) }
+            }.onFailure { error ->
+                _uiState.update { it.copy(isAddingOwned = false, ownedAddError = error.message ?: "Failed to save.") }
+            }
+        }
+    }
+
+    fun onDeleteOwnedMaterial(id: String) {
+        viewModelScope.launch { runCatching { deleteOwnedMaterialUseCase(projectId, id) } }
     }
 }
 

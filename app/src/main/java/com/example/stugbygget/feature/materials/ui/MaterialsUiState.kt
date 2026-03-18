@@ -1,6 +1,7 @@
 package com.example.stugbygget.feature.materials.ui
 
 import com.example.stugbygget.domain.model.MaterialSpec
+import com.example.stugbygget.domain.model.OwnedMaterial
 import com.example.stugbygget.domain.model.PriceQuote
 
 data class MaterialsUiState(
@@ -8,6 +9,15 @@ data class MaterialsUiState(
     val materials: List<MaterialSpec> = emptyList(),
     val searchQuery: String = "",
     val errorMessage: String? = null,
+    // Owned materials
+    val ownedMaterials: List<OwnedMaterial> = emptyList(),
+    val showOwnedAddSheet: Boolean = false,
+    val draftOwnedName: String = "",
+    val draftOwnedQuantity: String = "",
+    val draftOwnedUnit: String = "",
+    val draftOwnedNotes: String = "",
+    val isAddingOwned: Boolean = false,
+    val ownedAddError: String? = null,
 ) {
     val filteredMaterials: List<MaterialSpec>
         get() = if (searchQuery.isBlank()) materials
