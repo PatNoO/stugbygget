@@ -13,6 +13,9 @@ class GalleryViewModelFactory(
             @Suppress("UNCHECKED_CAST")
             return GalleryViewModel(
                 observePhotosUseCase = container.observePhotosUseCase,
+                uploadPhotoUseCase = container.uploadPhotoUseCase,
+                contentResolver = container.applicationContext.contentResolver,
+                currentUserEmail = container.firebaseAuth.currentUser?.email ?: "unknown",
                 projectId = container.projectSessionRepository.getProjectId()
             ) as T
         }
