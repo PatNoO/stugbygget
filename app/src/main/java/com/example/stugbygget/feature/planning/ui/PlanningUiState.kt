@@ -9,8 +9,9 @@ data class PlanningUiState(
     val daysLeft: Long = 0L,
     val isSchedulePassed: Boolean = false,
     val errorMessage: String? = null,
-    // Add-phase sheet state
+    // Add/edit-phase sheet state
     val showAddSheet: Boolean = false,
+    val editingPhase: RenovationPhase? = null,
     val draftName: String = "",
     val draftRoom: String = "",
     val draftStartDate: String = "",
@@ -19,4 +20,7 @@ data class PlanningUiState(
     val draftIcon: String = "🔧",
     val isAddingPhase: Boolean = false,
     val addError: String? = null,
+    // Delete state
+    val pendingDeleteId: String? = null,
+    val isDeleting: Boolean = false,
 )

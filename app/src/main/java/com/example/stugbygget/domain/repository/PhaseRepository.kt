@@ -6,4 +6,5 @@ import kotlinx.coroutines.flow.Flow
 interface PhaseRepository {
     fun observePhases(projectId: String): Flow<List<RenovationPhase>>
     suspend fun upsertPhase(projectId: String, phase: RenovationPhase)
+    suspend fun deletePhase(projectId: String, phaseId: String)
 }

@@ -37,6 +37,7 @@ import com.example.stugbygget.data.firebase.firestore.FirestoreMaterialRepositor
 import com.example.stugbygget.data.firebase.firestore.FirestoreOwnedMaterialRepository
 import com.example.stugbygget.domain.usecase.DeleteContactUseCase
 import com.example.stugbygget.domain.usecase.DeleteOwnedMaterialUseCase
+import com.example.stugbygget.domain.usecase.DeletePhaseUseCase
 import com.example.stugbygget.domain.usecase.DeletePhotoUseCase
 import com.example.stugbygget.domain.usecase.DeleteTodoUseCase
 import com.example.stugbygget.domain.usecase.CalculateMaterialQuantityUseCase
@@ -201,6 +202,9 @@ class AppContainer(
     }
     val upsertPhaseUseCase: UpsertPhaseUseCase by lazy {
         UpsertPhaseUseCase(phaseRepository)
+    }
+    val deletePhaseUseCase: DeletePhaseUseCase by lazy {
+        DeletePhaseUseCase(phaseRepository)
     }
     val toggleTodoUseCase: ToggleTodoUseCase by lazy {
         ToggleTodoUseCase(todoRepository)
