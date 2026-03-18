@@ -1,16 +1,17 @@
 package com.example.stugbygget.feature.gallery.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,11 +38,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -57,6 +58,8 @@ import com.example.stugbygget.ui.components.SommarFilterChip
 import com.example.stugbygget.ui.components.SommarHeaderCard
 import com.example.stugbygget.ui.components.SommarInfoBox
 import com.example.stugbygget.ui.components.SommarOutlineButton
+import com.example.stugbygget.ui.components.SommarSectionTitle
+import com.example.stugbygget.ui.theme.Border
 import com.example.stugbygget.ui.components.SommarPhotoPicker
 import com.example.stugbygget.ui.components.SommarSectionTitle
 import com.example.stugbygget.ui.theme.CreamBackground
@@ -68,6 +71,7 @@ import com.example.stugbygget.ui.theme.LakeBlue
 import com.example.stugbygget.ui.theme.MonoStyles
 import com.example.stugbygget.ui.theme.SommarGradients
 import com.example.stugbygget.ui.theme.SommarShapes
+import com.example.stugbygget.ui.theme.StugbyggetShapes
 import com.example.stugbygget.ui.theme.staggeredFadeIn
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -100,6 +104,7 @@ fun GalleryScreen(container: AppContainer) {
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
+                onClick = viewModel::onShowCameraCapture,
                 onClick = viewModel::onShowAddSheet,
                 containerColor = LakeBlue,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -148,6 +153,27 @@ fun GalleryScreen(container: AppContainer) {
         }
     }
 
+    // ── Camera capture overlay ──
+    if (uiState.showCameraCapture) {
+        CameraCapture(
+            onImageCaptured = viewModel::onCameraImageCaptured,
+            onDismiss = viewModel::onDismissCameraCapture,
+        )
+    }
+
+    // ── Upload confirmation sheet ──
+    if (uiState.showUploadSheet) {
+        ModalBottomSheet(
+            onDismissRequest = viewModel::onDismissUploadSheet,
+            sheetState = sheetState,
+            containerColor = CreamBackground,
+        ) {
+            UploadCaptureSheet(
+                uiState = uiState,
+                onRoomChanged = viewModel::onDraftRoomChanged,
+                onPhaseChanged = viewModel::onDraftPhaseChanged,
+                onSubmit = viewModel::onSubmitCapturedPhoto,
+                onDismiss = viewModel::onDismissUploadSheet,
     if (uiState.viewingPhoto != null) {
         PhotoViewerDialog(
             photo = uiState.viewingPhoto,
@@ -192,6 +218,12 @@ fun GalleryScreen(container: AppContainer) {
 }
 
 @Composable
+private fun UploadCaptureSheet(
+    uiState: GalleryUiState,
+    onRoomChanged: (String) -> Unit,
+    onPhaseChanged: (PhotoPhase) -> Unit,
+  
+  
 private fun AddPhotoSheet(
     uiState: GalleryUiState,
     onRoomChanged: (String) -> Unit,
@@ -208,10 +240,34 @@ private fun AddPhotoSheet(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
+            text = "Save Photo",
             text = "Add Photos",
             style = MaterialTheme.typography.titleMedium.copy(fontFamily = Fraunces),
             modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
         )
+
+        // ── Photo preview ──
+        if (uiState.capturedUri != null) {
+            SubcomposeAsyncImage(
+                model = uiState.capturedUri,
+                contentDescription = "Captured photo",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(200.dp)
+                    .clip(StugbyggetShapes.small)
+                    .border(1.dp, Border, StugbyggetShapes.small),
+                error = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .background(LakeBlue.copy(alpha = 0.08f)),
+                        contentAlignment = Alignment.Center,
+                    ) { Text("📷", style = MaterialTheme.typography.headlineLarge) }
+                },
+            )
+        }
 
         OutlinedTextField(
             value = uiState.draftRoomName,
@@ -262,6 +318,7 @@ private fun AddPhotoSheet(
                 }
             } else {
                 SommarButton(
+                    text = "Save",
                     text = "Upload",
                     onClick = onSubmit,
                     modifier = Modifier.weight(1f),
