@@ -11,8 +11,9 @@ data class TodosUiState(
     val availablePhases: List<String> = emptyList(),
     val availableAssignees: List<String> = emptyList(),
     val errorMessage: String? = null,
-    // Add-todo sheet state
+    // Add/edit-todo sheet state
     val showAddSheet: Boolean = false,
+    val editingTodo: TodoItem? = null,
     val draftText: String = "",
     val draftAssignee: String = "",
     val draftPriority: TodoPriority = TodoPriority.MEDIUM,
