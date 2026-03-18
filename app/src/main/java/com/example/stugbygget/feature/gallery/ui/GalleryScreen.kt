@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -19,19 +21,24 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.SubcomposeAsyncImage
+import com.example.stugbygget.R
 import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.domain.model.PhotoItem
 import com.example.stugbygget.domain.model.PhotoPhase
@@ -63,10 +70,11 @@ private fun phaseColor(phase: PhotoPhase): Color = when (phase) {
     PhotoPhase.AFTER -> GalleryAfter
 }
 
+@Composable
 private fun phaseLabel(phase: PhotoPhase): String = when (phase) {
-    PhotoPhase.BEFORE -> "Before"
-    PhotoPhase.DURING -> "During"
-    PhotoPhase.AFTER -> "After"
+    PhotoPhase.BEFORE -> stringResource(R.string.gallery_phase_before)
+    PhotoPhase.DURING -> stringResource(R.string.gallery_phase_during)
+    PhotoPhase.AFTER -> stringResource(R.string.gallery_phase_after)
 }
 
 @Composable
@@ -74,38 +82,54 @@ fun GalleryScreen(container: AppContainer) {
     val viewModel: GalleryViewModel = viewModel(factory = GalleryViewModelFactory(container))
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    when {
-        uiState.isLoading -> {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { /* TODO: wire to camera */ },
+                containerColor = LakeBlue,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
             ) {
-                CircularProgressIndicator(color = LakeBlue)
+                Text(text = "📷", style = MaterialTheme.typography.titleLarge)
             }
-        }
-
-        uiState.errorMessage != null -> {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.Center,
-            ) {
-                SommarInfoBox(
-                    emoji = "⚠️",
-                    title = "Error",
-                    text = uiState.errorMessage ?: "Something went wrong.",
-                    accentColor = MaterialTheme.colorScheme.error,
-                )
+        },
+    ) { innerPadding ->
+        when {
+            uiState.isLoading -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    CircularProgressIndicator(color = LakeBlue)
+                }
             }
-        }
 
-        else -> GalleryContent(
-            uiState = uiState,
-            onRoomSelected = viewModel::onRoomFilterSelected,
-            onPhaseSelected = viewModel::onPhaseFilterSelected,
-        )
+            uiState.errorMessage != null -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .padding(24.dp),
+                    verticalArrangement = Arrangement.Center,
+                ) {
+                    SommarInfoBox(
+                        emoji = "⚠️",
+                        title = stringResource(R.string.common_error_title),
+                        text = uiState.errorMessage ?: stringResource(R.string.common_error_default),
+                        accentColor = MaterialTheme.colorScheme.error,
+                    )
+                }
+            }
+
+            else -> GalleryContent(
+                uiState = uiState,
+                onRoomSelected = viewModel::onRoomFilterSelected,
+                onPhaseSelected = viewModel::onPhaseFilterSelected,
+                contentPadding = innerPadding,
+            )
+        }
     }
 }
 
@@ -114,12 +138,18 @@ private fun GalleryContent(
     uiState: GalleryUiState,
     onRoomSelected: (String?) -> Unit,
     onPhaseSelected: (PhotoPhase?) -> Unit,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
 ) {
     val grouped = uiState.photos.groupBy { it.phase }
 
     LazyVerticalStaggeredGrid(
         columns = StaggeredGridCells.Fixed(2),
-        contentPadding = PaddingValues(18.dp),
+        contentPadding = PaddingValues(
+            start = 18.dp + contentPadding.calculateStartPadding(LayoutDirection.Ltr),
+            end = 18.dp + contentPadding.calculateEndPadding(LayoutDirection.Ltr),
+            top = 18.dp + contentPadding.calculateTopPadding(),
+            bottom = 18.dp + contentPadding.calculateBottomPadding(),
+        ),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalItemSpacing = 10.dp,
     ) {
@@ -127,11 +157,11 @@ private fun GalleryContent(
         item(span = StaggeredGridItemSpan.FullLine) {
             SommarHeaderCard(
                 gradient = SommarGradients.lakeBlue,
-                title = "Renovation Journey 📸",
+                title = stringResource(R.string.gallery_header_title),
                 modifier = Modifier.padding(bottom = 8.dp),
             ) {
                 Text(
-                    text = "${uiState.photos.size} photos · Before · During · After",
+                    text = stringResource(R.string.gallery_header_subtitle, uiState.photos.size),
                     style = MonoStyles.dataSmall.copy(color = Color.White.copy(alpha = 0.8f)),
                 )
             }
@@ -146,7 +176,7 @@ private fun GalleryContent(
             ) {
                 items(rooms) { room ->
                     SommarFilterChip(
-                        text = room ?: "All rooms",
+                        text = room ?: stringResource(R.string.gallery_filter_all_rooms),
                         selected = uiState.selectedRoom == room,
                         onClick = { onRoomSelected(room) },
                         activeColor = LakeBlue,
@@ -164,7 +194,7 @@ private fun GalleryContent(
             ) {
                 items(phases) { phase ->
                     SommarFilterChip(
-                        text = if (phase == null) "All phases" else phaseLabel(phase),
+                        text = if (phase == null) stringResource(R.string.gallery_filter_all_phases) else phaseLabel(phase),
                         selected = uiState.selectedPhase == phase,
                         onClick = { onPhaseSelected(phase) },
                         activeColor = if (phase == null) LakeBlue else phaseColor(phase),
@@ -179,13 +209,13 @@ private fun GalleryContent(
                 SommarInfoBox(
                     emoji = "📸",
                     title = if (uiState.selectedRoom != null || uiState.selectedPhase != null)
-                        "No photos match this filter"
+                        stringResource(R.string.gallery_empty_filtered_title)
                     else
-                        "No photos yet",
+                        stringResource(R.string.gallery_empty_title),
                     text = if (uiState.selectedRoom != null || uiState.selectedPhase != null)
-                        "Try selecting a different filter."
+                        stringResource(R.string.common_try_other_filter)
                     else
-                        "Photos will appear here once uploaded to the project.",
+                        stringResource(R.string.gallery_empty_message),
                     accentColor = LakeBlue,
                 )
             }
