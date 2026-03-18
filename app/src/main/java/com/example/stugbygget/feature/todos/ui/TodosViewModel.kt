@@ -49,11 +49,25 @@ class TodosViewModel(
     }
 
     fun onShowAddSheet() {
-        _uiState.update { it.copy(showAddSheet = true, draftText = "", draftAssignee = "", draftPriority = TodoPriority.MEDIUM, draftPhaseId = "", addError = null) }
+        _uiState.update { it.copy(showAddSheet = true, editingTodo = null, draftText = "", draftAssignee = "", draftPriority = TodoPriority.MEDIUM, draftPhaseId = "", addError = null) }
+    }
+
+    fun onShowEditSheet(todo: TodoItem) {
+        _uiState.update {
+            it.copy(
+                showAddSheet = true,
+                editingTodo = todo,
+                draftText = todo.text,
+                draftAssignee = todo.assignee,
+                draftPriority = todo.priority,
+                draftPhaseId = todo.phaseId,
+                addError = null
+            )
+        }
     }
 
     fun onDismissAddSheet() {
-        _uiState.update { it.copy(showAddSheet = false, addError = null) }
+        _uiState.update { it.copy(showAddSheet = false, editingTodo = null, addError = null) }
     }
 
     fun onDraftTextChanged(text: String) = _uiState.update { it.copy(draftText = text, addError = null) }
@@ -69,19 +83,20 @@ class TodosViewModel(
         }
         viewModelScope.launch {
             _uiState.update { it.copy(isAddingTodo = true, addError = null) }
+            val existing = state.editingTodo
             val now = Instant.now()
             val todo = TodoItem(
-                id = UUID.randomUUID().toString(),
+                id = existing?.id ?: UUID.randomUUID().toString(),
                 text = state.draftText.trim(),
-                done = false,
+                done = existing?.done ?: false,
                 phaseId = state.draftPhaseId.trim(),
                 assignee = state.draftAssignee.trim(),
                 priority = state.draftPriority,
-                createdAt = now,
+                createdAt = existing?.createdAt ?: now,
                 updatedAt = now,
             )
             runCatching { upsertTodoUseCase(projectId, todo) }
-                .onSuccess { _uiState.update { it.copy(isAddingTodo = false, showAddSheet = false) } }
+                .onSuccess { _uiState.update { it.copy(isAddingTodo = false, showAddSheet = false, editingTodo = null) } }
                 .onFailure { e -> _uiState.update { it.copy(isAddingTodo = false, addError = e.message ?: "Failed to save todo.") } }
         }
     }

@@ -24,11 +24,15 @@ import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -47,12 +51,16 @@ import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.domain.model.PhotoItem
 import com.example.stugbygget.domain.model.PhotoPhase
 import com.example.stugbygget.ui.components.SommarBadge
+import com.example.stugbygget.ui.components.SommarButton
 import com.example.stugbygget.ui.components.SommarCard
 import com.example.stugbygget.ui.components.SommarFilterChip
 import com.example.stugbygget.ui.components.SommarHeaderCard
 import com.example.stugbygget.ui.components.SommarInfoBox
+import com.example.stugbygget.ui.components.SommarOutlineButton
+import com.example.stugbygget.ui.components.SommarPhotoPicker
 import com.example.stugbygget.ui.components.SommarSectionTitle
 import com.example.stugbygget.ui.theme.CreamBackground
+import com.example.stugbygget.ui.theme.Fraunces
 import com.example.stugbygget.ui.theme.GalleryAfter
 import com.example.stugbygget.ui.theme.GalleryBefore
 import com.example.stugbygget.ui.theme.GalleryDuring
@@ -82,15 +90,17 @@ private fun phaseLabel(phase: PhotoPhase): String = when (phase) {
     PhotoPhase.AFTER -> stringResource(R.string.gallery_phase_after)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GalleryScreen(container: AppContainer) {
     val viewModel: GalleryViewModel = viewModel(factory = GalleryViewModelFactory(container))
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { /* TODO: wire to camera */ },
+                onClick = viewModel::onShowAddSheet,
                 containerColor = LakeBlue,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
             ) {
@@ -163,6 +173,101 @@ fun GalleryScreen(container: AppContainer) {
                 }
             },
         )
+    if (uiState.showAddSheet) {
+        ModalBottomSheet(
+            onDismissRequest = viewModel::onDismissAddSheet,
+            sheetState = sheetState,
+            containerColor = CreamBackground,
+        ) {
+            AddPhotoSheet(
+                uiState = uiState,
+                onRoomChanged = viewModel::onDraftRoomChanged,
+                onPhaseChanged = viewModel::onDraftPhaseChanged,
+                onPhotosChanged = viewModel::onPhotosChanged,
+                onSubmit = viewModel::onSubmitPhotos,
+                onDismiss = viewModel::onDismissAddSheet,
+            )
+        }
+    }
+}
+
+@Composable
+private fun AddPhotoSheet(
+    uiState: GalleryUiState,
+    onRoomChanged: (String) -> Unit,
+    onPhaseChanged: (PhotoPhase) -> Unit,
+    onPhotosChanged: (List<Pair<android.net.Uri, String>>) -> Unit,
+    onSubmit: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .padding(bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            text = "Add Photos",
+            style = MaterialTheme.typography.titleMedium.copy(fontFamily = Fraunces),
+            modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
+        )
+
+        OutlinedTextField(
+            value = uiState.draftRoomName,
+            onValueChange = onRoomChanged,
+            label = { Text("Room *") },
+            singleLine = true,
+            isError = uiState.uploadError != null && uiState.draftRoomName.isBlank(),
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Text(
+            text = stringResource(R.string.common_field_phase),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            PhotoPhase.entries.forEach { phase ->
+                SommarFilterChip(
+                    text = phaseLabel(phase),
+                    selected = uiState.draftPhase == phase,
+                    onClick = { onPhaseChanged(phase) },
+                    activeColor = phaseColor(phase),
+                )
+            }
+        }
+
+        SommarPhotoPicker(onPhotosChanged = onPhotosChanged)
+
+        if (uiState.uploadError != null) {
+            Text(
+                text = uiState.uploadError,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+
+        Spacer(Modifier.height(4.dp))
+
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            SommarOutlineButton(
+                text = stringResource(R.string.common_cancel),
+                onClick = onDismiss,
+                modifier = Modifier.weight(1f),
+            )
+            if (uiState.isUploading) {
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = LakeBlue, modifier = Modifier.size(28.dp))
+                }
+            } else {
+                SommarButton(
+                    text = "Upload",
+                    onClick = onSubmit,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
     }
 }
 

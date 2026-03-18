@@ -14,12 +14,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -117,7 +119,11 @@ fun PlanningScreen(container: AppContainer) {
                 }
             }
 
-            else -> PlanningContent(uiState)
+            else -> PlanningContent(
+            uiState = uiState,
+            onEditPhase = viewModel::onShowEditSheet,
+            onDeletePhase = viewModel::onRequestDelete,
+        )
         }
 
         // FAB
@@ -127,6 +133,22 @@ fun PlanningScreen(container: AppContainer) {
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(20.dp),
+        )
+    }
+
+    if (uiState.pendingDeleteId != null) {
+        AlertDialog(
+            onDismissRequest = viewModel::onCancelDelete,
+            title = { Text("Delete Phase") },
+            text = { Text("This will permanently delete the phase. Continue?") },
+            confirmButton = {
+                TextButton(onClick = viewModel::onConfirmDelete, enabled = !uiState.isDeleting) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::onCancelDelete) { Text("Cancel") }
+            },
         )
     }
 
@@ -171,7 +193,7 @@ private fun AddPhaseSheet(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = stringResource(R.string.planning_sheet_title),
+            text = if (uiState.editingPhase != null) "Edit Phase" else stringResource(R.string.planning_sheet_title),
             style = MaterialTheme.typography.titleMedium.copy(fontFamily = Fraunces),
             modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
         )
@@ -253,7 +275,7 @@ private fun AddPhaseSheet(
                 }
             } else {
                 SommarButton(
-                    text = stringResource(R.string.planning_button_add),
+                    text = if (uiState.editingPhase != null) "Save Changes" else stringResource(R.string.planning_button_add),
                     onClick = onSubmit,
                     modifier = Modifier.weight(1f),
                 )
@@ -263,7 +285,11 @@ private fun AddPhaseSheet(
 }
 
 @Composable
-private fun PlanningContent(uiState: PlanningUiState) {
+private fun PlanningContent(
+    uiState: PlanningUiState,
+    onEditPhase: (RenovationPhase) -> Unit,
+    onDeletePhase: (String) -> Unit,
+) {
     LazyColumn(
         contentPadding = PaddingValues(18.dp),
         verticalArrangement = Arrangement.spacedBy(0.dp),
@@ -324,6 +350,8 @@ private fun PlanningContent(uiState: PlanningUiState) {
                 phase = phase,
                 index = index,
                 isLast = index == uiState.phases.lastIndex,
+                onEdit = { onEditPhase(phase) },
+                onDelete = { onDeletePhase(phase.id) },
             )
         }
     }
@@ -334,6 +362,8 @@ private fun PhaseRow(
     phase: RenovationPhase,
     index: Int,
     isLast: Boolean,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     val color = phaseColor(phase.color)
     val isComplete = phase.progress >= 100
@@ -385,6 +415,20 @@ private fun PhaseRow(
                 progress = phase.progress / 100f,
                 color = if (isComplete) MeadowGreen else color,
             )
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                SommarOutlineButton(
+                    text = "Edit",
+                    onClick = onEdit,
+                    modifier = Modifier.weight(1f),
+                )
+                SommarOutlineButton(
+                    text = "Delete",
+                    onClick = onDelete,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.weight(1f),
+                )
+            }
         }
     }
 }

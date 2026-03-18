@@ -43,4 +43,13 @@ class FirestorePhaseRepository(
             .set(PhaseDocumentMapper.toMap(phase))
             .await()
     }
+
+    override suspend fun deletePhase(projectId: String, phaseId: String) {
+        firestore.collection("projects")
+            .document(projectId)
+            .collection("phases")
+            .document(phaseId)
+            .delete()
+            .await()
+    }
 }

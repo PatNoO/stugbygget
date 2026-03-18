@@ -3,13 +3,16 @@ package com.example.stugbygget.feature.shopping.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stugbygget.domain.usecase.AddShoppingItemUseCase
+import com.example.stugbygget.domain.usecase.CompareShoppingPricesUseCase
 import com.example.stugbygget.domain.usecase.CreateShoppingListUseCase
+import com.example.stugbygget.domain.usecase.ObservePriceQuotesUseCase
 import com.example.stugbygget.domain.usecase.ObserveShoppingListsUseCase
 import com.example.stugbygget.domain.usecase.ToggleShoppingItemPurchasedUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -18,6 +21,8 @@ class ShoppingViewModel(
     private val createShoppingListUseCase: CreateShoppingListUseCase,
     private val addShoppingItemUseCase: AddShoppingItemUseCase,
     private val toggleShoppingItemPurchasedUseCase: ToggleShoppingItemPurchasedUseCase,
+    private val compareShoppingPricesUseCase: CompareShoppingPricesUseCase,
+    private val observePriceQuotesUseCase: ObservePriceQuotesUseCase,
     private val projectId: String,
     private val currentUserIdProvider: () -> String?
 ) : ViewModel() {
@@ -159,6 +164,35 @@ class ShoppingViewModel(
             }.onFailure { throwable ->
                 _uiState.update {
                     it.copy(errorMessage = throwable.message ?: "Failed to update item.")
+                }
+            }
+        }
+    }
+
+    fun onComparePrice(listId: String) {
+        val list = _uiState.value.shoppingLists.firstOrNull { it.id == listId } ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isComparingPrice = it.isComparingPrice + (listId to true)) }
+            runCatching {
+                val quotes = list.items
+                    .mapNotNull { it.materialId }
+                    .flatMap { materialId ->
+                        observePriceQuotesUseCase(projectId, materialId).first()
+                    }
+                compareShoppingPricesUseCase(projectId, list, quotes)
+            }.onSuccess { result ->
+                _uiState.update { state ->
+                    state.copy(
+                        isComparingPrice = state.isComparingPrice + (listId to false),
+                        priceComparisons = state.priceComparisons + (listId to result)
+                    )
+                }
+            }.onFailure { throwable ->
+                _uiState.update { state ->
+                    state.copy(
+                        isComparingPrice = state.isComparingPrice + (listId to false),
+                        errorMessage = throwable.message ?: "Failed to compare prices."
+                    )
                 }
             }
         }

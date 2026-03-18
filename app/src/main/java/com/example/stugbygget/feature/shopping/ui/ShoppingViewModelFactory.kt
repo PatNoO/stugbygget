@@ -15,6 +15,8 @@ class ShoppingViewModelFactory(
                 createShoppingListUseCase = container.createShoppingListUseCase,
                 addShoppingItemUseCase = container.addShoppingItemUseCase,
                 toggleShoppingItemPurchasedUseCase = container.toggleShoppingItemPurchasedUseCase,
+                compareShoppingPricesUseCase = container.compareShoppingPricesUseCase,
+                observePriceQuotesUseCase = container.observePriceQuotesUseCase,
                 projectId = container.projectSessionRepository.getProjectId(),
                 currentUserIdProvider = container.projectSessionRepository::getCurrentUserId
             ) as T

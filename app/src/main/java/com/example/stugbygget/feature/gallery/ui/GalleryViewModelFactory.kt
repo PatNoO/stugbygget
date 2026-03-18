@@ -14,6 +14,9 @@ class GalleryViewModelFactory(
             return GalleryViewModel(
                 observePhotosUseCase = container.observePhotosUseCase,
                 deletePhotoUseCase = container.deletePhotoUseCase,
+                uploadPhotoUseCase = container.uploadPhotoUseCase,
+                contentResolver = container.applicationContext.contentResolver,
+                currentUserEmail = container.firebaseAuth.currentUser?.email ?: "unknown",
                 projectId = container.projectSessionRepository.getProjectId()
             ) as T
         }

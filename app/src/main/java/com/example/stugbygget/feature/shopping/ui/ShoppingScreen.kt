@@ -38,6 +38,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.stugbygget.R
 import com.example.stugbygget.di.AppContainer
+import com.example.stugbygget.domain.model.PriceComparisonResult
 import com.example.stugbygget.domain.model.ShoppingItem
 import com.example.stugbygget.domain.model.ShoppingList
 import com.example.stugbygget.ui.components.SommarBadge
@@ -157,6 +158,8 @@ fun ShoppingScreen(container: AppContainer) {
                     isExpanded = isExpanded,
                     draft = uiState.itemDrafts[list.id] ?: ShoppingItemDraftUiState(),
                     isSubmitting = uiState.isSubmitting,
+                    isComparingPrice = uiState.isComparingPrice[list.id] ?: false,
+                    priceComparison = uiState.priceComparisons[list.id],
                     onToggleExpand = { expandedLists[list.id] = !isExpanded },
                     onItemNameChanged = { v -> viewModel.onItemNameChanged(list.id, v) },
                     onItemQuantityChanged = { v -> viewModel.onItemQuantityChanged(list.id, v) },
@@ -165,6 +168,7 @@ fun ShoppingScreen(container: AppContainer) {
                     onTogglePurchased = { itemId, checked ->
                         viewModel.onTogglePurchased(list.id, itemId, checked)
                     },
+                    onComparePrice = { viewModel.onComparePrice(list.id) },
                     modifier = Modifier.staggeredFadeIn(index),
                 )
             }
@@ -178,12 +182,15 @@ private fun ShoppingListCard(
     isExpanded: Boolean,
     draft: ShoppingItemDraftUiState,
     isSubmitting: Boolean,
+    isComparingPrice: Boolean,
+    priceComparison: PriceComparisonResult?,
     onToggleExpand: () -> Unit,
     onItemNameChanged: (String) -> Unit,
     onItemQuantityChanged: (String) -> Unit,
     onItemUnitChanged: (String) -> Unit,
     onAddItem: () -> Unit,
     onTogglePurchased: (String, Boolean) -> Unit,
+    onComparePrice: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val purchasedCount = list.items.count { it.purchased }
@@ -232,7 +239,6 @@ private fun ShoppingListCard(
         Spacer(Modifier.height(10.dp))
 
         // ── Price comparison ──
-        // TODO: wire CompareShoppingPricesUseCase to show per-store totals
         if (list.totalEstimate > 0.0) {
             Row(
                 modifier = Modifier
@@ -251,7 +257,68 @@ private fun ShoppingListCard(
                     style = MonoStyles.data.copy(color = MeadowGreen),
                 )
             }
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(8.dp))
+        }
+
+        val hasLinkedItems = list.items.any { it.materialId != null }
+        if (hasLinkedItems) {
+            SommarOutlineButton(
+                text = if (isComparingPrice) "Comparing..." else "Compare Store Prices",
+                onClick = onComparePrice,
+                enabled = !isComparingPrice,
+                color = MeadowGreen,
+            )
+            priceComparison?.let { result ->
+                Spacer(Modifier.height(8.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(StugbyggetShapes.extraSmall)
+                        .background(MeadowGreen.copy(alpha = 0.06f))
+                        .padding(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    result.cheapestSingleStore?.let { best ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(
+                                text = "Cheapest store: ${best.store}",
+                                style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
+                            )
+                            Text(
+                                text = "${best.totalCost.toInt()} SEK",
+                                style = MonoStyles.data.copy(color = MeadowGreen),
+                            )
+                        }
+                    }
+                    if (result.bestSplitLines.isNotEmpty()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                        ) {
+                            Text(
+                                text = "Best split (${result.bestSplitLines.size} items)",
+                                style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
+                            )
+                            Text(
+                                text = "${result.bestSplitTotal.toInt()} SEK",
+                                style = MonoStyles.data.copy(color = MeadowGreen),
+                            )
+                        }
+                    }
+                    if (result.singleStoreTotals.isEmpty() && result.bestSplitLines.isEmpty()) {
+                        Text(
+                            text = "No live prices found for this list.",
+                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+        } else {
+            Spacer(Modifier.height(2.dp))
         }
 
         // ── Add item form ──
