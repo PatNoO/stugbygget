@@ -113,6 +113,7 @@ fun TodosScreen(container: AppContainer) {
                 uiState = uiState,
                 onAssigneeSelected = viewModel::onAssigneeFilterSelected,
                 onTodoToggle = { id, checked -> viewModel.onTodoToggle(id, checked) },
+                onEditTodo = viewModel::onShowEditSheet,
             )
         }
 
@@ -166,7 +167,7 @@ private fun AddTodoSheet(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = stringResource(R.string.todos_sheet_title),
+            text = if (uiState.editingTodo != null) "Edit Task" else stringResource(R.string.todos_sheet_title),
             style = MaterialTheme.typography.titleMedium.copy(fontFamily = Fraunces),
             modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
         )
@@ -285,7 +286,7 @@ private fun AddTodoSheet(
                 }
             } else {
                 SommarButton(
-                    text = stringResource(R.string.todos_button_add),
+                    text = if (uiState.editingTodo != null) "Save Changes" else stringResource(R.string.todos_button_add),
                     onClick = onSubmit,
                     modifier = Modifier.weight(1f),
                 )
@@ -299,6 +300,7 @@ private fun TodosContent(
     uiState: TodosUiState,
     onAssigneeSelected: (String?) -> Unit,
     onTodoToggle: (String, Boolean) -> Unit,
+    onEditTodo: (TodoItem) -> Unit,
 ) {
     val allTodos = uiState.todos
     val doneCount = allTodos.count { it.done }
@@ -375,6 +377,7 @@ private fun TodosContent(
             TodoRow(
                 todo = todo,
                 onToggle = { onTodoToggle(todo.id, !todo.done) },
+                onEdit = { onEditTodo(todo) },
                 modifier = Modifier.staggeredFadeIn(index),
             )
         }
@@ -385,6 +388,7 @@ private fun TodosContent(
 private fun TodoRow(
     todo: TodoItem,
     onToggle: () -> Unit,
+    onEdit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -444,6 +448,12 @@ private fun TodoRow(
                 Text(
                     text = todo.assignee,
                     style = MonoStyles.dataSmall.copy(color = LakeBlue),
+                )
+                Text("•", style = MonoStyles.dataSmall.copy(color = Sand))
+                Text(
+                    text = "Edit",
+                    style = MonoStyles.dataSmall.copy(color = LakeBlue),
+                    modifier = Modifier.clickable(onClick = onEdit),
                 )
             }
         }
