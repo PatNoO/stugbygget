@@ -15,13 +15,9 @@ import com.example.stugbygget.data.firebase.firestore.FirestoreShoppingRepositor
 import com.example.stugbygget.data.firebase.firestore.FirestoreTodoRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreBudgetRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreContactRepository
-import com.example.stugbygget.data.firebase.firestore.FirestoreLogisticsRepository
 import com.example.stugbygget.data.local.LocalNotificationSettingsRepository
-import com.example.stugbygget.data.local.RouteCacheDataSource
 import com.example.stugbygget.data.local.AndroidNotificationDispatcher
 import com.example.stugbygget.data.remote.claude.ClaudeChatRepository
-import com.example.stugbygget.data.remote.maps.GoogleDirectionsService
-import com.example.stugbygget.data.remote.maps.GoogleRouteRepository
 import com.example.stugbygget.domain.repository.AuthRepository
 import com.example.stugbygget.domain.repository.ChatRepository
 import com.example.stugbygget.domain.repository.ShoppingRepository
@@ -31,29 +27,29 @@ import com.example.stugbygget.domain.repository.PhotoRepository
 import com.example.stugbygget.domain.repository.ProjectSessionRepository
 import com.example.stugbygget.domain.repository.PriceRecommendationRepository
 import com.example.stugbygget.domain.repository.ContactRepository
-import com.example.stugbygget.domain.repository.LogisticsRepository
 import com.example.stugbygget.domain.repository.NotificationDispatchGateway
 import com.example.stugbygget.domain.repository.NotificationSettingsRepository
-import com.example.stugbygget.domain.repository.RouteRepository
 import com.example.stugbygget.domain.repository.RuntimeConfigRepository
 import com.example.stugbygget.domain.repository.MaterialRepository
+import com.example.stugbygget.domain.repository.OwnedMaterialRepository
 import com.example.stugbygget.domain.repository.TodoRepository
 import com.example.stugbygget.data.firebase.firestore.FirestoreMaterialRepository
+import com.example.stugbygget.data.firebase.firestore.FirestoreOwnedMaterialRepository
 import com.example.stugbygget.domain.usecase.DeleteContactUseCase
+import com.example.stugbygget.domain.usecase.DeleteOwnedMaterialUseCase
 import com.example.stugbygget.domain.usecase.DeletePhotoUseCase
 import com.example.stugbygget.domain.usecase.DeleteTodoUseCase
 import com.example.stugbygget.domain.usecase.CalculateMaterialQuantityUseCase
 import com.example.stugbygget.domain.usecase.CompareShoppingPricesUseCase
 import com.example.stugbygget.domain.usecase.AddShoppingItemUseCase
 import com.example.stugbygget.domain.usecase.CreateShoppingListUseCase
-import com.example.stugbygget.domain.usecase.CalculateLogisticsRecommendationUseCase
 import com.example.stugbygget.domain.usecase.ObserveAuthUserUseCase
 import com.example.stugbygget.domain.usecase.ObserveContactsUseCase
 import com.example.stugbygget.domain.usecase.UpsertContactUseCase
-import com.example.stugbygget.domain.usecase.GetRouteMetricsUseCase
 import com.example.stugbygget.domain.usecase.GetNotificationSettingsUseCase
 import com.example.stugbygget.domain.usecase.GetRuntimeConfigUseCase
 import com.example.stugbygget.domain.usecase.ObserveMaterialsUseCase
+import com.example.stugbygget.domain.usecase.ObserveOwnedMaterialsUseCase
 import com.example.stugbygget.domain.usecase.ObservePhotosUseCase
 import com.example.stugbygget.domain.usecase.ObservePriceQuotesUseCase
 import com.example.stugbygget.domain.usecase.ObservePhasesUseCase
@@ -63,7 +59,6 @@ import com.example.stugbygget.domain.usecase.ObserveTodosUseCase
 import com.example.stugbygget.domain.usecase.SignInWithEmailPasswordUseCase
 import com.example.stugbygget.domain.usecase.SignOutUseCase
 import com.example.stugbygget.domain.usecase.StreamAssistantReplyUseCase
-import com.example.stugbygget.domain.usecase.PlanLogisticsWithRouteUseCase
 import com.example.stugbygget.domain.usecase.RunNotificationPipelineUseCase
 import com.example.stugbygget.domain.usecase.BuildNotificationEventsUseCase
 import com.example.stugbygget.domain.usecase.BuildPlanningOverviewUseCase
@@ -73,6 +68,7 @@ import com.example.stugbygget.domain.usecase.UpdateNotificationSettingsUseCase
 import com.example.stugbygget.domain.usecase.ToggleShoppingItemPurchasedUseCase
 import com.example.stugbygget.domain.usecase.ToggleTodoUseCase
 import com.example.stugbygget.domain.usecase.UploadPhotoUseCase
+import com.example.stugbygget.domain.usecase.UpsertOwnedMaterialUseCase
 import com.example.stugbygget.domain.usecase.UpsertPhaseUseCase
 import com.example.stugbygget.domain.usecase.UpsertTodoUseCase
 import com.google.firebase.auth.FirebaseAuth
@@ -80,8 +76,6 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.functions.FirebaseFunctions
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.google.firebase.storage.FirebaseStorage
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 class AppContainer(
     appContext: Context
@@ -118,11 +112,13 @@ class AppContainer(
         FirestoreShoppingRepository(firestore, offlineSyncCoordinator)
     }
     val budgetRepository: BudgetRepository by lazy { FirestoreBudgetRepository(firestore) }
-    val logisticsRepository: LogisticsRepository by lazy { FirestoreLogisticsRepository(firestore) }
     val contactRepository: ContactRepository by lazy { FirestoreContactRepository(firestore) }
     val photoRepository: PhotoRepository by lazy { FirestorePhotoRepository(firestore, storage) }
     val materialRepository: MaterialRepository by lazy {
         FirestoreMaterialRepository(firestore)
+    }
+    val ownedMaterialRepository: OwnedMaterialRepository by lazy {
+        FirestoreOwnedMaterialRepository(firestore)
     }
     val priceRecommendationRepository: PriceRecommendationRepository by lazy {
         FirestorePriceRecommendationRepository(firestore)
@@ -133,23 +129,11 @@ class AppContainer(
     val runtimeConfigRepository: RuntimeConfigRepository by lazy {
         FirebaseRuntimeConfigRepository(remoteConfig)
     }
-    val mapsRetrofit: Retrofit by lazy {
-        Retrofit.Builder()
-            .baseUrl("https://maps.googleapis.com/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
-    val googleDirectionsService: GoogleDirectionsService by lazy {
-        mapsRetrofit.create(GoogleDirectionsService::class.java)
-    }
     val chatRepository: ChatRepository by lazy {
         ClaudeChatRepository(
             functions = functions,
             contextProvider = projectContextProvider
         )
-    }
-    val routeCacheDataSource: RouteCacheDataSource by lazy {
-        RouteCacheDataSource(applicationContext)
     }
     val notificationSettingsRepository: NotificationSettingsRepository by lazy {
         LocalNotificationSettingsRepository(applicationContext)
@@ -157,13 +141,6 @@ class AppContainer(
     val notificationDispatchGateway: NotificationDispatchGateway by lazy {
         AndroidNotificationDispatcher(applicationContext)
     }
-    val routeRepository: RouteRepository by lazy {
-        GoogleRouteRepository(
-            service = googleDirectionsService,
-            cacheDataSource = routeCacheDataSource
-        )
-    }
-
     val observeAuthUserUseCase: ObserveAuthUserUseCase by lazy {
         ObserveAuthUserUseCase(authRepository)
     }
@@ -200,18 +177,6 @@ class AppContainer(
     val compareShoppingPricesUseCase: CompareShoppingPricesUseCase by lazy {
         CompareShoppingPricesUseCase(priceRecommendationRepository)
     }
-    val calculateLogisticsRecommendationUseCase: CalculateLogisticsRecommendationUseCase by lazy {
-        CalculateLogisticsRecommendationUseCase(logisticsRepository)
-    }
-    val getRouteMetricsUseCase: GetRouteMetricsUseCase by lazy {
-        GetRouteMetricsUseCase(routeRepository)
-    }
-    val planLogisticsWithRouteUseCase: PlanLogisticsWithRouteUseCase by lazy {
-        PlanLogisticsWithRouteUseCase(
-            getRouteMetricsUseCase = getRouteMetricsUseCase,
-            calculateLogisticsRecommendationUseCase = calculateLogisticsRecommendationUseCase
-        )
-    }
     val getNotificationSettingsUseCase: GetNotificationSettingsUseCase by lazy {
         GetNotificationSettingsUseCase(notificationSettingsRepository)
     }
@@ -245,6 +210,15 @@ class AppContainer(
     }
     val observeMaterialsUseCase: ObserveMaterialsUseCase by lazy {
         ObserveMaterialsUseCase(materialRepository)
+    }
+    val observeOwnedMaterialsUseCase: ObserveOwnedMaterialsUseCase by lazy {
+        ObserveOwnedMaterialsUseCase(ownedMaterialRepository)
+    }
+    val upsertOwnedMaterialUseCase: UpsertOwnedMaterialUseCase by lazy {
+        UpsertOwnedMaterialUseCase(ownedMaterialRepository)
+    }
+    val deleteOwnedMaterialUseCase: DeleteOwnedMaterialUseCase by lazy {
+        DeleteOwnedMaterialUseCase(ownedMaterialRepository)
     }
     val observePriceQuotesUseCase: ObservePriceQuotesUseCase by lazy {
         ObservePriceQuotesUseCase(materialRepository)

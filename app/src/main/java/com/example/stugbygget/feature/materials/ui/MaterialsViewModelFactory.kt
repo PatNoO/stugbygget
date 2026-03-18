@@ -12,6 +12,9 @@ class MaterialsViewModelFactory(
         if (modelClass.isAssignableFrom(MaterialsViewModel::class.java)) {
             return MaterialsViewModel(
                 observeMaterialsUseCase = container.observeMaterialsUseCase,
+                observeOwnedMaterialsUseCase = container.observeOwnedMaterialsUseCase,
+                upsertOwnedMaterialUseCase = container.upsertOwnedMaterialUseCase,
+                deleteOwnedMaterialUseCase = container.deleteOwnedMaterialUseCase,
                 projectId = container.projectSessionRepository.getProjectId(),
             ) as T
         }
