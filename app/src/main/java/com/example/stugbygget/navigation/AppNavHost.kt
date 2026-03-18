@@ -9,7 +9,6 @@ import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.feature.aichat.ui.AiChatScreen
 import com.example.stugbygget.feature.budget.ui.BudgetScreen
 import com.example.stugbygget.feature.gallery.ui.GalleryScreen
-import com.example.stugbygget.feature.logistics.ui.LogisticsScreen
 import com.example.stugbygget.feature.materials.ui.MaterialDetailScreen
 import com.example.stugbygget.feature.materials.ui.MaterialsScreen
 import com.example.stugbygget.feature.planning.ui.PlanningScreen
@@ -62,9 +61,6 @@ fun AppNavHost(
         }
         composable(AppRoute.Budget.route) {
             BudgetScreen(container = container)
-        }
-        composable(AppRoute.Logistics.route) {
-            LogisticsScreen(container = container)
         }
         composable(AppRoute.Contacts.route) {
             ContactsScreen(container = container)
