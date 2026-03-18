@@ -1,9 +1,13 @@
 package com.example.stugbygget.feature.gallery.ui
 
+import android.content.ContentResolver
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stugbygget.domain.model.PhotoPhase
 import com.example.stugbygget.domain.usecase.ObservePhotosUseCase
+import com.example.stugbygget.domain.usecase.UploadPhotoUseCase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,7 +22,10 @@ import kotlinx.coroutines.launch
 
 class GalleryViewModel(
     private val observePhotosUseCase: ObservePhotosUseCase,
-    private val projectId: String
+    private val uploadPhotoUseCase: UploadPhotoUseCase,
+    private val contentResolver: ContentResolver,
+    private val currentUserEmail: String,
+    private val projectId: String,
 ) : ViewModel() {
 
     private data class GalleryFilters(
@@ -39,6 +46,68 @@ class GalleryViewModel(
 
     fun onPhaseFilterSelected(phase: PhotoPhase?) {
         _uiState.update { it.copy(selectedPhase = phase) }
+    }
+
+    fun onShowCameraCapture() {
+        _uiState.update { it.copy(showCameraCapture = true) }
+    }
+
+    fun onDismissCameraCapture() {
+        _uiState.update { it.copy(showCameraCapture = false) }
+    }
+
+    fun onCameraImageCaptured(uri: Uri) {
+        _uiState.update {
+            it.copy(
+                showCameraCapture = false,
+                capturedUri = uri,
+                showUploadSheet = true,
+                draftRoomName = "",
+                draftPhase = PhotoPhase.DURING,
+                uploadError = null,
+            )
+        }
+    }
+
+    fun onDismissUploadSheet() {
+        _uiState.update {
+            it.copy(showUploadSheet = false, capturedUri = null, uploadError = null)
+        }
+    }
+
+    fun onDraftRoomChanged(room: String) = _uiState.update { it.copy(draftRoomName = room, uploadError = null) }
+    fun onDraftPhaseChanged(phase: PhotoPhase) = _uiState.update { it.copy(draftPhase = phase) }
+
+    fun onSubmitCapturedPhoto() {
+        val state = _uiState.value
+        val uri = state.capturedUri ?: return
+        if (state.draftRoomName.isBlank()) {
+            _uiState.update { it.copy(uploadError = "Room name is required.") }
+            return
+        }
+        viewModelScope.launch(Dispatchers.IO) {
+            _uiState.update { it.copy(isUploading = true, uploadError = null) }
+            runCatching {
+                val bytes = contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                    ?: throw IllegalStateException("Could not read captured image.")
+                val mimeType = contentResolver.getType(uri) ?: "image/jpeg"
+                val fileName = uri.lastPathSegment ?: "photo_${System.currentTimeMillis()}"
+                uploadPhotoUseCase(
+                    projectId = projectId,
+                    roomName = state.draftRoomName.trim(),
+                    phase = state.draftPhase,
+                    description = "",
+                    uploadedBy = currentUserEmail,
+                    fileName = fileName,
+                    contentType = mimeType,
+                    bytes = bytes,
+                )
+            }.onSuccess {
+                _uiState.update { it.copy(isUploading = false, showUploadSheet = false, capturedUri = null) }
+            }.onFailure { e ->
+                _uiState.update { it.copy(isUploading = false, uploadError = e.message ?: "Upload failed.") }
+            }
+        }
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
