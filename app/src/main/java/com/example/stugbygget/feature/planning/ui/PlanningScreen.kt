@@ -26,9 +26,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.stugbygget.R
 import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.domain.model.RenovationPhase
 import com.example.stugbygget.ui.components.SommarBadge
@@ -36,6 +38,7 @@ import com.example.stugbygget.ui.components.SommarButton
 import com.example.stugbygget.ui.components.SommarCard
 import com.example.stugbygget.ui.components.SommarInfoBox
 import com.example.stugbygget.ui.components.SommarOutlineButton
+import com.example.stugbygget.ui.components.SommarPhotoPicker
 import com.example.stugbygget.ui.components.SommarProgressBar
 import com.example.stugbygget.ui.components.SommarProgressRing
 import com.example.stugbygget.ui.components.SommarSectionTitle
@@ -92,8 +95,8 @@ fun PlanningScreen(container: AppContainer) {
                 ) {
                     SommarInfoBox(
                         emoji = "⚠️",
-                        title = "Error",
-                        text = uiState.errorMessage ?: "Something went wrong.",
+                        title = stringResource(R.string.common_error_title),
+                        text = uiState.errorMessage ?: stringResource(R.string.common_error_default),
                         accentColor = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -108,8 +111,8 @@ fun PlanningScreen(container: AppContainer) {
                 ) {
                     SommarInfoBox(
                         emoji = "📋",
-                        title = "No phases yet",
-                        text = "Renovation phases will appear here once added to the project.",
+                        title = stringResource(R.string.planning_empty_title),
+                        text = stringResource(R.string.planning_empty_message),
                     )
                 }
             }
@@ -119,7 +122,7 @@ fun PlanningScreen(container: AppContainer) {
 
         // FAB
         SommarButton(
-            text = "+ Add phase",
+            text = stringResource(R.string.planning_fab),
             onClick = viewModel::onShowAddSheet,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -168,7 +171,7 @@ private fun AddPhaseSheet(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = "New phase",
+            text = stringResource(R.string.planning_sheet_title),
             style = MaterialTheme.typography.titleMedium.copy(fontFamily = Fraunces),
             modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
         )
@@ -176,7 +179,7 @@ private fun AddPhaseSheet(
         OutlinedTextField(
             value = uiState.draftName,
             onValueChange = onNameChanged,
-            label = { Text("Phase name *") },
+            label = { Text(stringResource(R.string.planning_field_name)) },
             singleLine = true,
             isError = uiState.addError != null && uiState.draftName.isBlank(),
             modifier = Modifier.fillMaxWidth(),
@@ -185,7 +188,7 @@ private fun AddPhaseSheet(
         OutlinedTextField(
             value = uiState.draftRoom,
             onValueChange = onRoomChanged,
-            label = { Text("Room *") },
+            label = { Text(stringResource(R.string.planning_field_room)) },
             singleLine = true,
             isError = uiState.addError != null && uiState.draftRoom.isBlank(),
             modifier = Modifier.fillMaxWidth(),
@@ -195,14 +198,14 @@ private fun AddPhaseSheet(
             OutlinedTextField(
                 value = uiState.draftStartDate,
                 onValueChange = onStartDateChanged,
-                label = { Text("Start date (YYYY-MM-DD)") },
+                label = { Text(stringResource(R.string.planning_field_start_date)) },
                 singleLine = true,
                 modifier = Modifier.weight(1f),
             )
             OutlinedTextField(
                 value = uiState.draftEndDate,
                 onValueChange = onEndDateChanged,
-                label = { Text("End date (YYYY-MM-DD)") },
+                label = { Text(stringResource(R.string.planning_field_end_date)) },
                 singleLine = true,
                 modifier = Modifier.weight(1f),
             )
@@ -212,18 +215,21 @@ private fun AddPhaseSheet(
             OutlinedTextField(
                 value = uiState.draftColor,
                 onValueChange = onColorChanged,
-                label = { Text("Color (hex)") },
+                label = { Text(stringResource(R.string.planning_field_color)) },
                 singleLine = true,
                 modifier = Modifier.weight(1f),
             )
             OutlinedTextField(
                 value = uiState.draftIcon,
                 onValueChange = onIconChanged,
-                label = { Text("Icon (emoji)") },
+                label = { Text(stringResource(R.string.planning_field_icon)) },
                 singleLine = true,
                 modifier = Modifier.weight(1f),
             )
         }
+
+        // Photos
+        SommarPhotoPicker()
 
         if (uiState.addError != null) {
             Text(
@@ -237,7 +243,7 @@ private fun AddPhaseSheet(
 
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             SommarOutlineButton(
-                text = "Cancel",
+                text = stringResource(R.string.common_cancel),
                 onClick = onDismiss,
                 modifier = Modifier.weight(1f),
             )
@@ -247,7 +253,7 @@ private fun AddPhaseSheet(
                 }
             } else {
                 SommarButton(
-                    text = "Add phase",
+                    text = stringResource(R.string.planning_button_add),
                     onClick = onSubmit,
                     modifier = Modifier.weight(1f),
                 )
@@ -265,7 +271,7 @@ private fun PlanningContent(uiState: PlanningUiState) {
         // ── Summary stats ──
         item {
             SommarSectionTitle(
-                text = "Overview",
+                text = stringResource(R.string.planning_section_overview),
                 modifier = Modifier.fadeUpIn(),
             )
             Row(
@@ -284,7 +290,7 @@ private fun PlanningContent(uiState: PlanningUiState) {
                         )
                         Spacer(Modifier.height(6.dp))
                         Text(
-                            text = "Complete",
+                            text = stringResource(R.string.planning_stat_complete),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -292,13 +298,13 @@ private fun PlanningContent(uiState: PlanningUiState) {
                 }
                 SommarStatCard(
                     value = "${uiState.phases.size}",
-                    label = "phases",
+                    label = stringResource(R.string.planning_stat_phases),
                     color = FaluRed,
                     modifier = Modifier.weight(1f),
                 )
                 SommarStatCard(
                     value = if (uiState.isSchedulePassed) "—" else "${uiState.daysLeft}",
-                    label = if (uiState.isSchedulePassed) "overdue" else "days left",
+                    label = if (uiState.isSchedulePassed) stringResource(R.string.planning_stat_overdue) else stringResource(R.string.planning_stat_days_left),
                     color = if (uiState.isSchedulePassed) MaterialTheme.colorScheme.error else MeadowGreen,
                     modifier = Modifier.weight(1f),
                 )
@@ -308,7 +314,7 @@ private fun PlanningContent(uiState: PlanningUiState) {
         // ── Phase timeline ──
         item {
             SommarSectionTitle(
-                text = "Timeline",
+                text = stringResource(R.string.planning_section_timeline),
                 modifier = Modifier.fadeUpIn(delay = 100),
             )
         }

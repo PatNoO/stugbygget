@@ -28,14 +28,21 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.stugbygget.R
 import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.domain.model.TodoItem
 import com.example.stugbygget.domain.model.TodoPriority
@@ -45,6 +52,7 @@ import com.example.stugbygget.ui.components.SommarFilterChip
 import com.example.stugbygget.ui.components.SommarHeaderCard
 import com.example.stugbygget.ui.components.SommarInfoBox
 import com.example.stugbygget.ui.components.SommarOutlineButton
+import com.example.stugbygget.ui.components.SommarPhotoPicker
 import com.example.stugbygget.ui.components.SommarProgressRing
 import com.example.stugbygget.ui.theme.Border
 import com.example.stugbygget.ui.theme.CreamBackground
@@ -94,8 +102,8 @@ fun TodosScreen(container: AppContainer) {
                 ) {
                     SommarInfoBox(
                         emoji = "⚠️",
-                        title = "Error",
-                        text = uiState.errorMessage ?: "Something went wrong.",
+                        title = stringResource(R.string.common_error_title),
+                        text = uiState.errorMessage ?: stringResource(R.string.common_error_default),
                         accentColor = MaterialTheme.colorScheme.error,
                     )
                 }
@@ -110,7 +118,7 @@ fun TodosScreen(container: AppContainer) {
 
         // FAB
         SommarButton(
-            text = "+ Add task",
+            text = stringResource(R.string.todos_fab),
             onClick = viewModel::onShowAddSheet,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -147,6 +155,9 @@ private fun AddTodoSheet(
     onSubmit: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    var isDescriptionExpanded by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -155,26 +166,50 @@ private fun AddTodoSheet(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = "New task",
+            text = stringResource(R.string.todos_sheet_title),
             style = MaterialTheme.typography.titleMedium.copy(fontFamily = Fraunces),
             modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
         )
 
-        // Task text
-        OutlinedTextField(
-            value = uiState.draftText,
-            onValueChange = onTextChanged,
-            label = { Text("Task description *") },
-            singleLine = true,
-            isError = uiState.addError != null && uiState.draftText.isBlank(),
-            modifier = Modifier.fillMaxWidth(),
-        )
+        // Task text — expands on focus, collapses with Done button
+        Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+            OutlinedTextField(
+                value = uiState.draftText,
+                onValueChange = onTextChanged,
+                label = { Text(stringResource(R.string.todos_field_description)) },
+                singleLine = !isDescriptionExpanded,
+                minLines = if (isDescriptionExpanded) 4 else 1,
+                isError = uiState.addError != null && uiState.draftText.isBlank(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { if (it.isFocused) isDescriptionExpanded = true },
+            )
+            if (isDescriptionExpanded) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    Text(
+                        text = stringResource(R.string.common_done),
+                        style = MaterialTheme.typography.labelMedium.copy(color = LakeBlue),
+                        modifier = Modifier
+                            .clickable {
+                                isDescriptionExpanded = false
+                                focusManager.clearFocus()
+                            }
+                            .padding(4.dp),
+                    )
+                }
+            }
+        }
 
         // Assignee
         OutlinedTextField(
             value = uiState.draftAssignee,
             onValueChange = onAssigneeChanged,
-            label = { Text("Assignee") },
+            label = { Text(stringResource(R.string.common_field_assignee)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
@@ -183,7 +218,7 @@ private fun AddTodoSheet(
         val phaseOptions = if (uiState.availablePhases.isNotEmpty()) uiState.availablePhases else emptyList()
         if (phaseOptions.isNotEmpty()) {
             Text(
-                text = "Phase",
+                text = stringResource(R.string.common_field_phase),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -201,7 +236,7 @@ private fun AddTodoSheet(
             OutlinedTextField(
                 value = uiState.draftPhaseId,
                 onValueChange = onPhaseIdChanged,
-                label = { Text("Phase (optional)") },
+                label = { Text(stringResource(R.string.todos_field_phase_optional)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -209,7 +244,7 @@ private fun AddTodoSheet(
 
         // Priority chips
         Text(
-            text = "Priority",
+            text = stringResource(R.string.common_field_priority),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -224,6 +259,9 @@ private fun AddTodoSheet(
             }
         }
 
+        // Photos
+        SommarPhotoPicker()
+
         // Error
         if (uiState.addError != null) {
             Text(
@@ -237,7 +275,7 @@ private fun AddTodoSheet(
 
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             SommarOutlineButton(
-                text = "Cancel",
+                text = stringResource(R.string.common_cancel),
                 onClick = onDismiss,
                 modifier = Modifier.weight(1f),
             )
@@ -247,7 +285,7 @@ private fun AddTodoSheet(
                 }
             } else {
                 SommarButton(
-                    text = "Add task",
+                    text = stringResource(R.string.todos_button_add),
                     onClick = onSubmit,
                     modifier = Modifier.weight(1f),
                 )
@@ -274,7 +312,7 @@ private fun TodosContent(
         item {
             SommarHeaderCard(
                 gradient = SommarGradients.meadowGreen,
-                title = "Tasks done",
+                title = stringResource(R.string.todos_header_title),
                 modifier = Modifier.padding(bottom = 18.dp),
             ) {
                 Row(
@@ -308,7 +346,7 @@ private fun TodosContent(
             ) {
                 items(assignees) { assignee ->
                     SommarFilterChip(
-                        text = if (assignee == null) "All" else assignee,
+                        text = if (assignee == null) stringResource(R.string.common_all) else assignee,
                         selected = uiState.selectedAssignee == assignee,
                         onClick = { onAssigneeSelected(assignee) },
                         activeColor = MeadowGreen,
@@ -322,11 +360,11 @@ private fun TodosContent(
             item {
                 SommarInfoBox(
                     emoji = "✅",
-                    title = if (uiState.selectedAssignee != null) "No tasks for this person" else "No tasks yet",
+                    title = if (uiState.selectedAssignee != null) stringResource(R.string.todos_empty_filtered_title) else stringResource(R.string.todos_empty_title),
                     text = if (uiState.selectedAssignee != null)
-                        "Try selecting a different filter."
+                        stringResource(R.string.common_try_other_filter)
                     else
-                        "Todos will appear here once added to the project.",
+                        stringResource(R.string.todos_empty_message),
                     accentColor = MeadowGreen,
                 )
             }
