@@ -17,7 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.stugbygget.R
 import com.example.stugbygget.ui.theme.FaluRed
 import com.example.stugbygget.ui.theme.Fraunces
 import com.example.stugbygget.ui.theme.MeadowGreen
@@ -46,14 +48,14 @@ fun SommarTopBar(
     ) {
         Column {
             Text(
-                text = "StugBygget",
+                text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.headlineLarge.copy(
                     fontFamily = Fraunces,
                     color = FaluRed,
                 ),
             )
             Text(
-                text = "Summer 2026 — Renovation in progress",
+                text = stringResource(R.string.top_bar_subtitle),
                 style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 modifier = Modifier.padding(top = 2.dp),
             )

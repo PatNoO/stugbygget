@@ -13,7 +13,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.stugbygget.R
 import com.example.stugbygget.ui.theme.SommarShapes
 import com.example.stugbygget.ui.theme.pulseAnimation
 
@@ -72,7 +74,7 @@ fun SommarErrorCard(
         }
         if (onRetry != null) {
             SommarOutlineButton(
-                text = "Retry",
+                text = stringResource(R.string.common_retry),
                 onClick = onRetry,
                 modifier = Modifier.padding(top = 8.dp),
             )

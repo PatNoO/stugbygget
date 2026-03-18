@@ -30,9 +30,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.stugbygget.R
 import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.domain.model.Contact
 import com.example.stugbygget.domain.model.ContactRole
@@ -95,8 +97,8 @@ fun ContactsScreen(container: AppContainer) {
                 ) {
                     SommarInfoBox(
                         emoji = "⚠️",
-                        title = "Error",
-                        text = uiState.errorMessage ?: "Something went wrong.",
+                        title = stringResource(R.string.common_error_title),
+                        text = uiState.errorMessage ?: stringResource(R.string.common_error_default),
                         accentColor = MaterialTheme.colorScheme.error
                     )
                 }
@@ -110,7 +112,7 @@ fun ContactsScreen(container: AppContainer) {
         }
 
         SommarButton(
-            text = "+ Add contact",
+            text = stringResource(R.string.contacts_fab),
             onClick = viewModel::onShowAddSheet,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -139,16 +141,16 @@ fun ContactsScreen(container: AppContainer) {
     if (uiState.pendingDeleteId != null) {
         AlertDialog(
             onDismissRequest = viewModel::onCancelDelete,
-            title = { Text("Delete contact?") },
-            text = { Text("This contact will be permanently removed.") },
+            title = { Text(stringResource(R.string.contacts_dialog_delete_title)) },
+            text = { Text(stringResource(R.string.contacts_dialog_delete_message)) },
             confirmButton = {
                 TextButton(onClick = viewModel::onConfirmDelete) {
-                    Text("Delete", color = FaluRed)
+                    Text(stringResource(R.string.common_delete), color = FaluRed)
                 }
             },
             dismissButton = {
                 TextButton(onClick = viewModel::onCancelDelete) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )
@@ -170,8 +172,8 @@ private fun ContactsContent(
         ) {
             SommarInfoBox(
                 emoji = "👤",
-                title = "No contacts yet",
-                text = "Add contractors, suppliers, and team members to your project.",
+                title = stringResource(R.string.contacts_empty_title),
+                text = stringResource(R.string.contacts_empty_message),
                 accentColor = LakeBlue
             )
         }
@@ -277,7 +279,7 @@ private fun ContactSheet(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            text = if (isEditing) "Edit contact" else "New contact",
+            text = if (isEditing) stringResource(R.string.contacts_sheet_title_edit) else stringResource(R.string.contacts_sheet_title_add),
             style = MaterialTheme.typography.titleMedium.copy(fontFamily = Fraunces),
             modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
         )
@@ -285,7 +287,7 @@ private fun ContactSheet(
         OutlinedTextField(
             value = uiState.draftName,
             onValueChange = onNameChanged,
-            label = { Text("Name *") },
+            label = { Text(stringResource(R.string.contacts_field_name)) },
             singleLine = true,
             isError = uiState.sheetError != null && uiState.draftName.isBlank(),
             modifier = Modifier.fillMaxWidth()
@@ -294,7 +296,7 @@ private fun ContactSheet(
         OutlinedTextField(
             value = uiState.draftPhone,
             onValueChange = onPhoneChanged,
-            label = { Text("Phone") },
+            label = { Text(stringResource(R.string.contacts_field_phone)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -302,13 +304,13 @@ private fun ContactSheet(
         OutlinedTextField(
             value = uiState.draftEmail,
             onValueChange = onEmailChanged,
-            label = { Text("Email") },
+            label = { Text(stringResource(R.string.contacts_field_email)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
 
         Text(
-            text = "Role",
+            text = stringResource(R.string.contacts_field_role),
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -335,7 +337,7 @@ private fun ContactSheet(
 
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             SommarOutlineButton(
-                text = "Cancel",
+                text = stringResource(R.string.common_cancel),
                 onClick = onDismiss,
                 modifier = Modifier.weight(1f)
             )
@@ -345,7 +347,7 @@ private fun ContactSheet(
                 }
             } else {
                 SommarButton(
-                    text = if (isEditing) "Save" else "Add contact",
+                    text = if (isEditing) stringResource(R.string.common_save) else stringResource(R.string.contacts_button_add),
                     onClick = onSubmit,
                     modifier = Modifier.weight(1f)
                 )

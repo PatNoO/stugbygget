@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -37,6 +38,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.stugbygget.R
 import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.ui.components.SommarButton
 import com.example.stugbygget.ui.components.SommarHeaderCard
@@ -69,8 +71,8 @@ fun AiChatScreen(container: AppContainer) {
         // ── Header ──
         SommarHeaderCard(
             gradient = SommarGradients.midsummerGold,
-            title = "Stugan AI",
-            subtitle = "Your renovation assistant",
+            title = stringResource(R.string.chat_header_title),
+            subtitle = stringResource(R.string.chat_header_subtitle),
             emoji = "🤖",
             modifier = Modifier.padding(horizontal = 18.dp, vertical = 12.dp),
         )
@@ -89,8 +91,8 @@ fun AiChatScreen(container: AppContainer) {
                 item {
                     SommarInfoBox(
                         emoji = "🤖",
-                        title = "Ask Stugan AI",
-                        text = "Get practical advice on materials, planning, and renovation tasks for your summer cottage.",
+                        title = stringResource(R.string.chat_empty_title),
+                        text = stringResource(R.string.chat_empty_message),
                         accentColor = MidsummerGold,
                     )
                 }
@@ -157,7 +159,7 @@ private fun ChatBubble(message: ChatMessageUiModel) {
             ) {
                 Column {
                     Text(
-                        text = "You",
+                        text = stringResource(R.string.chat_label_you),
                         style = MonoStyles.dataSmall.copy(color = Color.White.copy(alpha = 0.7f)),
                     )
                     Spacer(Modifier.height(4.dp))
@@ -179,7 +181,7 @@ private fun ChatBubble(message: ChatMessageUiModel) {
             ) {
                 Column {
                     Text(
-                        text = "Stugan AI",
+                        text = stringResource(R.string.chat_label_ai),
                         style = MonoStyles.dataSmall.copy(color = MidsummerGold),
                     )
                     Spacer(Modifier.height(4.dp))
@@ -210,7 +212,7 @@ private fun ThinkingBubble() {
         )
         Spacer(Modifier.width(8.dp))
         Text(
-            text = "Stugan AI is thinking…",
+            text = stringResource(R.string.chat_thinking),
             style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
         )
     }
@@ -244,7 +246,7 @@ private fun InputBar(
         ) {
             if (draft.isEmpty()) {
                 Text(
-                    text = "Ask a renovation question…",
+                    text = stringResource(R.string.chat_input_placeholder),
                     style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 )
             }
@@ -262,7 +264,7 @@ private fun InputBar(
 
         // Send button — SommarButton shows grey gradient automatically when disabled
         SommarButton(
-            text = "Send",
+            text = stringResource(R.string.chat_button_send),
             onClick = onSend,
             enabled = canSend,
         )
