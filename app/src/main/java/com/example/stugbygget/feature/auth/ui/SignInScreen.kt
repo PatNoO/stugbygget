@@ -12,8 +12,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.stugbygget.R
 
 @Composable
 fun SignInScreen(
@@ -34,14 +36,14 @@ fun SignInScreen(
     ) {
         Text(text = "StugBygget", style = MaterialTheme.typography.headlineMedium)
         Text(
-            text = "Sign in with email and password to access project data",
+            text = stringResource(R.string.auth_subtitle),
             modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
         )
 
         OutlinedTextField(
             value = email,
             onValueChange = onEmailChanged,
-            label = { Text("Email") },
+            label = { Text(stringResource(R.string.auth_field_email)) },
             singleLine = true,
             modifier = Modifier.padding(bottom = 8.dp)
         )
@@ -49,7 +51,7 @@ fun SignInScreen(
         OutlinedTextField(
             value = password,
             onValueChange = onPasswordChanged,
-            label = { Text("Password") },
+            label = { Text(stringResource(R.string.auth_field_password)) },
             visualTransformation = PasswordVisualTransformation(),
             singleLine = true,
             modifier = Modifier.padding(bottom = 16.dp)
@@ -70,7 +72,7 @@ fun SignInScreen(
             if (isLoading) {
                 CircularProgressIndicator(modifier = Modifier.padding(2.dp))
             } else {
-                Text("Sign In")
+                Text(stringResource(R.string.auth_button_sign_in))
             }
         }
     }

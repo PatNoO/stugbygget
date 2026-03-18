@@ -1,3 +1,200 @@
 <resources>
     <string name="app_name">StugBygget</string>
+    <string name="top_bar_subtitle">Summer 2026 — Renovation in progress</string>
+
+    <!-- Common -->
+    <string name="common_done">Done</string>
+    <string name="photo_description_hint">Description…</string>
+    <string name="common_error_title">Error</string>
+    <string name="common_error_default">Something went wrong.</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_retry">Retry</string>
+    <string name="common_add">Add</string>
+    <string name="common_save">Save</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_all">All</string>
+    <string name="common_try_other_filter">Try selecting a different filter.</string>
+    <string name="common_in_stock">In stock</string>
+    <string name="common_out_of_stock">Out of stock</string>
+    <string name="common_photos_label">Photos</string>
+    <string name="common_field_notes_optional">Notes (optional)</string>
+    <string name="common_field_phase">Phase</string>
+    <string name="common_field_priority">Priority</string>
+    <string name="common_field_assignee">Assignee</string>
+    <string name="common_sek_suffix"> SEK</string>
+    <string name="common_kg_suffix"> kg</string>
+    <string name="common_km_suffix"> km</string>
+    <string name="common_m3_suffix"> m³</string>
+
+    <!-- Planning -->
+    <string name="planning_empty_title">No phases yet</string>
+    <string name="planning_empty_message">Renovation phases will appear here once added to the project.</string>
+    <string name="planning_fab">+ Add phase</string>
+    <string name="planning_sheet_title">New phase</string>
+    <string name="planning_field_name">Phase name *</string>
+    <string name="planning_field_room">Room *</string>
+    <string name="planning_field_start_date">Start date (YYYY-MM-DD)</string>
+    <string name="planning_field_end_date">End date (YYYY-MM-DD)</string>
+    <string name="planning_field_color">Color (hex)</string>
+    <string name="planning_field_icon">Icon (emoji)</string>
+    <string name="planning_button_add">Add phase</string>
+    <string name="planning_section_overview">Overview</string>
+    <string name="planning_section_timeline">Timeline</string>
+    <string name="planning_stat_complete">Complete</string>
+    <string name="planning_stat_phases">phases</string>
+    <string name="planning_stat_overdue">overdue</string>
+    <string name="planning_stat_days_left">days left</string>
+
+    <!-- Todos -->
+    <string name="todos_header_title">Tasks done</string>
+    <string name="todos_empty_title">No tasks yet</string>
+    <string name="todos_empty_message">Todos will appear here once added to the project.</string>
+    <string name="todos_empty_filtered_title">No tasks for this person</string>
+    <string name="todos_fab">+ Add task</string>
+    <string name="todos_sheet_title">New task</string>
+    <string name="todos_field_description">Task description *</string>
+    <string name="todos_field_phase_optional">Phase (optional)</string>
+    <string name="todos_button_add">Add task</string>
+
+    <!-- Gallery -->
+    <string name="gallery_header_title">Renovation Journey 📸</string>
+    <!-- %1$d = photo count -->
+    <string name="gallery_header_subtitle">%1$d photos · Before · During · After</string>
+    <string name="gallery_filter_all_rooms">All rooms</string>
+    <string name="gallery_filter_all_phases">All phases</string>
+    <string name="gallery_empty_title">No photos yet</string>
+    <string name="gallery_empty_message">Photos will appear here once uploaded to the project.</string>
+    <string name="gallery_empty_filtered_title">No photos match this filter</string>
+    <string name="gallery_phase_before">Before</string>
+    <string name="gallery_phase_during">During</string>
+    <string name="gallery_phase_after">After</string>
+
+    <!-- AI Chat -->
+    <string name="chat_header_title">Stugan AI</string>
+    <string name="chat_header_subtitle">Your renovation assistant</string>
+    <string name="chat_empty_title">Ask Stugan AI</string>
+    <string name="chat_empty_message">Get practical advice on materials, planning, and renovation tasks for your summer cottage.</string>
+    <string name="chat_label_you">You</string>
+    <string name="chat_label_ai">Stugan AI</string>
+    <string name="chat_thinking">Stugan AI is thinking…</string>
+    <string name="chat_input_placeholder">Ask a renovation question…</string>
+    <string name="chat_button_send">Send</string>
+
+    <!-- Shopping -->
+    <string name="shopping_header_title">Shopping List 📊</string>
+    <!-- %1$d = purchased, %2$d = total -->
+    <string name="shopping_header_subtitle">%1$d/%2$d items purchased</string>
+    <string name="shopping_new_list_title">New list</string>
+    <string name="shopping_field_list_name">List name</string>
+    <string name="shopping_field_phase_id">Phase ID (e.g. foundation)</string>
+    <string name="shopping_button_creating">Creating…</string>
+    <string name="shopping_button_create">Create List</string>
+    <string name="shopping_empty_title">No shopping lists yet</string>
+    <string name="shopping_empty_message">Create your first list above to get started.</string>
+    <string name="shopping_list_empty">No items yet — add one below.</string>
+    <string name="shopping_estimated_total">Estimated total</string>
+    <string name="shopping_field_item_name">Item name</string>
+    <string name="shopping_field_qty">Qty</string>
+    <string name="shopping_field_unit">Unit</string>
+    <string name="shopping_button_adding">Adding…</string>
+    <string name="shopping_button_add_item">+ Add Item</string>
+    <string name="shopping_price_paid_suffix"> SEK paid</string>
+
+    <!-- Budget -->
+    <string name="budget_header_title">Budget 💰</string>
+    <!-- %1$s = formatted amount -->
+    <string name="budget_header_subtitle">%1$s SEK spent</string>
+    <string name="budget_total_label">Total budget</string>
+    <string name="budget_badge_over">Over budget</string>
+    <string name="budget_stat_spent">Spent: </string>
+    <string name="budget_stat_budget">Budget: </string>
+    <string name="budget_stat_estimated">Estimated final: </string>
+    <string name="budget_section_phases">Phase Breakdown</string>
+    <string name="budget_phases_empty_title">No phases yet</string>
+    <string name="budget_phases_empty_message">Phase budget data will appear here.</string>
+    <string name="budget_section_categories">Category Spend</string>
+    <string name="budget_categories_empty_title">No category data</string>
+    <string name="budget_categories_empty_message">Category spend will appear as expenses are recorded.</string>
+    <string name="budget_phase_badge_over">⚠ Over budget</string>
+
+    <!-- Materials -->
+    <string name="materials_header_title">Materials &amp; Prices 🔗</string>
+    <!-- %1$d = count -->
+    <string name="materials_header_subtitle">%1$d materials</string>
+    <string name="materials_search_hint">Search materials…</string>
+    <string name="materials_empty_title">No materials yet</string>
+    <string name="materials_empty_message">Materials will appear here once added to the project.</string>
+    <string name="materials_empty_no_results_title">No results</string>
+    <!-- %1$s = search query -->
+    <string name="materials_empty_no_results_message">No materials match &quot;%1$s&quot;.</string>
+    <string name="materials_at_home_title">At Home 🏠</string>
+    <string name="materials_add_button">+ Add</string>
+    <string name="materials_owned_empty_title">Nothing tracked yet</string>
+    <string name="materials_owned_empty_message">Add materials you already have at home so you know what not to buy.</string>
+    <string name="materials_owned_sheet_title">Material at home</string>
+    <string name="materials_field_name">Material name *</string>
+    <string name="materials_field_quantity">Quantity *</string>
+    <string name="materials_field_unit">Unit (e.g. liter, pcs)</string>
+    <string name="materials_button_add">Add</string>
+
+    <!-- Material Detail -->
+    <string name="material_detail_empty_title">Material not found</string>
+    <string name="material_detail_empty_message">This material could not be loaded.</string>
+    <string name="material_detail_stat_waste">waste margin</string>
+    <string name="material_detail_section_calculator">Quantity calculator</string>
+    <string name="material_detail_field_area">Enter area (m²)</string>
+    <string name="material_detail_field_area_hint">e.g. 48</string>
+    <string name="material_detail_stat_units">Units needed</string>
+    <string name="material_detail_section_prices">Price comparison</string>
+    <string name="material_detail_prices_empty_title">No prices yet</string>
+    <string name="material_detail_prices_empty_message">Price data will appear here once added to the project.</string>
+    <string name="material_detail_show_map">Show on map</string>
+    <string name="material_detail_badge_best_price">Best price</string>
+
+    <!-- Contacts -->
+    <string name="contacts_empty_title">No contacts yet</string>
+    <string name="contacts_empty_message">Add contractors, suppliers, and team members to your project.</string>
+    <string name="contacts_fab">+ Add contact</string>
+    <string name="contacts_dialog_delete_title">Delete contact?</string>
+    <string name="contacts_dialog_delete_message">This contact will be permanently removed.</string>
+    <string name="contacts_sheet_title_add">New contact</string>
+    <string name="contacts_sheet_title_edit">Edit contact</string>
+    <string name="contacts_field_name">Name *</string>
+    <string name="contacts_field_phone">Phone</string>
+    <string name="contacts_field_email">Email</string>
+    <string name="contacts_field_role">Role</string>
+    <string name="contacts_role_contractor">Contractor</string>
+    <string name="contacts_role_supplier">Supplier</string>
+    <string name="contacts_role_team">Team</string>
+    <string name="contacts_role_other">Other</string>
+    <string name="contacts_button_add">Add contact</string>
+
+    <!-- Logistics -->
+    <string name="logistics_error_title">Could not calculate logistics</string>
+    <string name="logistics_error_unknown">Unknown error</string>
+    <string name="logistics_empty_title">No logistics data yet</string>
+    <string name="logistics_empty_message">Add items to a shopping list to see transport recommendations.</string>
+    <string name="logistics_header_title">Logistics &amp; Transport 🚛</string>
+    <!-- %1$d = km, %2$d = kg -->
+    <string name="logistics_header_subtitle">Distance: ~%1$d km · %2$d kg</string>
+    <string name="logistics_summary_title">Material Summary</string>
+    <string name="logistics_stat_weight">Total weight</string>
+    <string name="logistics_stat_volume">Total volume</string>
+    <string name="logistics_stat_distance">Distance</string>
+    <string name="logistics_section_options">Transport Options</string>
+    <string name="logistics_type_self">Self-transport</string>
+    <string name="logistics_type_delivery">Store delivery</string>
+    <string name="logistics_type_freight">Freight carrier (DHL)</string>
+    <string name="logistics_badge_recommended">✓ Recommended</string>
+    <string name="logistics_label_cost">Cost: </string>
+    <string name="logistics_time_min"> min</string>
+    <string name="logistics_section_schedule">Delivery Schedule</string>
+    <string name="logistics_schedule_placeholder_title">Timeline sync coming in SB71</string>
+    <string name="logistics_schedule_placeholder_message">Delivery dates will be linked to your renovation phases once Cloud Functions are integrated.</string>
+
+    <!-- Auth -->
+    <string name="auth_subtitle">Sign in with email and password to access project data</string>
+    <string name="auth_field_email">Email</string>
+    <string name="auth_field_password">Password</string>
+    <string name="auth_button_sign_in">Sign In</string>
 </resources>

@@ -1,0 +1,194 @@
+<resources>
+    <string name="app_name">StugBygget</string>
+    <string name="top_bar_subtitle">Sommar 2026 — Renovering pågår</string>
+
+    <!-- Gemensamt -->
+    <string name="common_done">Klar</string>
+    <string name="photo_description_hint">Beskrivning…</string>
+    <string name="common_error_title">Fel</string>
+    <string name="common_error_default">Något gick fel.</string>
+    <string name="common_cancel">Avbryt</string>
+    <string name="common_retry">Försök igen</string>
+    <string name="common_add">Lägg till</string>
+    <string name="common_save">Spara</string>
+    <string name="common_delete">Ta bort</string>
+    <string name="common_all">Alla</string>
+    <string name="common_try_other_filter">Prova att välja ett annat filter.</string>
+    <string name="common_in_stock">I lager</string>
+    <string name="common_out_of_stock">Inte i lager</string>
+    <string name="common_photos_label">Foton</string>
+    <string name="common_field_notes_optional">Anteckningar (valfritt)</string>
+    <string name="common_field_phase">Fas</string>
+    <string name="common_field_priority">Prioritet</string>
+    <string name="common_field_assignee">Ansvarig</string>
+    <string name="common_sek_suffix"> SEK</string>
+    <string name="common_kg_suffix"> kg</string>
+    <string name="common_km_suffix"> km</string>
+    <string name="common_m3_suffix"> m³</string>
+
+    <!-- Planering -->
+    <string name="planning_empty_title">Inga faser ännu</string>
+    <string name="planning_empty_message">Renoveringsfaser visas här när de läggs till i projektet.</string>
+    <string name="planning_fab">+ Lägg till fas</string>
+    <string name="planning_sheet_title">Ny fas</string>
+    <string name="planning_field_name">Fasnamn *</string>
+    <string name="planning_field_room">Rum *</string>
+    <string name="planning_field_start_date">Startdatum (ÅÅÅÅ-MM-DD)</string>
+    <string name="planning_field_end_date">Slutdatum (ÅÅÅÅ-MM-DD)</string>
+    <string name="planning_field_color">Färg (hex)</string>
+    <string name="planning_field_icon">Ikon (emoji)</string>
+    <string name="planning_button_add">Lägg till fas</string>
+    <string name="planning_section_overview">Översikt</string>
+    <string name="planning_section_timeline">Tidslinje</string>
+    <string name="planning_stat_complete">Slutfört</string>
+    <string name="planning_stat_phases">faser</string>
+    <string name="planning_stat_overdue">försenad</string>
+    <string name="planning_stat_days_left">dagar kvar</string>
+
+    <!-- Uppgifter -->
+    <string name="todos_header_title">Uppgifter klara</string>
+    <string name="todos_empty_title">Inga uppgifter ännu</string>
+    <string name="todos_empty_message">Uppgifter visas här när de läggs till i projektet.</string>
+    <string name="todos_empty_filtered_title">Inga uppgifter för den här personen</string>
+    <string name="todos_fab">+ Lägg till uppgift</string>
+    <string name="todos_sheet_title">Ny uppgift</string>
+    <string name="todos_field_description">Uppgiftsbeskrivning *</string>
+    <string name="todos_field_phase_optional">Fas (valfri)</string>
+    <string name="todos_button_add">Lägg till uppgift</string>
+
+    <!-- Galleri -->
+    <string name="gallery_header_title">Renoveringsresa 📸</string>
+    <string name="gallery_header_subtitle">%1$d foton · Innan · Under · Efter</string>
+    <string name="gallery_filter_all_rooms">Alla rum</string>
+    <string name="gallery_filter_all_phases">Alla faser</string>
+    <string name="gallery_empty_title">Inga foton ännu</string>
+    <string name="gallery_empty_message">Foton visas här när de laddas upp till projektet.</string>
+    <string name="gallery_empty_filtered_title">Inga foton matchar detta filter</string>
+    <string name="gallery_phase_before">Innan</string>
+    <string name="gallery_phase_during">Under</string>
+    <string name="gallery_phase_after">Efter</string>
+
+    <!-- AI Chatt -->
+    <string name="chat_header_title">Stugan AI</string>
+    <string name="chat_header_subtitle">Din renoveringsassistent</string>
+    <string name="chat_empty_title">Fråga Stugan AI</string>
+    <string name="chat_empty_message">Få praktiska råd om material, planering och renoveringsuppgifter för din sommarstuga.</string>
+    <string name="chat_label_you">Du</string>
+    <string name="chat_label_ai">Stugan AI</string>
+    <string name="chat_thinking">Stugan AI tänker…</string>
+    <string name="chat_input_placeholder">Ställ en renoveringsfråga…</string>
+    <string name="chat_button_send">Skicka</string>
+
+    <!-- Inköpslista -->
+    <string name="shopping_header_title">Inköpslista 📊</string>
+    <string name="shopping_header_subtitle">%1$d/%2$d varor köpta</string>
+    <string name="shopping_new_list_title">Ny lista</string>
+    <string name="shopping_field_list_name">Listnamn</string>
+    <string name="shopping_field_phase_id">Fas-ID (t.ex. grund)</string>
+    <string name="shopping_button_creating">Skapar…</string>
+    <string name="shopping_button_create">Skapa lista</string>
+    <string name="shopping_empty_title">Inga inköpslistor ännu</string>
+    <string name="shopping_empty_message">Skapa din första lista ovan för att komma igång.</string>
+    <string name="shopping_list_empty">Inga varor ännu — lägg till en nedan.</string>
+    <string name="shopping_estimated_total">Uppskattad summa</string>
+    <string name="shopping_field_item_name">Varunamn</string>
+    <string name="shopping_field_qty">Antal</string>
+    <string name="shopping_field_unit">Enhet</string>
+    <string name="shopping_button_adding">Lägger till…</string>
+    <string name="shopping_button_add_item">+ Lägg till vara</string>
+    <string name="shopping_price_paid_suffix"> SEK betald</string>
+
+    <!-- Budget -->
+    <string name="budget_header_title">Budget 💰</string>
+    <string name="budget_header_subtitle">%1$s SEK spenderat</string>
+    <string name="budget_total_label">Total budget</string>
+    <string name="budget_badge_over">Över budget</string>
+    <string name="budget_stat_spent">Spenderat: </string>
+    <string name="budget_stat_budget">Budget: </string>
+    <string name="budget_stat_estimated">Beräknad slutkostnad: </string>
+    <string name="budget_section_phases">Fasuppdelning</string>
+    <string name="budget_phases_empty_title">Inga faser ännu</string>
+    <string name="budget_phases_empty_message">Fasbudgetdata visas här.</string>
+    <string name="budget_section_categories">Kategoriutgifter</string>
+    <string name="budget_categories_empty_title">Ingen kategoridata</string>
+    <string name="budget_categories_empty_message">Kategoriutgifter visas när utgifter registreras.</string>
+    <string name="budget_phase_badge_over">⚠ Över budget</string>
+
+    <!-- Material -->
+    <string name="materials_header_title">Material &amp; Priser 🔗</string>
+    <string name="materials_header_subtitle">%1$d material</string>
+    <string name="materials_search_hint">Sök material…</string>
+    <string name="materials_empty_title">Inget material ännu</string>
+    <string name="materials_empty_message">Material visas här när det läggs till i projektet.</string>
+    <string name="materials_empty_no_results_title">Inga resultat</string>
+    <string name="materials_empty_no_results_message">Inget material matchar &quot;%1$s&quot;.</string>
+    <string name="materials_at_home_title">Hemma 🏠</string>
+    <string name="materials_add_button">+ Lägg till</string>
+    <string name="materials_owned_empty_title">Inget registrerat ännu</string>
+    <string name="materials_owned_empty_message">Lägg till material du redan har hemma så att du vet vad du inte behöver köpa.</string>
+    <string name="materials_owned_sheet_title">Material hemma</string>
+    <string name="materials_field_name">Materialnamn *</string>
+    <string name="materials_field_quantity">Antal *</string>
+    <string name="materials_field_unit">Enhet (t.ex. liter, st)</string>
+    <string name="materials_button_add">Lägg till</string>
+
+    <!-- Materialdetalj -->
+    <string name="material_detail_empty_title">Material hittades inte</string>
+    <string name="material_detail_empty_message">Det här materialet kunde inte laddas.</string>
+    <string name="material_detail_stat_waste">svinnmarginal</string>
+    <string name="material_detail_section_calculator">Mängdkalkylator</string>
+    <string name="material_detail_field_area">Ange yta (m²)</string>
+    <string name="material_detail_field_area_hint">t.ex. 48</string>
+    <string name="material_detail_stat_units">Enheter som behövs</string>
+    <string name="material_detail_section_prices">Prisjämförelse</string>
+    <string name="material_detail_prices_empty_title">Inga priser ännu</string>
+    <string name="material_detail_prices_empty_message">Prisdata visas här när det läggs till i projektet.</string>
+    <string name="material_detail_show_map">Visa på karta</string>
+    <string name="material_detail_badge_best_price">Bästa pris</string>
+
+    <!-- Kontakter -->
+    <string name="contacts_empty_title">Inga kontakter ännu</string>
+    <string name="contacts_empty_message">Lägg till entreprenörer, leverantörer och teammedlemmar i ditt projekt.</string>
+    <string name="contacts_fab">+ Lägg till kontakt</string>
+    <string name="contacts_dialog_delete_title">Ta bort kontakt?</string>
+    <string name="contacts_dialog_delete_message">Den här kontakten tas bort permanent.</string>
+    <string name="contacts_sheet_title_add">Ny kontakt</string>
+    <string name="contacts_sheet_title_edit">Redigera kontakt</string>
+    <string name="contacts_field_name">Namn *</string>
+    <string name="contacts_field_phone">Telefon</string>
+    <string name="contacts_field_email">E-post</string>
+    <string name="contacts_field_role">Roll</string>
+    <string name="contacts_role_contractor">Entreprenör</string>
+    <string name="contacts_role_supplier">Leverantör</string>
+    <string name="contacts_role_team">Team</string>
+    <string name="contacts_role_other">Övrigt</string>
+    <string name="contacts_button_add">Lägg till kontakt</string>
+
+    <!-- Logistik -->
+    <string name="logistics_error_title">Det gick inte att beräkna logistik</string>
+    <string name="logistics_error_unknown">Okänt fel</string>
+    <string name="logistics_empty_title">Ingen logistikdata ännu</string>
+    <string name="logistics_empty_message">Lägg till varor i en inköpslista för att se transportrekommendationer.</string>
+    <string name="logistics_header_title">Logistik &amp; Transport 🚛</string>
+    <string name="logistics_header_subtitle">Avstånd: ~%1$d km · %2$d kg</string>
+    <string name="logistics_summary_title">Materialöversikt</string>
+    <string name="logistics_stat_weight">Total vikt</string>
+    <string name="logistics_stat_volume">Total volym</string>
+    <string name="logistics_stat_distance">Avstånd</string>
+    <string name="logistics_section_options">Transportalternativ</string>
+    <string name="logistics_type_self">Egentransport</string>
+    <string name="logistics_type_delivery">Butiksleverans</string>
+    <string name="logistics_type_freight">Fraktbolag (DHL)</string>
+    <string name="logistics_badge_recommended">✓ Rekommenderas</string>
+    <string name="logistics_label_cost">Kostnad: </string>
+    <string name="logistics_time_min"> min</string>
+    <string name="logistics_section_schedule">Leveransschema</string>
+    <string name="logistics_schedule_placeholder_title">Tidslinjekoppling kommer i SB71</string>
+    <string name="logistics_schedule_placeholder_message">Leveransdatum kopplas till dina renoveringsfaser när Cloud Functions integrerats.</string>
+
+    <!-- Inloggning -->
+    <string name="auth_subtitle">Logga in med e-post och lösenord för att komma åt projektdata</string>
+    <string name="auth_field_email">E-post</string>
+    <string name="auth_field_password">Lösenord</string>
+    <string name="auth_button_sign_in">Logga in</string>
+</resources>

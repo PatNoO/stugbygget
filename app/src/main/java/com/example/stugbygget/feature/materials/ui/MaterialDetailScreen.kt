@@ -27,9 +27,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.stugbygget.R
 import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.domain.model.PriceQuote
 import com.example.stugbygget.ui.components.SommarBadge
@@ -81,8 +83,8 @@ fun MaterialDetailScreen(
             ) {
                 SommarInfoBox(
                     emoji = "🔍",
-                    title = "Material not found",
-                    text = "This material could not be loaded.",
+                    title = stringResource(R.string.material_detail_empty_title),
+                    text = stringResource(R.string.material_detail_empty_message),
                     accentColor = FaluRed,
                 )
             }
@@ -139,7 +141,7 @@ private fun MaterialDetailContent(
                 )
                 SommarStatCard(
                     value = "${(material.wasteMargin * 100).toInt()}%",
-                    label = "waste margin",
+                    label = stringResource(R.string.material_detail_stat_waste),
                     color = MidsummerGold,
                     modifier = Modifier.weight(1f),
                 )
@@ -148,10 +150,10 @@ private fun MaterialDetailContent(
 
         // ── Quantity calculator ──
         item {
-            SommarSectionTitle(text = "Quantity calculator")
+            SommarSectionTitle(text = stringResource(R.string.material_detail_section_calculator))
             SommarCard(modifier = Modifier.padding(bottom = 20.dp)) {
                 Text(
-                    text = "Enter area (m²)",
+                    text = stringResource(R.string.material_detail_field_area),
                     style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 )
                 Spacer(Modifier.height(8.dp))
@@ -165,7 +167,7 @@ private fun MaterialDetailContent(
                 ) {
                     if (uiState.areaInput.isEmpty()) {
                         Text(
-                            text = "e.g. 48",
+                            text = stringResource(R.string.material_detail_field_area_hint),
                             style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                         )
                     }
@@ -186,7 +188,7 @@ private fun MaterialDetailContent(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = "Units needed",
+                            text = stringResource(R.string.material_detail_stat_units),
                             style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                         )
                         Text(
@@ -205,15 +207,15 @@ private fun MaterialDetailContent(
 
         // ── Price comparison ──
         item {
-            SommarSectionTitle(text = "Price comparison")
+            SommarSectionTitle(text = stringResource(R.string.material_detail_section_prices))
         }
 
         if (uiState.priceQuotes.isEmpty()) {
             item {
                 SommarInfoBox(
                     emoji = "💰",
-                    title = "No prices yet",
-                    text = "Price data will appear here once added to the project.",
+                    title = stringResource(R.string.material_detail_prices_empty_title),
+                    text = stringResource(R.string.material_detail_prices_empty_message),
                     accentColor = MidsummerGold,
                     modifier = Modifier.padding(bottom = 12.dp),
                 )
@@ -231,7 +233,7 @@ private fun MaterialDetailContent(
         // ── Show on map ──
         item {
             SommarButton(
-                text = "Show on map",
+                text = stringResource(R.string.material_detail_show_map),
                 onClick = { /* TODO: connect to Google Maps */ },
                 gradient = SommarGradients.lakeBlue,
                 modifier = Modifier.padding(top = 8.dp, bottom = 24.dp),
@@ -272,7 +274,7 @@ private fun PriceQuoteCard(
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(
-                    text = if (quote.inStock) "In stock" else "Out of stock",
+                    text = if (quote.inStock) stringResource(R.string.common_in_stock) else stringResource(R.string.common_out_of_stock),
                     style = MonoStyles.dataSmall.copy(
                         color = if (quote.inStock) MeadowGreen else FaluRed,
                     ),
@@ -286,7 +288,7 @@ private fun PriceQuoteCard(
                 )
                 if (isCheapest) {
                     SommarBadge(
-                        text = "Best price",
+                        text = stringResource(R.string.material_detail_badge_best_price),
                         color = MeadowGreen,
                         backgroundColor = MeadowGreen.copy(alpha = 0.08f),
                         borderColor = MeadowGreen.copy(alpha = 0.2f),

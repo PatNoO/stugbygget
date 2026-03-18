@@ -19,9 +19,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.stugbygget.R
 import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.domain.model.CategoryBudget
 import com.example.stugbygget.domain.model.PhaseBudget
@@ -103,11 +105,11 @@ fun BudgetScreen(container: AppContainer) {
         item {
             SommarHeaderCard(
                 gradient = SommarGradients.midsummerGold,
-                title = "Budget 💰",
+                title = stringResource(R.string.budget_header_title),
                 modifier = Modifier.padding(bottom = 16.dp),
             ) {
                 Text(
-                    text = "${overview.totalSpent.toInt()} / ${overview.totalBudget.toInt()} SEK spent",
+                    text = stringResource(R.string.budget_header_subtitle, "%.0f".format(overview.totalSpent) + " / " + "%.0f".format(overview.totalBudget)),
                     style = MonoStyles.dataSmall.copy(color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.85f)),
                 )
             }
@@ -121,10 +123,10 @@ fun BudgetScreen(container: AppContainer) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text("Total budget", style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(R.string.budget_total_label), style = MaterialTheme.typography.titleSmall)
                     if (isOverBudget) {
                         SommarBadge(
-                            text = "Over budget",
+                            text = stringResource(R.string.budget_badge_over),
                             color = FaluRed,
                             backgroundColor = FaluRed.copy(alpha = 0.08f),
                             borderColor = FaluRed.copy(alpha = 0.2f),
@@ -143,17 +145,17 @@ fun BudgetScreen(container: AppContainer) {
                     horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
                     Text(
-                        text = "Spent: ${overview.totalSpent.toInt()} SEK",
+                        text = stringResource(R.string.budget_stat_spent) + "${overview.totalSpent.toInt()}" + stringResource(R.string.common_sek_suffix),
                         style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                     )
                     Text(
-                        text = "Budget: ${overview.totalBudget.toInt()} SEK",
+                        text = stringResource(R.string.budget_stat_budget) + "${overview.totalBudget.toInt()}" + stringResource(R.string.common_sek_suffix),
                         style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                     )
                 }
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    text = "Estimated final: ${overview.estimatedFinalCost.toInt()} SEK",
+                    text = stringResource(R.string.budget_stat_estimated) + "${overview.estimatedFinalCost.toInt()}" + stringResource(R.string.common_sek_suffix),
                     style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 )
             }
@@ -162,7 +164,7 @@ fun BudgetScreen(container: AppContainer) {
         // ── Phase breakdown ──
         item {
             SommarSectionTitle(
-                text = "Phase Breakdown",
+                text = stringResource(R.string.budget_section_phases),
                 modifier = Modifier.padding(bottom = 8.dp),
             )
         }
@@ -171,8 +173,8 @@ fun BudgetScreen(container: AppContainer) {
             item {
                 SommarInfoBox(
                     emoji = "📋",
-                    title = "No phases yet",
-                    text = "Phase budget data will appear here.",
+                    title = stringResource(R.string.budget_phases_empty_title),
+                    text = stringResource(R.string.budget_phases_empty_message),
                     accentColor = MidsummerGold,
                 )
             }
@@ -189,7 +191,7 @@ fun BudgetScreen(container: AppContainer) {
         // ── Category breakdown ──
         item {
             SommarSectionTitle(
-                text = "Category Spend",
+                text = stringResource(R.string.budget_section_categories),
                 modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
             )
         }
@@ -198,8 +200,8 @@ fun BudgetScreen(container: AppContainer) {
             item {
                 SommarInfoBox(
                     emoji = "🏷️",
-                    title = "No category data",
-                    text = "Category spend will appear as expenses are recorded.",
+                    title = stringResource(R.string.budget_categories_empty_title),
+                    text = stringResource(R.string.budget_categories_empty_message),
                     accentColor = LakeBlue,
                 )
             }
@@ -235,7 +237,7 @@ private fun PhaseBudgetCard(
             Text(phase.phaseId, style = MaterialTheme.typography.titleSmall)
             if (isOverspent) {
                 SommarBadge(
-                    text = "⚠ Over budget",
+                    text = stringResource(R.string.budget_phase_badge_over),
                     color = FaluRed,
                     backgroundColor = FaluRed.copy(alpha = 0.08f),
                     borderColor = FaluRed.copy(alpha = 0.2f),
@@ -254,7 +256,7 @@ private fun PhaseBudgetCard(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                text = "Spent: ${phase.spent.toInt()} SEK",
+                text = stringResource(R.string.budget_stat_spent) + "${phase.spent.toInt()}" + stringResource(R.string.common_sek_suffix),
                 style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
             )
             Text(
@@ -286,7 +288,7 @@ private fun CategoryBudgetRow(category: CategoryBudget) {
                 borderColor = accentColor.copy(alpha = 0.2f),
             )
             Text(
-                text = "${category.spent.toInt()} SEK",
+                text = "${category.spent.toInt()}" + stringResource(R.string.common_sek_suffix),
                 style = MonoStyles.data.copy(color = accentColor),
             )
         }

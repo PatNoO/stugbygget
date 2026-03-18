@@ -31,10 +31,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.stugbygget.R
 import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.domain.model.ShoppingItem
 import com.example.stugbygget.domain.model.ShoppingList
@@ -78,13 +80,13 @@ fun ShoppingScreen(container: AppContainer) {
         item {
             SommarHeaderCard(
                 gradient = SommarGradients.meadowGreen,
-                title = "Shopping List 📊",
+                title = stringResource(R.string.shopping_header_title),
                 modifier = Modifier.padding(bottom = 16.dp),
             ) {
-                val totalItems = uiState.shoppingLists.sumOf { it.items.size }
-                val purchasedItems = uiState.shoppingLists.sumOf { list -> list.items.count { it.purchased } }
+                val totalCount = uiState.shoppingLists.sumOf { it.items.size }
+                val purchasedCount = uiState.shoppingLists.sumOf { list -> list.items.count { it.purchased } }
                 Text(
-                    text = "$purchasedItems / $totalItems items purchased",
+                    text = stringResource(R.string.shopping_header_subtitle, purchasedCount, totalCount),
                     style = MonoStyles.dataSmall.copy(color = Color.White.copy(alpha = 0.8f)),
                 )
             }
@@ -94,24 +96,24 @@ fun ShoppingScreen(container: AppContainer) {
         item {
             SommarCard(modifier = Modifier.padding(bottom = 16.dp)) {
                 Text(
-                    text = "New list",
+                    text = stringResource(R.string.shopping_new_list_title),
                     style = MaterialTheme.typography.titleSmall,
                 )
                 Spacer(Modifier.height(10.dp))
                 StyledInput(
                     value = uiState.listNameInput,
                     onValueChange = viewModel::onListNameChanged,
-                    placeholder = "List name",
+                    placeholder = stringResource(R.string.shopping_field_list_name),
                 )
                 Spacer(Modifier.height(8.dp))
                 StyledInput(
                     value = uiState.phaseInput,
                     onValueChange = viewModel::onPhaseChanged,
-                    placeholder = "Phase ID (e.g. foundation)",
+                    placeholder = stringResource(R.string.shopping_field_phase_id),
                 )
                 Spacer(Modifier.height(10.dp))
                 SommarButton(
-                    text = if (uiState.isSubmitting) "Creating…" else "Create List",
+                    text = if (uiState.isSubmitting) stringResource(R.string.shopping_button_creating) else stringResource(R.string.shopping_button_create),
                     onClick = viewModel::onCreateList,
                     enabled = !uiState.isSubmitting,
                 )
@@ -132,8 +134,8 @@ fun ShoppingScreen(container: AppContainer) {
             item {
                 SommarInfoBox(
                     emoji = "🛒",
-                    title = "No shopping lists yet",
-                    text = "Create your first list above to get started.",
+                    title = stringResource(R.string.shopping_empty_title),
+                    text = stringResource(R.string.shopping_empty_message),
                     accentColor = MeadowGreen,
                 )
             }
@@ -215,7 +217,7 @@ private fun ShoppingListCard(
         // ── Items ──
         if (list.items.isEmpty()) {
             Text(
-                text = "No items yet — add one below.",
+                text = stringResource(R.string.shopping_list_empty),
                 style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
             )
         } else {
@@ -241,7 +243,7 @@ private fun ShoppingListCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Text(
-                    text = "Estimated total",
+                    text = stringResource(R.string.shopping_estimated_total),
                     style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 )
                 Text(
@@ -261,27 +263,27 @@ private fun ShoppingListCard(
                 StyledInput(
                     value = draft.name,
                     onValueChange = onItemNameChanged,
-                    placeholder = "Item name",
+                    placeholder = stringResource(R.string.shopping_field_item_name),
                 )
             }
             Box(modifier = Modifier.width(64.dp)) {
                 StyledInput(
                     value = draft.quantity,
                     onValueChange = onItemQuantityChanged,
-                    placeholder = "Qty",
+                    placeholder = stringResource(R.string.shopping_field_qty),
                 )
             }
             Box(modifier = Modifier.width(58.dp)) {
                 StyledInput(
                     value = draft.unit,
                     onValueChange = onItemUnitChanged,
-                    placeholder = "Unit",
+                    placeholder = stringResource(R.string.shopping_field_unit),
                 )
             }
         }
         Spacer(Modifier.height(8.dp))
         SommarOutlineButton(
-            text = if (isSubmitting) "Adding…" else "+ Add Item",
+            text = if (isSubmitting) stringResource(R.string.shopping_button_adding) else stringResource(R.string.shopping_button_add_item),
             onClick = onAddItem,
             color = MeadowGreen,
         )
@@ -323,7 +325,7 @@ private fun ShoppingItemRow(
                 ),
             )
             Text(
-                text = "${item.quantity} ${item.unit}${item.purchasedPrice?.let { " · ${it.toInt()} SEK paid" } ?: ""}",
+                text = "${item.quantity} ${item.unit}${item.purchasedPrice?.let { " · ${it.toInt()}${stringResource(R.string.shopping_price_paid_suffix)}" } ?: ""}",
                 style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
             )
         }
