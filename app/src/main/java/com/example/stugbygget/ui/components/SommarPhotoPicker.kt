@@ -51,17 +51,22 @@ private class PhotoEntry(val uri: Uri) {
  * Displays selected photo thumbnails with a description field below each one,
  * and an add button that opens the image picker.
  *
- * TODO: wire selected URIs and descriptions to ViewModel/backend when ready.
+ * @param onPhotosChanged Called whenever the photo list or any description changes.
+ *   Passes the current list of (uri, description) pairs. Defaults to no-op.
  */
 @Composable
 fun SommarPhotoPicker(
     modifier: Modifier = Modifier,
+    onPhotosChanged: (List<Pair<Uri, String>>) -> Unit = {},
 ) {
     val photos = remember { mutableStateListOf<PhotoEntry>() }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents(),
-    ) { uris -> uris.forEach { photos.add(PhotoEntry(it)) } }
+    ) { uris ->
+        uris.forEach { photos.add(PhotoEntry(it)) }
+        onPhotosChanged(photos.map { it.uri to it.description })
+    }
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -124,7 +129,10 @@ fun SommarPhotoPicker(
                         }
                         BasicTextField(
                             value = entry.description,
-                            onValueChange = { entry.description = it },
+                            onValueChange = {
+                                entry.description = it
+                                onPhotosChanged(photos.map { p -> p.uri to p.description })
+                            },
                             textStyle = MaterialTheme.typography.labelSmall.copy(color = onSurface),
                             maxLines = 2,
                             modifier = Modifier.fillMaxWidth(),
