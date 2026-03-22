@@ -20,4 +20,6 @@ data class TodosUiState(
     val draftPhaseId: String = "",
     val isAddingTodo: Boolean = false,
     val addError: String? = null,
+    // Detail popup
+    val viewingTodo: TodoItem? = null,
 )
