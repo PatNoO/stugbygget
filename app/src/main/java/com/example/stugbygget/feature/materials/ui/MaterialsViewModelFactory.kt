@@ -12,10 +12,13 @@ class MaterialsViewModelFactory(
         if (modelClass.isAssignableFrom(MaterialsViewModel::class.java)) {
             return MaterialsViewModel(
                 observeMaterialsUseCase = container.observeMaterialsUseCase,
+                seedMaterialsUseCase = container.seedMaterialsUseCase,
                 observeOwnedMaterialsUseCase = container.observeOwnedMaterialsUseCase,
                 upsertOwnedMaterialUseCase = container.upsertOwnedMaterialUseCase,
                 deleteOwnedMaterialUseCase = container.deleteOwnedMaterialUseCase,
                 projectId = container.projectSessionRepository.getProjectId(),
+                contentResolver = container.applicationContext.contentResolver,
+                storage = container.storage,
             ) as T
         }
         throw IllegalArgumentException("Unknown ViewModel: ${modelClass.name}")
