@@ -8,9 +8,7 @@ import com.example.stugbygget.domain.usecase.DeletePhaseUseCase
 import com.example.stugbygget.domain.usecase.ObservePhasesUseCase
 import com.example.stugbygget.domain.usecase.UpsertPhaseUseCase
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneOffset
-import java.time.format.DateTimeParseException
 import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -59,23 +57,31 @@ class PlanningViewModel(
     }
 
     fun onShowAddSheet() {
-        _uiState.update { it.copy(showAddSheet = true, editingPhase = null, draftName = "", draftRoom = "", draftStartDate = "", draftEndDate = "", draftColor = "#8B2E16", draftIcon = "🔧", addError = null) }
+        _uiState.update {
+            it.copy(
+                showAddSheet = true,
+                editingPhase = null,
+                draftName = "",
+                draftRoom = "",
+                draftDescription = "",
+                draftStartMillis = null,
+                draftEndMillis = null,
+                addError = null,
+            )
+        }
     }
 
     fun onShowEditSheet(phase: RenovationPhase) {
-        val startStr = phase.startDate.atOffset(ZoneOffset.UTC).toLocalDate().toString()
-        val endStr = phase.endDate.atOffset(ZoneOffset.UTC).toLocalDate().toString()
         _uiState.update {
             it.copy(
                 showAddSheet = true,
                 editingPhase = phase,
                 draftName = phase.name,
                 draftRoom = phase.room,
-                draftStartDate = startStr,
-                draftEndDate = endStr,
-                draftColor = phase.color,
-                draftIcon = phase.icon,
-                addError = null
+                draftDescription = phase.description,
+                draftStartMillis = phase.startDate.toEpochMilli(),
+                draftEndMillis = phase.endDate.toEpochMilli(),
+                addError = null,
             )
         }
     }
@@ -104,10 +110,9 @@ class PlanningViewModel(
 
     fun onDraftNameChanged(value: String) = _uiState.update { it.copy(draftName = value, addError = null) }
     fun onDraftRoomChanged(value: String) = _uiState.update { it.copy(draftRoom = value, addError = null) }
-    fun onDraftStartDateChanged(value: String) = _uiState.update { it.copy(draftStartDate = value, addError = null) }
-    fun onDraftEndDateChanged(value: String) = _uiState.update { it.copy(draftEndDate = value, addError = null) }
-    fun onDraftColorChanged(value: String) = _uiState.update { it.copy(draftColor = value) }
-    fun onDraftIconChanged(value: String) = _uiState.update { it.copy(draftIcon = value) }
+    fun onDraftDescriptionChanged(value: String) = _uiState.update { it.copy(draftDescription = value) }
+    fun onDraftStartMillisChanged(millis: Long) = _uiState.update { it.copy(draftStartMillis = millis, addError = null) }
+    fun onDraftEndMillisChanged(millis: Long) = _uiState.update { it.copy(draftEndMillis = millis, addError = null) }
 
     fun onSubmitPhase() {
         val state = _uiState.value
@@ -119,15 +124,14 @@ class PlanningViewModel(
             _uiState.update { it.copy(addError = "Room is required.") }
             return
         }
-        val startInstant: Instant
-        val endInstant: Instant
-        try {
-            startInstant = LocalDate.parse(state.draftStartDate.trim()).atStartOfDay().toInstant(ZoneOffset.UTC)
-            endInstant = LocalDate.parse(state.draftEndDate.trim()).atStartOfDay().toInstant(ZoneOffset.UTC)
-        } catch (e: DateTimeParseException) {
-            _uiState.update { it.copy(addError = "Dates must be in YYYY-MM-DD format.") }
+        val startMillis = state.draftStartMillis
+        val endMillis = state.draftEndMillis
+        if (startMillis == null || endMillis == null) {
+            _uiState.update { it.copy(addError = "Both dates are required.") }
             return
         }
+        val startInstant = Instant.ofEpochMilli(startMillis)
+        val endInstant = Instant.ofEpochMilli(endMillis)
         if (!endInstant.isAfter(startInstant)) {
             _uiState.update { it.copy(addError = "End date must be after start date.") }
             return
@@ -138,11 +142,12 @@ class PlanningViewModel(
                 id = state.editingPhase?.id ?: UUID.randomUUID().toString(),
                 name = state.draftName.trim(),
                 room = state.draftRoom.trim(),
+                description = state.draftDescription.trim(),
                 startDate = startInstant,
                 endDate = endInstant,
                 progress = state.editingPhase?.progress ?: 0,
-                color = state.draftColor.trim().ifBlank { "#8B2E16" },
-                icon = state.draftIcon.trim().ifBlank { "🔧" },
+                color = state.editingPhase?.color ?: "#8B2E16",
+                icon = state.editingPhase?.icon ?: "🔧",
             )
             runCatching { upsertPhaseUseCase(_projectId, phase) }
                 .onSuccess { _uiState.update { it.copy(isAddingPhase = false, showAddSheet = false, editingPhase = null) } }
