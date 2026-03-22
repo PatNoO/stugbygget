@@ -14,10 +14,9 @@ data class PlanningUiState(
     val editingPhase: RenovationPhase? = null,
     val draftName: String = "",
     val draftRoom: String = "",
-    val draftStartDate: String = "",
-    val draftEndDate: String = "",
-    val draftColor: String = "#8B2E16",
-    val draftIcon: String = "🔧",
+    val draftDescription: String = "",
+    val draftStartMillis: Long? = null,
+    val draftEndMillis: Long? = null,
     val isAddingPhase: Boolean = false,
     val addError: String? = null,
     // Delete state

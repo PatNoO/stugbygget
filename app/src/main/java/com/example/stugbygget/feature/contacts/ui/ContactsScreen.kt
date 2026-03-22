@@ -21,7 +21,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
+import com.example.stugbygget.ui.components.SommarTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -284,7 +284,7 @@ private fun ContactSheet(
             modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
         )
 
-        OutlinedTextField(
+        SommarTextField(
             value = uiState.draftName,
             onValueChange = onNameChanged,
             label = { Text(stringResource(R.string.contacts_field_name)) },
@@ -293,7 +293,7 @@ private fun ContactSheet(
             modifier = Modifier.fillMaxWidth()
         )
 
-        OutlinedTextField(
+        SommarTextField(
             value = uiState.draftPhone,
             onValueChange = onPhoneChanged,
             label = { Text(stringResource(R.string.contacts_field_phone)) },
@@ -301,7 +301,7 @@ private fun ContactSheet(
             modifier = Modifier.fillMaxWidth()
         )
 
-        OutlinedTextField(
+        SommarTextField(
             value = uiState.draftEmail,
             onValueChange = onEmailChanged,
             label = { Text(stringResource(R.string.contacts_field_email)) },

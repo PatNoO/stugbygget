@@ -132,21 +132,23 @@ fun SommarOutlineButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colorScheme.primary,
+    enabled: Boolean = true,
 ) {
+    val resolvedColor = if (enabled) color else MaterialTheme.colorScheme.onSurfaceVariant
     Box(
         modifier = modifier
             .fillMaxWidth()
             .clip(SommarShapes.button)
             .background(Color.Transparent)
-            .border(1.5.dp, color, SommarShapes.button)
-            .clickable(onClick = onClick)
+            .border(1.5.dp, resolvedColor, SommarShapes.button)
+            .clickable(enabled = enabled, onClick = onClick)
             .padding(vertical = 14.dp),
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.labelLarge,
-            color = color,
+            color = resolvedColor,
         )
     }
 }
