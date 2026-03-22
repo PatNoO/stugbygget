@@ -29,6 +29,7 @@ class FirestoreOwnedMaterialRepository(
                         quantity = (data["quantity"] as? Number)?.toDouble() ?: 0.0,
                         unit = data["unit"] as? String ?: "",
                         notes = data["notes"] as? String ?: "",
+                        photoUrl = data["photoUrl"] as? String ?: "",
                     )
                 }.getOrNull()
             }.filterNotNull()
@@ -43,6 +44,7 @@ class FirestoreOwnedMaterialRepository(
             "quantity" to material.quantity,
             "unit" to material.unit,
             "notes" to material.notes,
+            "photoUrl" to material.photoUrl,
         )
         if (material.id.isBlank()) {
             collection(projectId).add(data).await()

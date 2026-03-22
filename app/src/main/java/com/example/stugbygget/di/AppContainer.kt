@@ -69,6 +69,7 @@ import com.example.stugbygget.domain.usecase.UpdateNotificationSettingsUseCase
 import com.example.stugbygget.domain.usecase.ToggleShoppingItemPurchasedUseCase
 import com.example.stugbygget.domain.usecase.ToggleTodoUseCase
 import com.example.stugbygget.domain.usecase.UploadPhotoUseCase
+import com.example.stugbygget.domain.usecase.SeedMaterialsUseCase
 import com.example.stugbygget.domain.usecase.UpsertOwnedMaterialUseCase
 import com.example.stugbygget.domain.usecase.UpsertPhaseUseCase
 import com.example.stugbygget.domain.usecase.UpsertTodoUseCase
@@ -222,6 +223,9 @@ class AppContainer(
     }
     val observeMaterialsUseCase: ObserveMaterialsUseCase by lazy {
         ObserveMaterialsUseCase(materialRepository)
+    }
+    val seedMaterialsUseCase: SeedMaterialsUseCase by lazy {
+        SeedMaterialsUseCase(materialRepository)
     }
     val observeOwnedMaterialsUseCase: ObserveOwnedMaterialsUseCase by lazy {
         ObserveOwnedMaterialsUseCase(ownedMaterialRepository)
