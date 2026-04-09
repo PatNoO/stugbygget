@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -58,10 +57,9 @@ import com.example.stugbygget.ui.components.SommarFilterChip
 import com.example.stugbygget.ui.components.SommarHeaderCard
 import com.example.stugbygget.ui.components.SommarInfoBox
 import com.example.stugbygget.ui.components.SommarOutlineButton
-import com.example.stugbygget.ui.components.SommarSectionTitle
-import com.example.stugbygget.ui.theme.Border
 import com.example.stugbygget.ui.components.SommarPhotoPicker
 import com.example.stugbygget.ui.components.SommarSectionTitle
+import com.example.stugbygget.ui.theme.Border
 import com.example.stugbygget.ui.theme.CreamBackground
 import com.example.stugbygget.ui.theme.Fraunces
 import com.example.stugbygget.ui.theme.GalleryAfter
@@ -104,7 +102,6 @@ fun GalleryScreen(container: AppContainer) {
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = viewModel::onShowCameraCapture,
                 onClick = viewModel::onShowAddSheet,
                 containerColor = LakeBlue,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -161,7 +158,7 @@ fun GalleryScreen(container: AppContainer) {
         )
     }
 
-    // ── Upload confirmation sheet ──
+    // ── Upload confirmation sheet (after camera capture) ──
     if (uiState.showUploadSheet) {
         ModalBottomSheet(
             onDismissRequest = viewModel::onDismissUploadSheet,
@@ -174,15 +171,21 @@ fun GalleryScreen(container: AppContainer) {
                 onPhaseChanged = viewModel::onDraftPhaseChanged,
                 onSubmit = viewModel::onSubmitCapturedPhoto,
                 onDismiss = viewModel::onDismissUploadSheet,
+            )
+        }
+    }
+
+    // ── Photo viewer ──
     if (uiState.viewingPhoto != null) {
         PhotoViewerDialog(
-            photo = uiState.viewingPhoto,
+            photo = uiState.viewingPhoto!!,
             isDeleting = uiState.isDeleting,
-            onDelete = { viewModel.onRequestDelete(uiState.viewingPhoto.id) },
+            onDelete = { viewModel.onRequestDelete(uiState.viewingPhoto!!.id) },
             onDismiss = viewModel::onDismissViewer,
         )
     }
 
+    // ── Delete confirmation ──
     if (uiState.pendingDeleteId != null) {
         AlertDialog(
             onDismissRequest = viewModel::onCancelDelete,
@@ -199,6 +202,9 @@ fun GalleryScreen(container: AppContainer) {
                 }
             },
         )
+    }
+
+    // ── Add photos sheet (gallery picker) ──
     if (uiState.showAddSheet) {
         ModalBottomSheet(
             onDismissRequest = viewModel::onDismissAddSheet,
@@ -222,13 +228,6 @@ private fun UploadCaptureSheet(
     uiState: GalleryUiState,
     onRoomChanged: (String) -> Unit,
     onPhaseChanged: (PhotoPhase) -> Unit,
-  
-  
-private fun AddPhotoSheet(
-    uiState: GalleryUiState,
-    onRoomChanged: (String) -> Unit,
-    onPhaseChanged: (PhotoPhase) -> Unit,
-    onPhotosChanged: (List<Pair<android.net.Uri, String>>) -> Unit,
     onSubmit: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -241,12 +240,11 @@ private fun AddPhotoSheet(
     ) {
         Text(
             text = "Save Photo",
-            text = "Add Photos",
             style = MaterialTheme.typography.titleMedium.copy(fontFamily = Fraunces),
             modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
         )
 
-        // ── Photo preview ──
+        // ── Captured photo preview ──
         if (uiState.capturedUri != null) {
             SubcomposeAsyncImage(
                 model = uiState.capturedUri,
@@ -268,6 +266,84 @@ private fun AddPhotoSheet(
                 },
             )
         }
+
+        OutlinedTextField(
+            value = uiState.draftRoomName,
+            onValueChange = onRoomChanged,
+            label = { Text("Room *") },
+            singleLine = true,
+            isError = uiState.uploadError != null && uiState.draftRoomName.isBlank(),
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Text(
+            text = stringResource(R.string.common_field_phase),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            PhotoPhase.entries.forEach { phase ->
+                SommarFilterChip(
+                    text = phaseLabel(phase),
+                    selected = uiState.draftPhase == phase,
+                    onClick = { onPhaseChanged(phase) },
+                    activeColor = phaseColor(phase),
+                )
+            }
+        }
+
+        if (uiState.uploadError != null) {
+            Text(
+                text = uiState.uploadError,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+
+        Spacer(Modifier.height(4.dp))
+
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            SommarOutlineButton(
+                text = stringResource(R.string.common_cancel),
+                onClick = onDismiss,
+                modifier = Modifier.weight(1f),
+            )
+            if (uiState.isUploading) {
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = LakeBlue, modifier = Modifier.size(28.dp))
+                }
+            } else {
+                SommarButton(
+                    text = "Save",
+                    onClick = onSubmit,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AddPhotoSheet(
+    uiState: GalleryUiState,
+    onRoomChanged: (String) -> Unit,
+    onPhaseChanged: (PhotoPhase) -> Unit,
+    onPhotosChanged: (List<Pair<android.net.Uri, String>>) -> Unit,
+    onSubmit: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .padding(bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            text = "Add Photos",
+            style = MaterialTheme.typography.titleMedium.copy(fontFamily = Fraunces),
+            modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
+        )
 
         OutlinedTextField(
             value = uiState.draftRoomName,
@@ -318,7 +394,6 @@ private fun AddPhotoSheet(
                 }
             } else {
                 SommarButton(
-                    text = "Save",
                     text = "Upload",
                     onClick = onSubmit,
                     modifier = Modifier.weight(1f),
@@ -512,7 +587,6 @@ private fun PhotoCard(
     val color = phaseColor(photo.phase)
 
     SommarCard(modifier = modifier.clickable(onClick = onClick)) {
-        // ── Photo image ──
         SubcomposeAsyncImage(
             model = photo.downloadUrl,
             contentDescription = photo.description.ifBlank { photo.roomName },
@@ -536,7 +610,6 @@ private fun PhotoCard(
 
         Spacer(Modifier.height(8.dp))
 
-        // ── Phase badge ──
         SommarBadge(
             text = phaseLabel(photo.phase).uppercase(),
             color = color,
@@ -546,7 +619,6 @@ private fun PhotoCard(
 
         Spacer(Modifier.height(4.dp))
 
-        // ── Description & meta ──
         Text(
             text = photo.description.ifBlank { photo.roomName },
             style = MaterialTheme.typography.bodySmall,

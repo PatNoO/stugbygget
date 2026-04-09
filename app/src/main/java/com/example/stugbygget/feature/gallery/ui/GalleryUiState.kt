@@ -14,17 +14,16 @@ data class GalleryUiState(
     // Camera capture state
     val showCameraCapture: Boolean = false,
     val capturedUri: Uri? = null,
-    // Upload sheet state (shown after capture)
     val showUploadSheet: Boolean = false,
+    // Shared draft state (used by both upload sheet and add sheet)
     val draftRoomName: String = "",
     val draftPhase: PhotoPhase = PhotoPhase.DURING,
+    // Photo viewer / delete state
     val viewingPhoto: PhotoItem? = null,
     val pendingDeleteId: String? = null,
     val isDeleting: Boolean = false,
-    // Add-photo sheet state
+    // Gallery picker sheet state
     val showAddSheet: Boolean = false,
-    val draftRoomName: String = "",
-    val draftPhase: PhotoPhase = PhotoPhase.DURING,
     val draftPhotos: List<Pair<Uri, String>> = emptyList(),
     val isUploading: Boolean = false,
     val uploadError: String? = null,
