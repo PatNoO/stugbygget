@@ -264,6 +264,8 @@ private fun ShoppingListCard(
         val hasLinkedItems = list.items.any { it.materialId != null }
         if (hasLinkedItems) {
             SommarOutlineButton(
+                text = if (isComparingPrice) "Comparing..." else "Compare Store Prices",
+                onClick = if (isComparingPrice) ({}) else onComparePrice,
                 text = if (isComparingPrice) stringResource(R.string.shopping_button_comparing) else stringResource(R.string.shopping_button_compare_prices),
                 onClick = onComparePrice,
                 enabled = !isComparingPrice,

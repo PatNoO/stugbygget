@@ -12,6 +12,7 @@ sealed class AppRoute(val route: String, val title: String) {
     data object Shopping : AppRoute("shopping", "Shopping")
     data object Budget : AppRoute("budget", "Budget")
     data object Contacts : AppRoute("contacts", "Contacts")
+    data object Settings : AppRoute("settings", "Settings")
 }
 
 val primaryRoutes = listOf(

@@ -46,10 +46,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.stugbygget.data.local.ThemePreferences
 import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.feature.auth.ui.AuthViewModel
 import com.example.stugbygget.feature.auth.ui.AuthViewModelFactory
 import com.example.stugbygget.feature.auth.ui.SignInScreen
+import com.example.stugbygget.feature.settings.ui.AppThemeViewModel
+import com.example.stugbygget.feature.settings.ui.AppThemeViewModelFactory
 import com.example.stugbygget.navigation.AppNavHost
 import com.example.stugbygget.navigation.primaryRoutes
 import com.example.stugbygget.ui.components.SommarTopBar
@@ -76,6 +79,10 @@ class MainActivity : ComponentActivity() {
         AuthViewModelFactory((application as StugByggetApp).container)
     }
 
+    private val appThemeViewModel: AppThemeViewModel by viewModels {
+        AppThemeViewModelFactory(ThemePreferences(applicationContext))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -83,9 +90,14 @@ class MainActivity : ComponentActivity() {
         requestNotificationPermissionIfNeeded()
 
         setContent {
-            StugbyggetTheme {
+            val themeState by appThemeViewModel.state.collectAsStateWithLifecycle()
+            StugbyggetTheme(
+                appTheme = themeState.appTheme,
+                darkMode = themeState.darkMode,
+            ) {
                 AppContent(
                     authViewModel = authViewModel,
+                    appThemeViewModel = appThemeViewModel,
                     pendingNavigationRoute = pendingNavigationRoute,
                     onNavigationConsumed = { pendingNavigationRoute = null },
                 )
@@ -112,6 +124,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun AppContent(
     authViewModel: AuthViewModel,
+    appThemeViewModel: AppThemeViewModel,
     pendingNavigationRoute: String?,
     onNavigationConsumed: () -> Unit,
 ) {
@@ -132,6 +145,7 @@ private fun AppContent(
     } else {
         MainNavigationScaffold(
             container = container,
+            appThemeViewModel = appThemeViewModel,
             onSignOut = authViewModel::signOut,
             pendingNavigationRoute = pendingNavigationRoute,
             onNavigationConsumed = onNavigationConsumed,
@@ -152,12 +166,14 @@ private val moreNavItems = listOf(
     NavItem("🔗", "Materials", AppRoute.Materials.route),
     NavItem("📊", "Budget", AppRoute.Budget.route),
     NavItem("👤", "Contacts", AppRoute.Contacts.route),
+    NavItem("⚙️", "Settings", AppRoute.Settings.route),
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun MainNavigationScaffold(
     container: AppContainer,
+    appThemeViewModel: AppThemeViewModel,
     onSignOut: () -> Unit,
     pendingNavigationRoute: String?,
     onNavigationConsumed: () -> Unit,
@@ -230,6 +246,7 @@ private fun MainNavigationScaffold(
         AppNavHost(
             navController = navController,
             container = container,
+            appThemeViewModel = appThemeViewModel,
             modifier = Modifier.padding(innerPadding)
         )
     }
