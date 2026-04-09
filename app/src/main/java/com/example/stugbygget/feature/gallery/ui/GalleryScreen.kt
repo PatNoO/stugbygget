@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
-import androidx.compose.foundation.lazy.staggeredgrid.rememberLazyStaggeredGridState
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -102,6 +101,7 @@ fun GalleryScreen(container: AppContainer) {
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
+                onClick = viewModel::onShowAddSheet,
                 onClick = viewModel::onShowCameraCapture,
                 containerColor = LakeBlue,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -157,6 +157,7 @@ fun GalleryScreen(container: AppContainer) {
         )
     }
 
+    // ── Upload confirmation sheet (after camera capture) ──
     // ── Upload confirmation sheet (shown after camera capture) ──
     if (uiState.showUploadSheet) {
         ModalBottomSheet(
@@ -173,6 +174,7 @@ fun GalleryScreen(container: AppContainer) {
         }
     }
 
+    // ── Photo viewer ──
     // ── Add-photo gallery picker sheet ──
     if (uiState.showAddSheet) {
         ModalBottomSheet(
@@ -200,7 +202,7 @@ fun GalleryScreen(container: AppContainer) {
         )
     }
 
-    // ── Delete confirmation dialog ──
+    // ── Delete confirmation ──
     if (uiState.pendingDeleteId != null) {
         AlertDialog(
             onDismissRequest = viewModel::onCancelDelete,
@@ -217,6 +219,24 @@ fun GalleryScreen(container: AppContainer) {
                 }
             },
         )
+    }
+
+    // ── Add photos sheet (gallery picker) ──
+    if (uiState.showAddSheet) {
+        ModalBottomSheet(
+            onDismissRequest = viewModel::onDismissAddSheet,
+            sheetState = sheetState,
+            containerColor = CreamBackground,
+        ) {
+            AddPhotoSheet(
+                uiState = uiState,
+                onRoomChanged = viewModel::onDraftRoomChanged,
+                onPhaseChanged = viewModel::onDraftPhaseChanged,
+                onPhotosChanged = viewModel::onPhotosChanged,
+                onSubmit = viewModel::onSubmitPhotos,
+                onDismiss = viewModel::onDismissAddSheet,
+            )
+        }
     }
 }
 
@@ -235,7 +255,7 @@ private fun UploadCaptureSheet(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = stringResource(R.string.gallery_sheet_upload_title),
+            text = "Save Photo",
             style = MaterialTheme.typography.titleMedium.copy(fontFamily = Fraunces),
             modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
         )
@@ -347,6 +367,84 @@ private fun AddPhotoSheet(
             }
         }
 
+        if (uiState.uploadError != null) {
+            Text(
+                text = uiState.uploadError,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+
+        Spacer(Modifier.height(4.dp))
+
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            SommarOutlineButton(
+                text = stringResource(R.string.common_cancel),
+                onClick = onDismiss,
+                modifier = Modifier.weight(1f),
+            )
+            if (uiState.isUploading) {
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = LakeBlue, modifier = Modifier.size(28.dp))
+                }
+            } else {
+                SommarButton(
+                    text = "Save",
+                    onClick = onSubmit,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AddPhotoSheet(
+    uiState: GalleryUiState,
+    onRoomChanged: (String) -> Unit,
+    onPhaseChanged: (PhotoPhase) -> Unit,
+    onPhotosChanged: (List<Pair<android.net.Uri, String>>) -> Unit,
+    onSubmit: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .padding(bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            text = "Add Photos",
+            style = MaterialTheme.typography.titleMedium.copy(fontFamily = Fraunces),
+            modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
+        )
+
+        OutlinedTextField(
+            value = uiState.draftRoomName,
+            onValueChange = onRoomChanged,
+            label = { Text("Room *") },
+            singleLine = true,
+            isError = uiState.uploadError != null && uiState.draftRoomName.isBlank(),
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Text(
+            text = stringResource(R.string.common_field_phase),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            PhotoPhase.entries.forEach { phase ->
+                SommarFilterChip(
+                    text = phaseLabel(phase),
+                    selected = uiState.draftPhase == phase,
+                    onClick = { onPhaseChanged(phase) },
+                    activeColor = phaseColor(phase),
+                )
+            }
+        }
+
         SommarPhotoPicker(onPhotosChanged = onPhotosChanged)
 
         if (uiState.uploadError != null) {
@@ -371,6 +469,7 @@ private fun AddPhotoSheet(
                 }
             } else {
                 SommarButton(
+                    text = "Upload",
                     text = stringResource(R.string.gallery_button_upload),
                     onClick = onSubmit,
                     modifier = Modifier.weight(1f),
@@ -545,7 +644,6 @@ private fun PhotoCard(
     val color = phaseColor(photo.phase)
 
     SommarCard(modifier = modifier.clickable(onClick = onClick)) {
-        // ── Photo image ──
         SubcomposeAsyncImage(
             model = photo.downloadUrl,
             contentDescription = photo.description.ifBlank { null },
@@ -569,7 +667,6 @@ private fun PhotoCard(
 
         Spacer(Modifier.height(8.dp))
 
-        // ── Phase badge ──
         SommarBadge(
             text = phaseLabel(photo.phase).uppercase(),
             color = color,

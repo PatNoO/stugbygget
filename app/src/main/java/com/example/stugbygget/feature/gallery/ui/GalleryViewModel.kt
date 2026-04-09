@@ -24,8 +24,8 @@ import kotlinx.coroutines.launch
 
 class GalleryViewModel(
     private val observePhotosUseCase: ObservePhotosUseCase,
-    private val deletePhotoUseCase: DeletePhotoUseCase,
     private val uploadPhotoUseCase: UploadPhotoUseCase,
+    private val deletePhotoUseCase: DeletePhotoUseCase,
     private val contentResolver: ContentResolver,
     private val currentUserEmail: String,
     private val projectId: String,
@@ -63,6 +63,55 @@ class GalleryViewModel(
                 capturedUri = uri,
                 showUploadSheet = true,
                 draftPhase = PhotoPhase.DURING,
+            )
+        }
+    }
+
+    fun onViewPhoto(photo: PhotoItem) {
+        _uiState.update { it.copy(viewingPhoto = photo) }
+    }
+
+    fun onDismissViewer() {
+        _uiState.update { it.copy(viewingPhoto = null) }
+    }
+
+    fun onRequestDelete(photoId: String) {
+        _uiState.update { it.copy(pendingDeleteId = photoId) }
+    }
+
+    fun onCancelDelete() {
+        _uiState.update { it.copy(pendingDeleteId = null) }
+    }
+
+    fun onConfirmDelete() {
+        val state = _uiState.value
+        val photoId = state.pendingDeleteId ?: return
+        val photo = state.photos.firstOrNull { it.id == photoId } ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeleting = true) }
+            runCatching {
+                deletePhotoUseCase(projectId, photoId, photo.storagePath, deleteFromStorage = true)
+            }.onSuccess {
+                _uiState.update { it.copy(isDeleting = false, pendingDeleteId = null, viewingPhoto = null) }
+            }.onFailure { throwable ->
+                _uiState.update {
+                    it.copy(
+                        isDeleting = false,
+                        pendingDeleteId = null,
+                        errorMessage = throwable.message ?: "Failed to delete photo.",
+                    )
+                }
+            }
+        }
+    }
+
+    fun onShowAddSheet() {
+        _uiState.update {
+            it.copy(
+                showAddSheet = true,
+                draftRoomName = "",
+                draftPhase = PhotoPhase.DURING,
+                draftPhotos = emptyList(),
                 uploadError = null,
             )
         }
@@ -70,6 +119,23 @@ class GalleryViewModel(
 
     fun onDismissUploadSheet() {
         _uiState.update { it.copy(showUploadSheet = false, capturedUri = null, uploadError = null) }
+    }
+
+    fun onDismissAddSheet() {
+        _uiState.update { it.copy(showAddSheet = false, uploadError = null) }
+    }
+
+    fun onDraftRoomChanged(room: String) = _uiState.update { it.copy(draftRoomName = room, uploadError = null) }
+    fun onDraftPhaseChanged(phase: PhotoPhase) = _uiState.update { it.copy(draftPhase = phase) }
+    fun onPhotosChanged(photos: List<Pair<Uri, String>>) = _uiState.update { it.copy(draftPhotos = photos) }
+
+    fun onSubmitCapturedPhoto() {
+        val state = _uiState.value
+        val uri = state.capturedUri ?: return
+        if (state.draftRoomName.isBlank()) {
+            _uiState.update { it.copy(uploadError = "Room name is required.") }
+            return
+        }
     }
 
     fun onSubmitCapturedPhoto() {
@@ -100,6 +166,12 @@ class GalleryViewModel(
         }
     }
 
+    fun onSubmitPhotos() {
+        val state = _uiState.value
+        if (state.draftRoomName.isBlank()) {
+            _uiState.update { it.copy(uploadError = "Room name is required.") }
+            return
+        }
     // ── Gallery picker (add-photo) flow ──
 
     fun onShowAddSheet() {
