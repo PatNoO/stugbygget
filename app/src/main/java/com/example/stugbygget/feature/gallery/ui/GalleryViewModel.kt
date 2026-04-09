@@ -32,7 +32,6 @@ class GalleryViewModel(
 ) : ViewModel() {
 
     private data class GalleryFilters(
-        val roomName: String?,
         val phase: PhotoPhase?
     )
 
@@ -43,13 +42,11 @@ class GalleryViewModel(
         observePhotos()
     }
 
-    fun onRoomFilterSelected(room: String?) {
-        _uiState.update { it.copy(selectedRoom = room) }
-    }
-
     fun onPhaseFilterSelected(phase: PhotoPhase?) {
         _uiState.update { it.copy(selectedPhase = phase) }
     }
+
+    // ── Camera capture flow ──
 
     fun onShowCameraCapture() {
         _uiState.update { it.copy(showCameraCapture = true) }
@@ -65,7 +62,6 @@ class GalleryViewModel(
                 showCameraCapture = false,
                 capturedUri = uri,
                 showUploadSheet = true,
-                draftRoomName = "",
                 draftPhase = PhotoPhase.DURING,
             )
         }
@@ -140,6 +136,11 @@ class GalleryViewModel(
             _uiState.update { it.copy(uploadError = "Room name is required.") }
             return
         }
+    }
+
+    fun onSubmitCapturedPhoto() {
+        val state = _uiState.value
+        val uri = state.capturedUri ?: return
         viewModelScope.launch(Dispatchers.IO) {
             _uiState.update { it.copy(isUploading = true, uploadError = null) }
             runCatching {
@@ -149,7 +150,7 @@ class GalleryViewModel(
                 val fileName = uri.lastPathSegment ?: "photo_${System.currentTimeMillis()}"
                 uploadPhotoUseCase(
                     projectId = projectId,
-                    roomName = state.draftRoomName.trim(),
+                    roomName = "",
                     phase = state.draftPhase,
                     description = "",
                     uploadedBy = currentUserEmail,
@@ -171,6 +172,28 @@ class GalleryViewModel(
             _uiState.update { it.copy(uploadError = "Room name is required.") }
             return
         }
+    // ── Gallery picker (add-photo) flow ──
+
+    fun onShowAddSheet() {
+        _uiState.update {
+            it.copy(
+                showAddSheet = true,
+                draftPhase = PhotoPhase.DURING,
+                draftPhotos = emptyList(),
+                uploadError = null,
+            )
+        }
+    }
+
+    fun onDismissAddSheet() {
+        _uiState.update { it.copy(showAddSheet = false, uploadError = null) }
+    }
+
+    fun onDraftPhaseChanged(phase: PhotoPhase) = _uiState.update { it.copy(draftPhase = phase) }
+    fun onPhotosChanged(photos: List<Pair<Uri, String>>) = _uiState.update { it.copy(draftPhotos = photos) }
+
+    fun onSubmitPhotos() {
+        val state = _uiState.value
         if (state.draftPhotos.isEmpty()) {
             _uiState.update { it.copy(uploadError = "Select at least one photo.") }
             return
@@ -186,7 +209,7 @@ class GalleryViewModel(
                     val fileName = uri.lastPathSegment ?: "photo_${System.currentTimeMillis()}"
                     uploadPhotoUseCase(
                         projectId = projectId,
-                        roomName = state.draftRoomName.trim(),
+                        roomName = "",
                         phase = state.draftPhase,
                         description = description.trim(),
                         uploadedBy = currentUserEmail,
@@ -208,21 +231,56 @@ class GalleryViewModel(
         }
     }
 
+    // ── Photo viewer / delete flow ──
+
+    fun onViewPhoto(photo: PhotoItem) {
+        _uiState.update { it.copy(viewingPhoto = photo) }
+    }
+
+    fun onDismissViewer() {
+        _uiState.update { it.copy(viewingPhoto = null) }
+    }
+
+    fun onRequestDelete(photoId: String) {
+        _uiState.update { it.copy(pendingDeleteId = photoId) }
+    }
+
+    fun onCancelDelete() {
+        _uiState.update { it.copy(pendingDeleteId = null) }
+    }
+
+    fun onConfirmDelete() {
+        val state = _uiState.value
+        val photoId = state.pendingDeleteId ?: return
+        val photo = state.photos.firstOrNull { it.id == photoId } ?: return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isDeleting = true) }
+            runCatching {
+                deletePhotoUseCase(projectId, photoId, photo.storagePath, deleteFromStorage = true)
+            }.onSuccess {
+                _uiState.update { it.copy(isDeleting = false, pendingDeleteId = null, viewingPhoto = null) }
+            }.onFailure { throwable ->
+                _uiState.update {
+                    it.copy(
+                        isDeleting = false,
+                        pendingDeleteId = null,
+                        errorMessage = throwable.message ?: "Failed to delete photo.",
+                    )
+                }
+            }
+        }
+    }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun observePhotos() {
         viewModelScope.launch {
             _uiState
-                .map { state ->
-                    GalleryFilters(
-                        roomName = state.selectedRoom,
-                        phase = state.selectedPhase
-                    )
-                }
+                .map { state -> GalleryFilters(phase = state.selectedPhase) }
                 .distinctUntilChanged()
                 .flatMapLatest { filters ->
                     observePhotosUseCase(
                         projectId = projectId,
-                        roomName = filters.roomName,
+                        roomName = null,
                         phase = filters.phase
                     )
                 }
@@ -240,7 +298,6 @@ class GalleryViewModel(
                         it.copy(
                             isLoading = false,
                             photos = photos,
-                            availableRooms = photos.map { photo -> photo.roomName }.distinct().sorted(),
                             errorMessage = null
                         )
                     }

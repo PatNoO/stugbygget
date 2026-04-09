@@ -7,4 +7,5 @@ import kotlinx.coroutines.flow.Flow
 interface MaterialRepository {
     fun observeMaterials(projectId: String): Flow<List<MaterialSpec>>
     fun observePriceQuotes(projectId: String, materialId: String): Flow<List<PriceQuote>>
+    suspend fun seedDefaultMaterials(projectId: String)
 }

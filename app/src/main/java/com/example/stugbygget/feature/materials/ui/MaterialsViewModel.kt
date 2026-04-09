@@ -1,5 +1,7 @@
 package com.example.stugbygget.feature.materials.ui
 
+import android.content.ContentResolver
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.stugbygget.domain.model.OwnedMaterial
@@ -8,24 +10,34 @@ import com.example.stugbygget.domain.usecase.DeleteOwnedMaterialUseCase
 import com.example.stugbygget.domain.usecase.ObserveMaterialsUseCase
 import com.example.stugbygget.domain.usecase.ObserveOwnedMaterialsUseCase
 import com.example.stugbygget.domain.usecase.ObservePriceQuotesUseCase
+import com.example.stugbygget.domain.usecase.SeedMaterialsUseCase
 import com.example.stugbygget.domain.usecase.UpsertOwnedMaterialUseCase
+import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import java.util.UUID
 
 class MaterialsViewModel(
     private val observeMaterialsUseCase: ObserveMaterialsUseCase,
+    private val seedMaterialsUseCase: SeedMaterialsUseCase,
     private val observeOwnedMaterialsUseCase: ObserveOwnedMaterialsUseCase,
     private val upsertOwnedMaterialUseCase: UpsertOwnedMaterialUseCase,
     private val deleteOwnedMaterialUseCase: DeleteOwnedMaterialUseCase,
     private val projectId: String,
+    private val contentResolver: ContentResolver,
+    private val storage: FirebaseStorage,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MaterialsUiState(isLoading = true))
     val uiState: StateFlow<MaterialsUiState> = _uiState.asStateFlow()
+
+    private var seeded = false
 
     init {
         viewModelScope.launch {
@@ -36,6 +48,12 @@ class MaterialsViewModel(
                     }
                 }
                 .collect { materials ->
+                    if (materials.isEmpty() && !seeded) {
+                        seeded = true
+                        viewModelScope.launch {
+                            runCatching { seedMaterialsUseCase(projectId) }
+                        }
+                    }
                     _uiState.update { it.copy(isLoading = false, materials = materials, errorMessage = null) }
                 }
         }
@@ -60,6 +78,21 @@ class MaterialsViewModel(
                 draftOwnedQuantity = "",
                 draftOwnedUnit = "",
                 draftOwnedNotes = "",
+                draftOwnedPhotoUri = null,
+                ownedAddError = null,
+            )
+        }
+    }
+
+    fun onShowOwnedAddSheetFromCatalog(name: String) {
+        _uiState.update {
+            it.copy(
+                showOwnedAddSheet = true,
+                draftOwnedName = name,
+                draftOwnedQuantity = "",
+                draftOwnedUnit = "",
+                draftOwnedNotes = "",
+                draftOwnedPhotoUri = null,
                 ownedAddError = null,
             )
         }
@@ -73,6 +106,9 @@ class MaterialsViewModel(
     fun onDraftOwnedQuantityChanged(value: String) = _uiState.update { it.copy(draftOwnedQuantity = value) }
     fun onDraftOwnedUnitChanged(value: String) = _uiState.update { it.copy(draftOwnedUnit = value) }
     fun onDraftOwnedNotesChanged(value: String) = _uiState.update { it.copy(draftOwnedNotes = value) }
+    fun onDraftOwnedPhotoSelected(uri: Uri) = _uiState.update { it.copy(draftOwnedPhotoUri = uri) }
+    fun onViewOwnedPhoto(url: String) = _uiState.update { it.copy(viewingPhotoUrl = url) }
+    fun onDismissPhotoViewer() = _uiState.update { it.copy(viewingPhotoUrl = null) }
 
     fun onSubmitOwnedMaterial() {
         val state = _uiState.value
@@ -85,8 +121,18 @@ class MaterialsViewModel(
             return
         }
         _uiState.update { it.copy(isAddingOwned = true, ownedAddError = null) }
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             runCatching {
+                val photoUrl = state.draftOwnedPhotoUri?.let { uri ->
+                    val bytes = contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                        ?: throw IllegalStateException("Could not read photo.")
+                    val mimeType = contentResolver.getType(uri) ?: "image/jpeg"
+                    val ext = if (mimeType.contains("png")) "png" else "jpg"
+                    val ref = storage.reference
+                        .child("projects/$projectId/owned_materials/${UUID.randomUUID()}.$ext")
+                    ref.putBytes(bytes).await()
+                    ref.downloadUrl.await().toString()
+                } ?: ""
                 upsertOwnedMaterialUseCase(
                     projectId,
                     OwnedMaterial(
@@ -95,6 +141,7 @@ class MaterialsViewModel(
                         quantity = quantity,
                         unit = state.draftOwnedUnit.trim(),
                         notes = state.draftOwnedNotes.trim(),
+                        photoUrl = photoUrl,
                     ),
                 )
             }.onSuccess {

@@ -19,12 +19,14 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
+import com.example.stugbygget.ui.components.SommarTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -114,6 +116,7 @@ fun TodosScreen(container: AppContainer) {
                 onAssigneeSelected = viewModel::onAssigneeFilterSelected,
                 onTodoToggle = { id, checked -> viewModel.onTodoToggle(id, checked) },
                 onEditTodo = viewModel::onShowEditSheet,
+                onViewTodo = viewModel::onViewTodo,
             )
         }
 
@@ -144,6 +147,138 @@ fun TodosScreen(container: AppContainer) {
             )
         }
     }
+
+    // Detail popup
+    uiState.viewingTodo?.let { todo ->
+        TodoDetailDialog(
+            todo = todo,
+            onDismiss = viewModel::onDismissTodoDetail,
+            onEdit = viewModel::onShowEditSheet,
+            onToggle = { viewModel.onTodoToggle(todo.id, !todo.done) },
+        )
+    }
+}
+
+@Composable
+private fun TodoDetailDialog(
+    todo: TodoItem,
+    onDismiss: () -> Unit,
+    onEdit: (TodoItem) -> Unit,
+    onToggle: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = CreamBackground,
+        title = {
+            Text(
+                text = todo.text,
+                style = MaterialTheme.typography.titleMedium.copy(fontFamily = Fraunces),
+            )
+        },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                // Done status
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clip(StugbyggetShapes.extraSmall)
+                            .background(if (todo.done) MeadowGreen else Color.Transparent)
+                            .border(
+                                2.dp,
+                                if (todo.done) MeadowGreen else Border,
+                                StugbyggetShapes.extraSmall,
+                            ),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        if (todo.done) {
+                            Text("✓", color = Color.White, style = MaterialTheme.typography.labelSmall)
+                        }
+                    }
+                    Text(
+                        text = if (todo.done) stringResource(R.string.common_done) else stringResource(R.string.todos_status_not_done),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = if (todo.done) MeadowGreen else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+
+                // Priority
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.common_field_priority) + ":",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    SommarBadge(
+                        text = todo.priority.name,
+                        color = priorityColor(todo.priority),
+                        backgroundColor = priorityColor(todo.priority).copy(alpha = 0.08f),
+                        borderColor = priorityColor(todo.priority).copy(alpha = 0.2f),
+                    )
+                }
+
+                // Assignee
+                if (todo.assignee.isNotBlank()) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.common_field_assignee) + ":",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            text = todo.assignee,
+                            style = MaterialTheme.typography.bodySmall.copy(color = LakeBlue),
+                        )
+                    }
+                }
+
+                // Phase
+                if (todo.phaseId.isNotBlank()) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.common_field_phase) + ":",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Text(
+                            text = todo.phaseId,
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onToggle) {
+                Text(
+                    text = if (todo.done) stringResource(R.string.todos_action_mark_undone) else stringResource(R.string.todos_action_mark_done),
+                    color = MeadowGreen,
+                )
+            }
+        },
+        dismissButton = {
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                TextButton(onClick = { onEdit(todo) }) {
+                    Text(text = stringResource(R.string.common_edit), color = LakeBlue)
+                }
+                TextButton(onClick = onDismiss) {
+                    Text(text = stringResource(R.string.common_cancel))
+                }
+            }
+        },
+    )
 }
 
 @Composable
@@ -167,14 +302,14 @@ private fun AddTodoSheet(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = if (uiState.editingTodo != null) "Edit Task" else stringResource(R.string.todos_sheet_title),
+            text = if (uiState.editingTodo != null) stringResource(R.string.todos_sheet_title_edit) else stringResource(R.string.todos_sheet_title),
             style = MaterialTheme.typography.titleMedium.copy(fontFamily = Fraunces),
             modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
         )
 
         // Task text — expands on focus, collapses with Done button
         Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
-            OutlinedTextField(
+            SommarTextField(
                 value = uiState.draftText,
                 onValueChange = onTextChanged,
                 label = { Text(stringResource(R.string.todos_field_description)) },
@@ -207,7 +342,7 @@ private fun AddTodoSheet(
         }
 
         // Assignee
-        OutlinedTextField(
+        SommarTextField(
             value = uiState.draftAssignee,
             onValueChange = onAssigneeChanged,
             label = { Text(stringResource(R.string.common_field_assignee)) },
@@ -234,7 +369,7 @@ private fun AddTodoSheet(
                 }
             }
         } else {
-            OutlinedTextField(
+            SommarTextField(
                 value = uiState.draftPhaseId,
                 onValueChange = onPhaseIdChanged,
                 label = { Text(stringResource(R.string.todos_field_phase_optional)) },
@@ -286,7 +421,7 @@ private fun AddTodoSheet(
                 }
             } else {
                 SommarButton(
-                    text = if (uiState.editingTodo != null) "Save Changes" else stringResource(R.string.todos_button_add),
+                    text = if (uiState.editingTodo != null) stringResource(R.string.common_save_changes) else stringResource(R.string.todos_button_add),
                     onClick = onSubmit,
                     modifier = Modifier.weight(1f),
                 )
@@ -301,6 +436,7 @@ private fun TodosContent(
     onAssigneeSelected: (String?) -> Unit,
     onTodoToggle: (String, Boolean) -> Unit,
     onEditTodo: (TodoItem) -> Unit,
+    onViewTodo: (TodoItem) -> Unit,
 ) {
     val allTodos = uiState.todos
     val doneCount = allTodos.count { it.done }
@@ -377,6 +513,7 @@ private fun TodosContent(
             TodoRow(
                 todo = todo,
                 onToggle = { onTodoToggle(todo.id, !todo.done) },
+                onView = { onViewTodo(todo) },
                 onEdit = { onEditTodo(todo) },
                 modifier = Modifier.staggeredFadeIn(index),
             )
@@ -388,6 +525,7 @@ private fun TodosContent(
 private fun TodoRow(
     todo: TodoItem,
     onToggle: () -> Unit,
+    onView: () -> Unit,
     onEdit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -404,10 +542,9 @@ private fun TodoRow(
                 if (todo.done) MeadowGreen.copy(alpha = 0.2f) else Border,
                 com.example.stugbygget.ui.theme.SommarShapes.card,
             )
-            .clickable(onClick = onToggle)
             .padding(14.dp),
     ) {
-        // Custom rounded checkbox
+        // Custom rounded checkbox — tap to toggle done
         Box(
             modifier = Modifier
                 .size(24.dp)
@@ -417,7 +554,8 @@ private fun TodoRow(
                     2.dp,
                     if (todo.done) MeadowGreen else Border,
                     StugbyggetShapes.extraSmall,
-                ),
+                )
+                .clickable(onClick = onToggle),
             contentAlignment = Alignment.Center,
         ) {
             if (todo.done) {
@@ -427,7 +565,12 @@ private fun TodoRow(
 
         Spacer(Modifier.width(14.dp))
 
-        Column(modifier = Modifier.weight(1f)) {
+        // Text area — tap to open detail popup
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .clickable(onClick = onView),
+        ) {
             Text(
                 text = todo.text,
                 style = MaterialTheme.typography.bodyMedium.copy(
@@ -448,12 +591,6 @@ private fun TodoRow(
                 Text(
                     text = todo.assignee,
                     style = MonoStyles.dataSmall.copy(color = LakeBlue),
-                )
-                Text("•", style = MonoStyles.dataSmall.copy(color = Sand))
-                Text(
-                    text = "Edit",
-                    style = MonoStyles.dataSmall.copy(color = LakeBlue),
-                    modifier = Modifier.clickable(onClick = onEdit),
                 )
             }
         }

@@ -49,6 +49,7 @@ import com.example.stugbygget.ui.components.SommarInfoBox
 import com.example.stugbygget.ui.components.SommarOutlineButton
 import com.example.stugbygget.ui.components.SommarSectionTitle
 import com.example.stugbygget.ui.theme.Border
+import com.example.stugbygget.ui.theme.TextDark
 import com.example.stugbygget.ui.theme.MeadowGreen
 import com.example.stugbygget.ui.theme.MonoStyles
 import com.example.stugbygget.ui.theme.SommarGradients
@@ -147,7 +148,7 @@ fun ShoppingScreen(container: AppContainer) {
         grouped.entries.forEachIndexed { groupIndex, (phase, lists) ->
             item {
                 SommarSectionTitle(
-                    text = "Phase: $phase",
+                    text = stringResource(R.string.shopping_header_phase, phase),
                     modifier = Modifier.padding(top = if (groupIndex == 0) 4.dp else 16.dp),
                 )
             }
@@ -207,7 +208,7 @@ private fun ShoppingListCard(
             Column(modifier = Modifier.weight(1f)) {
                 Text(list.name, style = MaterialTheme.typography.titleSmall)
                 Text(
-                    text = "$purchasedCount / ${list.items.size} items · ${list.totalEstimate.toInt()} SEK est.",
+                    text = stringResource(R.string.shopping_list_subtitle, purchasedCount, list.items.size, list.totalEstimate.toInt()),
                     style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                 )
             }
@@ -264,6 +265,8 @@ private fun ShoppingListCard(
         if (hasLinkedItems) {
             SommarOutlineButton(
                 text = if (isComparingPrice) "Comparing..." else "Compare Store Prices",
+                onClick = if (isComparingPrice) ({}) else onComparePrice,
+                text = if (isComparingPrice) stringResource(R.string.shopping_button_comparing) else stringResource(R.string.shopping_button_compare_prices),
                 onClick = onComparePrice,
                 enabled = !isComparingPrice,
                 color = MeadowGreen,
@@ -284,7 +287,7 @@ private fun ShoppingListCard(
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
                             Text(
-                                text = "Cheapest store: ${best.store}",
+                                text = stringResource(R.string.shopping_price_cheapest_store, best.store),
                                 style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                             )
                             Text(
@@ -299,7 +302,7 @@ private fun ShoppingListCard(
                             horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
                             Text(
-                                text = "Best split (${result.bestSplitLines.size} items)",
+                                text = stringResource(R.string.shopping_price_best_split, result.bestSplitLines.size),
                                 style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                             )
                             Text(
@@ -310,7 +313,7 @@ private fun ShoppingListCard(
                     }
                     if (result.singleStoreTotals.isEmpty() && result.bestSplitLines.isEmpty()) {
                         Text(
-                            text = "No live prices found for this list.",
+                            text = stringResource(R.string.shopping_price_no_live_prices),
                             style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
                         )
                     }
@@ -427,7 +430,7 @@ private fun StyledInput(
         BasicTextField(
             value = value,
             onValueChange = onValueChange,
-            textStyle = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface),
+            textStyle = MaterialTheme.typography.bodySmall.copy(color = TextDark),
             cursorBrush = SolidColor(MeadowGreen),
             modifier = Modifier.fillMaxWidth(),
         )

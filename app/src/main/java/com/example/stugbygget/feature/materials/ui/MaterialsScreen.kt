@@ -1,5 +1,7 @@
 package com.example.stugbygget.feature.materials.ui
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,32 +11,45 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
+import com.example.stugbygget.ui.components.SommarTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.SubcomposeAsyncImage
 import com.example.stugbygget.R
 import com.example.stugbygget.di.AppContainer
 import com.example.stugbygget.domain.model.MaterialCategory
@@ -69,6 +84,8 @@ fun MaterialsScreen(
     val viewModel: MaterialsViewModel = viewModel(factory = MaterialsViewModelFactory(container))
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val context = LocalContext.current
+    var storePickerMaterial by remember { mutableStateOf<MaterialSpec?>(null) }
 
     when {
         uiState.isLoading -> {
@@ -101,8 +118,95 @@ fun MaterialsScreen(
             uiState = uiState,
             onSearchChanged = viewModel::onSearchQueryChanged,
             onMaterialClick = onMaterialClick,
+            onAddToOwned = viewModel::onShowOwnedAddSheetFromCatalog,
+            onSearchStorePrices = { material -> storePickerMaterial = material },
             onShowOwnedAddSheet = viewModel::onShowOwnedAddSheet,
             onDeleteOwned = viewModel::onDeleteOwnedMaterial,
+            onViewPhoto = viewModel::onViewOwnedPhoto,
+        )
+    }
+
+    if (uiState.viewingPhotoUrl != null) {
+        AlertDialog(
+            onDismissRequest = viewModel::onDismissPhotoViewer,
+            containerColor = CreamBackground,
+            title = null,
+            text = {
+                SubcomposeAsyncImage(
+                    model = uiState.viewingPhotoUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(1f)
+                        .clip(RoundedCornerShape(8.dp)),
+                    loading = {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = MeadowGreen, modifier = Modifier.size(32.dp))
+                        }
+                    },
+                    error = {
+                        Box(
+                            Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                                .background(MeadowGreen.copy(alpha = 0.08f)),
+                            contentAlignment = Alignment.Center,
+                        ) { Text("📦", style = MaterialTheme.typography.headlineLarge) }
+                    },
+                )
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = viewModel::onDismissPhotoViewer) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            },
+        )
+    }
+
+    storePickerMaterial?.let { material ->
+        val encodedName = Uri.encode(material.name)
+        AlertDialog(
+            onDismissRequest = { storePickerMaterial = null },
+            containerColor = CreamBackground,
+            title = {
+                Text(
+                    text = stringResource(R.string.materials_store_picker_title, material.name),
+                    style = MaterialTheme.typography.titleMedium.copy(fontFamily = Fraunces),
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    StoreButton(
+                        label = "Byggmax",
+                        emoji = "🏗️",
+                        url = "https://www.byggmax.se/search?q=$encodedName",
+                        context = context,
+                        onDismiss = { storePickerMaterial = null },
+                    )
+                    StoreButton(
+                        label = "Bauhaus",
+                        emoji = "🔨",
+                        url = "https://www.bauhaus.se/search?q=$encodedName",
+                        context = context,
+                        onDismiss = { storePickerMaterial = null },
+                    )
+                    StoreButton(
+                        label = "Hornbach",
+                        emoji = "🪵",
+                        url = "https://www.hornbach.se/search?q=$encodedName",
+                        context = context,
+                        onDismiss = { storePickerMaterial = null },
+                    )
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = { storePickerMaterial = null }) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            },
         )
     }
 
@@ -118,12 +222,15 @@ fun MaterialsScreen(
                 onQuantityChanged = viewModel::onDraftOwnedQuantityChanged,
                 onUnitChanged = viewModel::onDraftOwnedUnitChanged,
                 onNotesChanged = viewModel::onDraftOwnedNotesChanged,
+                onPhotoSelected = viewModel::onDraftOwnedPhotoSelected,
                 onSubmit = viewModel::onSubmitOwnedMaterial,
                 onDismiss = viewModel::onDismissOwnedAddSheet,
             )
         }
     }
 }
+
+private val photoThumbShape = RoundedCornerShape(8.dp)
 
 @Composable
 private fun AddOwnedMaterialSheet(
@@ -132,9 +239,14 @@ private fun AddOwnedMaterialSheet(
     onQuantityChanged: (String) -> Unit,
     onUnitChanged: (String) -> Unit,
     onNotesChanged: (String) -> Unit,
+    onPhotoSelected: (android.net.Uri) -> Unit,
     onSubmit: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val photoLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+    ) { uri -> uri?.let { onPhotoSelected(it) } }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -148,7 +260,7 @@ private fun AddOwnedMaterialSheet(
             modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
         )
 
-        OutlinedTextField(
+        SommarTextField(
             value = uiState.draftOwnedName,
             onValueChange = onNameChanged,
             label = { Text(stringResource(R.string.materials_field_name)) },
@@ -158,7 +270,7 @@ private fun AddOwnedMaterialSheet(
         )
 
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            OutlinedTextField(
+            SommarTextField(
                 value = uiState.draftOwnedQuantity,
                 onValueChange = onQuantityChanged,
                 label = { Text(stringResource(R.string.materials_field_quantity)) },
@@ -166,7 +278,7 @@ private fun AddOwnedMaterialSheet(
                 isError = uiState.ownedAddError != null && uiState.draftOwnedQuantity.isBlank(),
                 modifier = Modifier.weight(1f),
             )
-            OutlinedTextField(
+            SommarTextField(
                 value = uiState.draftOwnedUnit,
                 onValueChange = onUnitChanged,
                 label = { Text(stringResource(R.string.materials_field_unit)) },
@@ -175,13 +287,56 @@ private fun AddOwnedMaterialSheet(
             )
         }
 
-        OutlinedTextField(
+        SommarTextField(
             value = uiState.draftOwnedNotes,
             onValueChange = onNotesChanged,
             label = { Text(stringResource(R.string.common_field_notes_optional)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
         )
+
+        // ── Photo picker ──
+        Text(
+            text = stringResource(R.string.common_photos_label),
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        if (uiState.draftOwnedPhotoUri != null) {
+            // Preview of the selected photo
+            SubcomposeAsyncImage(
+                model = uiState.draftOwnedPhotoUri,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
+                    .clip(photoThumbShape)
+                    .border(1.5.dp, MeadowGreen.copy(alpha = 0.5f), photoThumbShape)
+                    .clickable { photoLauncher.launch("image/*") },
+                loading = {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = MeadowGreen, modifier = Modifier.size(28.dp))
+                    }
+                },
+            )
+        } else {
+            // Placeholder tap-to-pick area
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(72.dp)
+                    .clip(photoThumbShape)
+                    .background(MeadowGreen.copy(alpha = 0.06f))
+                    .border(1.dp, MeadowGreen.copy(alpha = 0.3f), photoThumbShape)
+                    .clickable { photoLauncher.launch("image/*") },
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = "📷  ${stringResource(R.string.materials_photo_tap_to_add)}",
+                    style = MaterialTheme.typography.labelMedium.copy(color = MeadowGreen),
+                )
+            }
+        }
 
         if (uiState.ownedAddError != null) {
             Text(
@@ -191,7 +346,7 @@ private fun AddOwnedMaterialSheet(
             )
         }
 
-        Spacer(Modifier)
+        Spacer(Modifier.height(4.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             SommarOutlineButton(
@@ -219,8 +374,11 @@ private fun MaterialsContent(
     uiState: MaterialsUiState,
     onSearchChanged: (String) -> Unit,
     onMaterialClick: (String) -> Unit,
+    onAddToOwned: (String) -> Unit,
+    onSearchStorePrices: (MaterialSpec) -> Unit,
     onShowOwnedAddSheet: () -> Unit,
     onDeleteOwned: (String) -> Unit,
+    onViewPhoto: (String) -> Unit,
 ) {
     LazyColumn(
         contentPadding = PaddingValues(18.dp),
@@ -287,6 +445,8 @@ private fun MaterialsContent(
             MaterialCard(
                 material = material,
                 onClick = { onMaterialClick(material.id) },
+                onAddToOwned = { onAddToOwned(material.name) },
+                onSearchStorePrices = { onSearchStorePrices(material) },
                 modifier = Modifier.staggeredFadeIn(index),
             )
         }
@@ -323,16 +483,21 @@ private fun MaterialsContent(
             OwnedMaterialRow(
                 owned = owned,
                 onDelete = { onDeleteOwned(owned.id) },
+                onViewPhoto = { onViewPhoto(owned.photoUrl) },
                 modifier = Modifier.staggeredFadeIn(index),
             )
         }
     }
 }
 
+private val ownedThumbSize = 56.dp
+private val ownedThumbShape = RoundedCornerShape(6.dp)
+
 @Composable
 private fun OwnedMaterialRow(
     owned: OwnedMaterial,
     onDelete: () -> Unit,
+    onViewPhoto: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     SommarCard(
@@ -342,6 +507,29 @@ private fun OwnedMaterialRow(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            // Photo thumbnail — only shown when a photo exists
+            if (owned.photoUrl.isNotBlank()) {
+                SubcomposeAsyncImage(
+                    model = owned.photoUrl,
+                    contentDescription = owned.name,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(ownedThumbSize)
+                        .clip(ownedThumbShape)
+                        .border(1.dp, Border, ownedThumbShape)
+                        .clickable(onClick = onViewPhoto),
+                    error = {
+                        Box(
+                            modifier = Modifier
+                                .size(ownedThumbSize)
+                                .background(MeadowGreen.copy(alpha = 0.08f)),
+                            contentAlignment = Alignment.Center,
+                        ) { Text("📦", style = MaterialTheme.typography.labelSmall) }
+                    },
+                )
+                Spacer(Modifier.width(10.dp))
+            }
+
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = owned.name,
@@ -390,6 +578,8 @@ private fun OwnedMaterialRow(
 private fun MaterialCard(
     material: MaterialSpec,
     onClick: () -> Unit,
+    onAddToOwned: () -> Unit,
+    onSearchStorePrices: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     SommarCard(
@@ -397,38 +587,103 @@ private fun MaterialCard(
             .padding(bottom = 10.dp)
             .clickable(onClick = onClick),
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = material.name,
-                    style = MaterialTheme.typography.titleSmall,
-                )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.padding(top = 4.dp),
-                ) {
-                    SommarBadge(
-                        text = material.category.name,
-                        color = categoryColor(material.category),
-                        backgroundColor = categoryColor(material.category).copy(alpha = 0.08f),
-                        borderColor = categoryColor(material.category).copy(alpha = 0.2f),
-                    )
+        Column {
+            // ── Name + badges row ──
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "${material.coveragePerUnit} ${material.unitType.name.lowercase()} / unit",
-                        style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
+                        text = material.name,
+                        style = MaterialTheme.typography.titleSmall,
                     )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.padding(top = 4.dp),
+                    ) {
+                        SommarBadge(
+                            text = material.category.name,
+                            color = categoryColor(material.category),
+                            backgroundColor = categoryColor(material.category).copy(alpha = 0.08f),
+                            borderColor = categoryColor(material.category).copy(alpha = 0.2f),
+                        )
+                        Text(
+                            text = "${material.coveragePerUnit} ${material.unitType.name.lowercase()} / unit",
+                            style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
+                        )
+                    }
                 }
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = "→",
+                    style = MaterialTheme.typography.titleMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
+                )
             }
-            Spacer(Modifier.width(8.dp))
-            Text(
-                text = "→",
-                style = MaterialTheme.typography.titleMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
-            )
+
+            // ── Action buttons row ──
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                ActionChip(
+                    text = stringResource(R.string.materials_action_search_prices),
+                    color = LakeBlue,
+                    onClick = onSearchStorePrices,
+                    modifier = Modifier.weight(1f),
+                )
+                ActionChip(
+                    text = stringResource(R.string.materials_action_add_to_home),
+                    color = MeadowGreen,
+                    onClick = onAddToOwned,
+                    modifier = Modifier.weight(1f),
+                )
+            }
         }
     }
+}
+
+@Composable
+private fun ActionChip(
+    text: String,
+    color: androidx.compose.ui.graphics.Color,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(color.copy(alpha = 0.08f))
+            .border(1.dp, color.copy(alpha = 0.3f), RoundedCornerShape(6.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 7.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelSmall.copy(color = color),
+        )
+    }
+}
+
+@Composable
+private fun StoreButton(
+    label: String,
+    emoji: String,
+    url: String,
+    context: android.content.Context,
+    onDismiss: () -> Unit,
+) {
+    SommarOutlineButton(
+        text = "$emoji  $label",
+        onClick = {
+            onDismiss()
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+        },
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
 
 internal fun categoryColor(category: MaterialCategory): androidx.compose.ui.graphics.Color = when (category) {
