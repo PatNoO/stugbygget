@@ -264,8 +264,7 @@ private fun ShoppingListCard(
         if (hasLinkedItems) {
             SommarOutlineButton(
                 text = if (isComparingPrice) "Comparing..." else "Compare Store Prices",
-                onClick = onComparePrice,
-                enabled = !isComparingPrice,
+                onClick = if (isComparingPrice) ({}) else onComparePrice,
                 color = MeadowGreen,
             )
             priceComparison?.let { result ->
