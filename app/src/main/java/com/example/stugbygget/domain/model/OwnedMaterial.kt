@@ -6,4 +6,5 @@ data class OwnedMaterial(
     val quantity: Double,
     val unit: String,
     val notes: String = "",
+    val photoUrl: String = "",
 )

@@ -6,6 +6,7 @@ data class RenovationPhase(
     val id: String,
     val name: String,
     val room: String,
+    val description: String = "",
     val startDate: Instant,
     val endDate: Instant,
     val progress: Int,

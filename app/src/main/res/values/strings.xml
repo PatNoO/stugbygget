@@ -33,8 +33,9 @@
     <string name="planning_sheet_title">New phase</string>
     <string name="planning_field_name">Phase name *</string>
     <string name="planning_field_room">Room *</string>
-    <string name="planning_field_start_date">Start date (YYYY-MM-DD)</string>
-    <string name="planning_field_end_date">End date (YYYY-MM-DD)</string>
+    <string name="planning_field_description">Description</string>
+    <string name="planning_field_start_date">Start date</string>
+    <string name="planning_field_end_date">End date</string>
     <string name="planning_field_color">Color (hex)</string>
     <string name="planning_field_icon">Icon (emoji)</string>
     <string name="planning_button_add">Add phase</string>
@@ -62,6 +63,8 @@
     <string name="gallery_header_subtitle">%1$d photos · Before · During · After</string>
     <string name="gallery_filter_all_rooms">All rooms</string>
     <string name="gallery_filter_all_phases">All phases</string>
+    <string name="gallery_filter_all">All photos</string>
+    <string name="gallery_category_label">Category</string>
     <string name="gallery_empty_title">No photos yet</string>
     <string name="gallery_empty_message">Photos will appear here once uploaded to the project.</string>
     <string name="gallery_empty_filtered_title">No photos match this filter</string>
@@ -136,6 +139,11 @@
     <string name="materials_field_quantity">Quantity *</string>
     <string name="materials_field_unit">Unit (e.g. liter, pcs)</string>
     <string name="materials_button_add">Add</string>
+    <string name="materials_photo_tap_to_add">Tap to add photo</string>
+    <string name="materials_action_search_prices">🔍 Search prices</string>
+    <string name="materials_action_add_to_home">🏠 At home</string>
+    <!-- %1$s = material name -->
+    <string name="materials_store_picker_title">Search \"%1$s\" at</string>
 
     <!-- Material Detail -->
     <string name="material_detail_empty_title">Material not found</string>
@@ -191,6 +199,54 @@
     <string name="logistics_section_schedule">Delivery Schedule</string>
     <string name="logistics_schedule_placeholder_title">Timeline sync coming in SB71</string>
     <string name="logistics_schedule_placeholder_message">Delivery dates will be linked to your renovation phases once Cloud Functions are integrated.</string>
+
+    <!-- Photo source picker -->
+    <string name="photo_source_title">Add Photo</string>
+    <string name="photo_source_camera">Take a photo</string>
+    <string name="photo_source_gallery">Choose from gallery</string>
+
+    <!-- Common additions -->
+    <string name="common_edit">Edit</string>
+    <string name="common_save_changes">Save Changes</string>
+    <string name="common_ok">OK</string>
+
+    <!-- Todos additions -->
+    <string name="todos_status_not_done">Not done</string>
+    <string name="todos_action_mark_done">Mark as done</string>
+    <string name="todos_action_mark_undone">Mark as not done</string>
+    <string name="todos_sheet_title_edit">Edit Task</string>
+
+    <!-- Planning additions -->
+    <string name="planning_dialog_delete_title">Delete Phase</string>
+    <string name="planning_dialog_delete_message">This will permanently delete the phase. Continue?</string>
+    <string name="planning_sheet_title_edit">Edit Phase</string>
+
+    <!-- Gallery additions -->
+    <string name="gallery_dialog_delete_title">Delete photo?</string>
+    <string name="gallery_dialog_delete_message">This photo will be permanently deleted.</string>
+    <string name="gallery_sheet_upload_title">Save Photo</string>
+    <string name="gallery_content_desc_captured">Captured photo</string>
+    <string name="gallery_sheet_add_title">Add Photos</string>
+    <string name="gallery_button_upload">Upload</string>
+
+    <!-- Budget additions -->
+    <string name="budget_error_title">Budget Error</string>
+    <string name="budget_empty_title">No budget data yet</string>
+    <string name="budget_empty_message">Add phases and expenses to see your budget here.</string>
+    <string name="budget_stat_budgeted">Budgeted: </string>
+
+    <!-- Shopping additions -->
+    <!-- %1$s = phase name -->
+    <string name="shopping_header_phase">Phase: %1$s</string>
+    <!-- %1$d = purchased, %2$d = total, %3$d = estimated SEK -->
+    <string name="shopping_list_subtitle">%1$d / %2$d items · %3$d SEK est.</string>
+    <string name="shopping_button_comparing">Comparing…</string>
+    <string name="shopping_button_compare_prices">Compare Store Prices</string>
+    <!-- %1$s = store name -->
+    <string name="shopping_price_cheapest_store">Cheapest store: %1$s</string>
+    <!-- %1$d = item count -->
+    <string name="shopping_price_best_split">Best split (%1$d items)</string>
+    <string name="shopping_price_no_live_prices">No live prices found for this list.</string>
 
     <!-- Auth -->
     <string name="auth_subtitle">Sign in with email and password to access project data</string>

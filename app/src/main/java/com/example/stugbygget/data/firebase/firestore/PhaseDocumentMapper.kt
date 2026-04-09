@@ -17,6 +17,7 @@ object PhaseDocumentMapper {
             id = id,
             name = map["name"] as? String ?: "",
             room = map["room"] as? String ?: "",
+            description = map["description"] as? String ?: "",
             startDate = startDate,
             endDate = endDate,
             progress = (map["progress"] as? Number)?.toInt()?.coerceIn(0, 100) ?: 0,
@@ -28,6 +29,7 @@ object PhaseDocumentMapper {
     fun toMap(phase: RenovationPhase): Map<String, Any> = mapOf(
         "name" to phase.name,
         "room" to phase.room,
+        "description" to phase.description,
         "startDate" to Timestamp(Date.from(phase.startDate)),
         "endDate" to Timestamp(Date.from(phase.endDate)),
         "progress" to phase.progress,
