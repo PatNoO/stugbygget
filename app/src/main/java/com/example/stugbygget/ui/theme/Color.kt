@@ -82,3 +82,87 @@ val PhaseAltan = MeadowGreenLight
 val GalleryBefore = FaluRed
 val GalleryDuring = MidsummerGold
 val GalleryAfter = MeadowGreen
+
+// ═══════════════════════════════════════════════════
+// Theme: "Sverige" — Swedish flag blue & yellow
+// ═══════════════════════════════════════════════════
+val SverigeBlue = Color(0xFF006AA7)
+val SverigeBlueLight = Color(0xFF2288C8)
+val SverigeBlueDark = Color(0xFF004E7C)
+val SverigeBlueContainer = Color(0xFFD6ECF8)
+val OnSverigeBlueContainer = Color(0xFF002B47)
+
+val SverigeYellow = Color(0xFFFECC02)
+val SverigeYellowLight = Color(0xFFFFDA40)
+val SverigeYellowDark = Color(0xFFCCA300)
+val SverigeYellowContainer = Color(0xFFFFF8D6)
+val OnSverigeYellowContainer = Color(0xFF3A2F00)
+
+val SverigeBackground = Color(0xFFF8FBFF)
+val SverigeCardWhite = Color(0xFFFFFFFF)
+val SverigeSurface = Color(0xFFF0F6FC)
+val SverigeTextDark = Color(0xFF12263A)
+val SverigeTextMedium = Color(0xFF3A5470)
+val SverigeTextLight = Color(0xFF6B88A0)
+val SverigeBorder = Color(0xFFCEDFEC)
+val SverigeBorderLight = Color(0xFFE4EFF8)
+
+// ═══════════════════════════════════════════════════
+// Theme: "Sommardag" — Swedish summer pastels
+// ═══════════════════════════════════════════════════
+val SommarSky = Color(0xFF5B9BD5)
+val SommarSkyLight = Color(0xFF7AB5E8)
+val SommarSkyDark = Color(0xFF3A7AB8)
+val SommarSkyContainer = Color(0xFFDDEEFB)
+val OnSommarSkyContainer = Color(0xFF0D2E4A)
+
+val SommarSunshine = Color(0xFFF5C842)
+val SommarSunshineLight = Color(0xFFFFD96A)
+val SommarSunshineDark = Color(0xFFCCA020)
+val SommarSunshineContainer = Color(0xFFFFF5D6)
+val OnSommarSunshineContainer = Color(0xFF3A2C00)
+
+val SommarMeadow = Color(0xFF6FAF72)
+val SommarMeadowLight = Color(0xFF8FCA92)
+val SommarMeadowDark = Color(0xFF4A8A4E)
+val SommarMeadowContainer = Color(0xFFDFF2E0)
+val OnSommarMeadowContainer = Color(0xFF0D2E10)
+
+val SommarBackground = Color(0xFFFEFDF8)
+val SommarCardWhite = Color(0xFFFFFFFF)
+val SommarSurfaceVariant = Color(0xFFF6F9F0)
+val SommarTextDark = Color(0xFF1A2E1A)
+val SommarTextMedium = Color(0xFF4A6B4A)
+val SommarTextLight = Color(0xFF7A9B7A)
+val SommarBorder = Color(0xFFD8ECD8)
+val SommarBorderLight = Color(0xFFEAF4EA)
+
+// ═══════════════════════════════════════════════════
+// Theme: "Virke" — construction wood & pine
+// ═══════════════════════════════════════════════════
+val VirkePine = Color(0xFF7A4F2E)
+val VirkePineLight = Color(0xFF9E6E48)
+val VirkePineDark = Color(0xFF563618)
+val VirkePineContainer = Color(0xFFF3E6D8)
+val OnVirkePineContainer = Color(0xFF2A1500)
+
+val VirkeOrange = Color(0xFFD4631A)
+val VirkeOrangeLight = Color(0xFFED8240)
+val VirkeOrangeDark = Color(0xFFAA4A0E)
+val VirkeOrangeContainer = Color(0xFFFFE8D6)
+val OnVirkeOrangeContainer = Color(0xFF3A1800)
+
+val VirkeConcrete = Color(0xFF787878)
+val VirkeConcreteLight = Color(0xFF9A9A9A)
+val VirkeConcreteDark = Color(0xFF565656)
+val VirkeConcreteContainer = Color(0xFFE8E8E8)
+val OnVirkeConcreteContainer = Color(0xFF1C1C1C)
+
+val VirkeBackground = Color(0xFFFAF6EE)
+val VirkeCardWhite = Color(0xFFFFFFFF)
+val VirkeSurface = Color(0xFFF5EDDF)
+val VirkeTextDark = Color(0xFF2A1A0A)
+val VirkeTextMedium = Color(0xFF5C3E26)
+val VirkeTextLight = Color(0xFF8B6B4A)
+val VirkeBorder = Color(0xFFE0CEBA)
+val VirkeBorderLight = Color(0xFFEDE0D0)
