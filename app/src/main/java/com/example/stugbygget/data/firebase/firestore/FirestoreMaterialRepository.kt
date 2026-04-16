@@ -9,6 +9,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.tasks.await
 
 class FirestoreMaterialRepository(
     private val firestore: FirebaseFirestore,
@@ -70,4 +71,38 @@ class FirestoreMaterialRepository(
 
             awaitClose { registration.remove() }
         }
+
+    override suspend fun seedDefaultMaterials(projectId: String) {
+        val col = firestore.collection("projects").document(projectId).collection("materials")
+        val batch = firestore.batch()
+        defaultMaterials.forEach { m ->
+            val doc = col.document()
+            batch.set(doc, mapOf(
+                "name" to m.name,
+                "category" to m.category.name,
+                "unitType" to m.unitType.name,
+                "coveragePerUnit" to m.coveragePerUnit,
+                "wasteMargin" to m.wasteMargin,
+            ))
+        }
+        batch.commit().await()
+    }
+
+    companion object {
+        private val defaultMaterials = listOf(
+            MaterialSpec("", "Fasadfärg",     MaterialCategory.PAINT,      UnitType.LITER,        8.0,  0.10),
+            MaterialSpec("", "Träolja",        MaterialCategory.PAINT,      UnitType.LITER,        6.0,  0.10),
+            MaterialSpec("", "Innerfärg",      MaterialCategory.PAINT,      UnitType.LITER,        10.0, 0.10),
+            MaterialSpec("", "Grundfärg",      MaterialCategory.PAINT,      UnitType.LITER,        12.0, 0.10),
+            MaterialSpec("", "Spackel",        MaterialCategory.PAINT,      UnitType.KG,           5.0,  0.15),
+            MaterialSpec("", "Terrassbräda",   MaterialCategory.WOOD,       UnitType.METER,        0.12, 0.15),
+            MaterialSpec("", "Panel",          MaterialCategory.WOOD,       UnitType.METER,        0.10, 0.15),
+            MaterialSpec("", "Reglar 45x70",   MaterialCategory.WOOD,       UnitType.METER,        1.0,  0.10),
+            MaterialSpec("", "Rockwool skiva", MaterialCategory.INSULATION, UnitType.SQUARE_METER, 1.0,  0.10),
+            MaterialSpec("", "XPS-skiva",      MaterialCategory.INSULATION, UnitType.SQUARE_METER, 1.0,  0.05),
+            MaterialSpec("", "Klinker",        MaterialCategory.TILE,       UnitType.SQUARE_METER, 1.0,  0.15),
+            MaterialSpec("", "Väggkakel",      MaterialCategory.TILE,       UnitType.SQUARE_METER, 1.0,  0.15),
+            MaterialSpec("", "Fogmassa",       MaterialCategory.TILE,       UnitType.KG,           3.0,  0.10),
+        )
+    }
 }

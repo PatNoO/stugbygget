@@ -7,25 +7,32 @@ import com.example.stugbygget.domain.model.PhotoPhase
 data class GalleryUiState(
     val isLoading: Boolean = true,
     val photos: List<PhotoItem> = emptyList(),
-    val selectedRoom: String? = null,
     val selectedPhase: PhotoPhase? = null,
-    val availableRooms: List<String> = emptyList(),
     val errorMessage: String? = null,
     // Camera capture state
     val showCameraCapture: Boolean = false,
     val capturedUri: Uri? = null,
-    // Upload sheet state (shown after capture)
     val showUploadSheet: Boolean = false,
+    // Shared draft state (used by both upload sheet and add sheet)
     val draftRoomName: String = "",
     val draftPhase: PhotoPhase = PhotoPhase.DURING,
+    // Photo viewer / delete state
     val viewingPhoto: PhotoItem? = null,
     val pendingDeleteId: String? = null,
     val isDeleting: Boolean = false,
-    // Add-photo sheet state
+    // Gallery picker sheet state
     val showAddSheet: Boolean = false,
-    val draftRoomName: String = "",
+    // Upload sheet state (shown after camera capture)
+    val showUploadSheet: Boolean = false,
+    // Add-photo sheet state (gallery picker)
+    val showAddSheet: Boolean = false,
+    // Shared draft fields
     val draftPhase: PhotoPhase = PhotoPhase.DURING,
     val draftPhotos: List<Pair<Uri, String>> = emptyList(),
     val isUploading: Boolean = false,
     val uploadError: String? = null,
+    // Viewer / delete state
+    val viewingPhoto: PhotoItem? = null,
+    val pendingDeleteId: String? = null,
+    val isDeleting: Boolean = false,
 )

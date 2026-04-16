@@ -26,3 +26,6 @@ secrets.properties
 # Log files
 *.log
 .vscode/
+
+# Local planning docs
+todo.md

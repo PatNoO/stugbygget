@@ -66,8 +66,8 @@ fun BudgetScreen(container: AppContainer) {
         ) {
             SommarInfoBox(
                 emoji = "⚠️",
-                title = "Budget Error",
-                text = uiState.errorMessage ?: "Unknown error",
+                title = stringResource(R.string.budget_error_title),
+                text = uiState.errorMessage ?: stringResource(R.string.common_error_default),
                 accentColor = FaluRed,
             )
         }
@@ -84,8 +84,8 @@ fun BudgetScreen(container: AppContainer) {
         ) {
             SommarInfoBox(
                 emoji = "💰",
-                title = "No budget data yet",
-                text = "Add phases and expenses to see your budget here.",
+                title = stringResource(R.string.budget_empty_title),
+                text = stringResource(R.string.budget_empty_message),
                 accentColor = MidsummerGold,
             )
         }
@@ -260,7 +260,7 @@ private fun PhaseBudgetCard(
                 style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
             )
             Text(
-                text = "Budgeted: ${phase.budgeted.toInt()} SEK",
+                text = stringResource(R.string.budget_stat_budgeted) + "${phase.budgeted.toInt()}" + stringResource(R.string.common_sek_suffix),
                 style = MonoStyles.dataSmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant),
             )
         }

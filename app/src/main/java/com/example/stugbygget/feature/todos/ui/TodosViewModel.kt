@@ -55,6 +55,7 @@ class TodosViewModel(
     fun onShowEditSheet(todo: TodoItem) {
         _uiState.update {
             it.copy(
+                viewingTodo = null,
                 showAddSheet = true,
                 editingTodo = todo,
                 draftText = todo.text,
@@ -100,6 +101,9 @@ class TodosViewModel(
                 .onFailure { e -> _uiState.update { it.copy(isAddingTodo = false, addError = e.message ?: "Failed to save todo.") } }
         }
     }
+
+    fun onViewTodo(todo: TodoItem) = _uiState.update { it.copy(viewingTodo = todo) }
+    fun onDismissTodoDetail() = _uiState.update { it.copy(viewingTodo = null) }
 
     fun onTodoToggle(todoId: String, checked: Boolean) {
         viewModelScope.launch {

@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
+import com.example.stugbygget.ui.components.SommarTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -40,7 +40,7 @@ fun SignInScreen(
             modifier = Modifier.padding(top = 8.dp, bottom = 16.dp)
         )
 
-        OutlinedTextField(
+        SommarTextField(
             value = email,
             onValueChange = onEmailChanged,
             label = { Text(stringResource(R.string.auth_field_email)) },
@@ -48,7 +48,7 @@ fun SignInScreen(
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        OutlinedTextField(
+        SommarTextField(
             value = password,
             onValueChange = onPasswordChanged,
             label = { Text(stringResource(R.string.auth_field_password)) },

@@ -33,8 +33,9 @@
     <string name="planning_sheet_title">Ny fas</string>
     <string name="planning_field_name">Fasnamn *</string>
     <string name="planning_field_room">Rum *</string>
-    <string name="planning_field_start_date">Startdatum (ÅÅÅÅ-MM-DD)</string>
-    <string name="planning_field_end_date">Slutdatum (ÅÅÅÅ-MM-DD)</string>
+    <string name="planning_field_description">Beskrivning</string>
+    <string name="planning_field_start_date">Startdatum</string>
+    <string name="planning_field_end_date">Slutdatum</string>
     <string name="planning_field_color">Färg (hex)</string>
     <string name="planning_field_icon">Ikon (emoji)</string>
     <string name="planning_button_add">Lägg till fas</string>
@@ -61,6 +62,8 @@
     <string name="gallery_header_subtitle">%1$d foton · Innan · Under · Efter</string>
     <string name="gallery_filter_all_rooms">Alla rum</string>
     <string name="gallery_filter_all_phases">Alla faser</string>
+    <string name="gallery_filter_all">Alla bilder</string>
+    <string name="gallery_category_label">Kategori</string>
     <string name="gallery_empty_title">Inga foton ännu</string>
     <string name="gallery_empty_message">Foton visas här när de laddas upp till projektet.</string>
     <string name="gallery_empty_filtered_title">Inga foton matchar detta filter</string>
@@ -131,6 +134,10 @@
     <string name="materials_field_quantity">Antal *</string>
     <string name="materials_field_unit">Enhet (t.ex. liter, st)</string>
     <string name="materials_button_add">Lägg till</string>
+    <string name="materials_photo_tap_to_add">Tryck för att lägga till foto</string>
+    <string name="materials_action_search_prices">🔍 Sök priser</string>
+    <string name="materials_action_add_to_home">🏠 Hemma</string>
+    <string name="materials_store_picker_title">Sök \"%1$s\" hos</string>
 
     <!-- Materialdetalj -->
     <string name="material_detail_empty_title">Material hittades inte</string>
@@ -185,6 +192,50 @@
     <string name="logistics_section_schedule">Leveransschema</string>
     <string name="logistics_schedule_placeholder_title">Tidslinjekoppling kommer i SB71</string>
     <string name="logistics_schedule_placeholder_message">Leveransdatum kopplas till dina renoveringsfaser när Cloud Functions integrerats.</string>
+
+    <!-- Fotokälla -->
+    <string name="photo_source_title">Lägg till foto</string>
+    <string name="photo_source_camera">Ta ett foto</string>
+    <string name="photo_source_gallery">Välj från galleri</string>
+
+    <!-- Gemensamma tillägg -->
+    <string name="common_edit">Redigera</string>
+    <string name="common_save_changes">Spara ändringar</string>
+    <string name="common_ok">OK</string>
+
+    <!-- Uppgifter tillägg -->
+    <string name="todos_status_not_done">Ej klar</string>
+    <string name="todos_action_mark_done">Markera som klar</string>
+    <string name="todos_action_mark_undone">Markera som ej klar</string>
+    <string name="todos_sheet_title_edit">Redigera uppgift</string>
+
+    <!-- Planering tillägg -->
+    <string name="planning_dialog_delete_title">Ta bort fas</string>
+    <string name="planning_dialog_delete_message">Den här fasen tas bort permanent. Fortsätta?</string>
+    <string name="planning_sheet_title_edit">Redigera fas</string>
+
+    <!-- Galleri tillägg -->
+    <string name="gallery_dialog_delete_title">Ta bort foto?</string>
+    <string name="gallery_dialog_delete_message">Det här fotot tas bort permanent.</string>
+    <string name="gallery_sheet_upload_title">Spara foto</string>
+    <string name="gallery_content_desc_captured">Taget foto</string>
+    <string name="gallery_sheet_add_title">Lägg till foton</string>
+    <string name="gallery_button_upload">Ladda upp</string>
+
+    <!-- Budget tillägg -->
+    <string name="budget_error_title">Budgetfel</string>
+    <string name="budget_empty_title">Ingen budgetdata ännu</string>
+    <string name="budget_empty_message">Lägg till faser och utgifter för att se din budget här.</string>
+    <string name="budget_stat_budgeted">Budgeterat: </string>
+
+    <!-- Inköpslista tillägg -->
+    <string name="shopping_header_phase">Fas: %1$s</string>
+    <string name="shopping_list_subtitle">%1$d / %2$d varor · %3$d SEK beräknat</string>
+    <string name="shopping_button_comparing">Jämför…</string>
+    <string name="shopping_button_compare_prices">Jämför butikspriser</string>
+    <string name="shopping_price_cheapest_store">Billigaste butik: %1$s</string>
+    <string name="shopping_price_best_split">Bästa uppdelning (%1$d varor)</string>
+    <string name="shopping_price_no_live_prices">Inga aktuella priser hittades för den här listan.</string>
 
     <!-- Inloggning -->
     <string name="auth_subtitle">Logga in med e-post och lösenord för att komma åt projektdata</string>

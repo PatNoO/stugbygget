@@ -1,5 +1,6 @@
 package com.example.stugbygget.feature.planning.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,18 +17,26 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
+import com.example.stugbygget.ui.components.SommarTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -53,6 +62,7 @@ import com.example.stugbygget.ui.theme.MeadowGreen
 import com.example.stugbygget.ui.theme.MonoStyles
 import com.example.stugbygget.ui.theme.fadeUpIn
 import com.example.stugbygget.ui.theme.staggeredFadeIn
+import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -60,6 +70,13 @@ import java.util.Locale
 private val dateFormatter = DateTimeFormatter
     .ofPattern("MMM d", Locale.ENGLISH)
     .withZone(ZoneId.systemDefault())
+
+private val datePickerFormatter = DateTimeFormatter
+    .ofPattern("d MMM yyyy", Locale.ENGLISH)
+    .withZone(ZoneId.systemDefault())
+
+private fun formatPickedDate(millis: Long?): String? =
+    millis?.let { datePickerFormatter.format(Instant.ofEpochMilli(it)) }
 
 private fun phaseColor(hex: String): Color = try {
     Color(android.graphics.Color.parseColor(hex))
@@ -139,15 +156,15 @@ fun PlanningScreen(container: AppContainer) {
     if (uiState.pendingDeleteId != null) {
         AlertDialog(
             onDismissRequest = viewModel::onCancelDelete,
-            title = { Text("Delete Phase") },
-            text = { Text("This will permanently delete the phase. Continue?") },
+            title = { Text(stringResource(R.string.planning_dialog_delete_title)) },
+            text = { Text(stringResource(R.string.planning_dialog_delete_message)) },
             confirmButton = {
                 TextButton(onClick = viewModel::onConfirmDelete, enabled = !uiState.isDeleting) {
-                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.common_delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
-                TextButton(onClick = viewModel::onCancelDelete) { Text("Cancel") }
+                TextButton(onClick = viewModel::onCancelDelete) { Text(stringResource(R.string.common_cancel)) }
             },
         )
     }
@@ -162,10 +179,9 @@ fun PlanningScreen(container: AppContainer) {
                 uiState = uiState,
                 onNameChanged = viewModel::onDraftNameChanged,
                 onRoomChanged = viewModel::onDraftRoomChanged,
-                onStartDateChanged = viewModel::onDraftStartDateChanged,
-                onEndDateChanged = viewModel::onDraftEndDateChanged,
-                onColorChanged = viewModel::onDraftColorChanged,
-                onIconChanged = viewModel::onDraftIconChanged,
+                onDescriptionChanged = viewModel::onDraftDescriptionChanged,
+                onStartMillisSelected = viewModel::onDraftStartMillisChanged,
+                onEndMillisSelected = viewModel::onDraftEndMillisChanged,
                 onSubmit = viewModel::onSubmitPhase,
                 onDismiss = viewModel::onDismissAddSheet,
             )
@@ -173,18 +189,23 @@ fun PlanningScreen(container: AppContainer) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddPhaseSheet(
     uiState: PlanningUiState,
     onNameChanged: (String) -> Unit,
     onRoomChanged: (String) -> Unit,
-    onStartDateChanged: (String) -> Unit,
-    onEndDateChanged: (String) -> Unit,
-    onColorChanged: (String) -> Unit,
-    onIconChanged: (String) -> Unit,
+    onDescriptionChanged: (String) -> Unit,
+    onStartMillisSelected: (Long) -> Unit,
+    onEndMillisSelected: (Long) -> Unit,
     onSubmit: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    var showStartPicker by remember { mutableStateOf(false) }
+    var showEndPicker by remember { mutableStateOf(false) }
+    var isDescriptionExpanded by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -193,12 +214,12 @@ private fun AddPhaseSheet(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = if (uiState.editingPhase != null) "Edit Phase" else stringResource(R.string.planning_sheet_title),
+            text = if (uiState.editingPhase != null) stringResource(R.string.planning_sheet_title_edit) else stringResource(R.string.planning_sheet_title),
             style = MaterialTheme.typography.titleMedium.copy(fontFamily = Fraunces),
             modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
         )
 
-        OutlinedTextField(
+        SommarTextField(
             value = uiState.draftName,
             onValueChange = onNameChanged,
             label = { Text(stringResource(R.string.planning_field_name)) },
@@ -207,7 +228,7 @@ private fun AddPhaseSheet(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        OutlinedTextField(
+        SommarTextField(
             value = uiState.draftRoom,
             onValueChange = onRoomChanged,
             label = { Text(stringResource(R.string.planning_field_room)) },
@@ -216,38 +237,75 @@ private fun AddPhaseSheet(
             modifier = Modifier.fillMaxWidth(),
         )
 
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            OutlinedTextField(
-                value = uiState.draftStartDate,
-                onValueChange = onStartDateChanged,
-                label = { Text(stringResource(R.string.planning_field_start_date)) },
-                singleLine = true,
-                modifier = Modifier.weight(1f),
+        // Description — expands on focus, same pattern as Todos
+        Column(verticalArrangement = Arrangement.spacedBy(0.dp)) {
+            SommarTextField(
+                value = uiState.draftDescription,
+                onValueChange = onDescriptionChanged,
+                label = { Text(stringResource(R.string.planning_field_description)) },
+                singleLine = !isDescriptionExpanded,
+                minLines = if (isDescriptionExpanded) 4 else 1,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { if (it.isFocused) isDescriptionExpanded = true },
             )
-            OutlinedTextField(
-                value = uiState.draftEndDate,
-                onValueChange = onEndDateChanged,
-                label = { Text(stringResource(R.string.planning_field_end_date)) },
-                singleLine = true,
-                modifier = Modifier.weight(1f),
-            )
+            if (isDescriptionExpanded) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp),
+                    horizontalArrangement = Arrangement.End,
+                ) {
+                    Text(
+                        text = stringResource(R.string.common_done),
+                        style = MaterialTheme.typography.labelMedium.copy(color = FaluRed),
+                        modifier = Modifier
+                            .clickable {
+                                isDescriptionExpanded = false
+                                focusManager.clearFocus()
+                            }
+                            .padding(4.dp),
+                    )
+                }
+            }
         }
 
+        // Date pickers
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            OutlinedTextField(
-                value = uiState.draftColor,
-                onValueChange = onColorChanged,
-                label = { Text(stringResource(R.string.planning_field_color)) },
-                singleLine = true,
-                modifier = Modifier.weight(1f),
-            )
-            OutlinedTextField(
-                value = uiState.draftIcon,
-                onValueChange = onIconChanged,
-                label = { Text(stringResource(R.string.planning_field_icon)) },
-                singleLine = true,
-                modifier = Modifier.weight(1f),
-            )
+            // Start date
+            Box(modifier = Modifier.weight(1f)) {
+                SommarTextField(
+                    value = formatPickedDate(uiState.draftStartMillis) ?: "",
+                    onValueChange = {},
+                    label = { Text(stringResource(R.string.planning_field_start_date)) },
+                    readOnly = true,
+                    singleLine = true,
+                    isError = uiState.addError != null && uiState.draftStartMillis == null,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clickable { showStartPicker = true },
+                )
+            }
+            // End date
+            Box(modifier = Modifier.weight(1f)) {
+                SommarTextField(
+                    value = formatPickedDate(uiState.draftEndMillis) ?: "",
+                    onValueChange = {},
+                    label = { Text(stringResource(R.string.planning_field_end_date)) },
+                    readOnly = true,
+                    singleLine = true,
+                    isError = uiState.addError != null && uiState.draftEndMillis == null,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .clickable { showEndPicker = true },
+                )
+            }
         }
 
         // Photos
@@ -275,11 +333,53 @@ private fun AddPhaseSheet(
                 }
             } else {
                 SommarButton(
-                    text = if (uiState.editingPhase != null) "Save Changes" else stringResource(R.string.planning_button_add),
+                    text = if (uiState.editingPhase != null) stringResource(R.string.common_save_changes) else stringResource(R.string.planning_button_add),
                     onClick = onSubmit,
                     modifier = Modifier.weight(1f),
                 )
             }
+        }
+    }
+
+    // ── Start date picker dialog ──
+    if (showStartPicker) {
+        val pickerState = rememberDatePickerState(initialSelectedDateMillis = uiState.draftStartMillis)
+        DatePickerDialog(
+            onDismissRequest = { showStartPicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    pickerState.selectedDateMillis?.let { onStartMillisSelected(it) }
+                    showStartPicker = false
+                }) { Text(stringResource(R.string.common_ok)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showStartPicker = false }) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            },
+        ) {
+            DatePicker(state = pickerState)
+        }
+    }
+
+    // ── End date picker dialog ──
+    if (showEndPicker) {
+        val pickerState = rememberDatePickerState(initialSelectedDateMillis = uiState.draftEndMillis)
+        DatePickerDialog(
+            onDismissRequest = { showEndPicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    pickerState.selectedDateMillis?.let { onEndMillisSelected(it) }
+                    showEndPicker = false
+                }) { Text(stringResource(R.string.common_ok)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEndPicker = false }) {
+                    Text(stringResource(R.string.common_cancel))
+                }
+            },
+        ) {
+            DatePicker(state = pickerState)
         }
     }
 }
@@ -418,12 +518,12 @@ private fun PhaseRow(
             Spacer(Modifier.height(8.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 SommarOutlineButton(
-                    text = "Edit",
+                    text = stringResource(R.string.common_edit),
                     onClick = onEdit,
                     modifier = Modifier.weight(1f),
                 )
                 SommarOutlineButton(
-                    text = "Delete",
+                    text = stringResource(R.string.common_delete),
                     onClick = onDelete,
                     color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.weight(1f),
