@@ -253,4 +253,16 @@
     <string name="auth_field_email">Email</string>
     <string name="auth_field_password">Password</string>
     <string name="auth_button_sign_in">Sign In</string>
+    <!-- Budget add/edit sheet -->
+    <string name="budget_fab_add">Add budget entry</string>
+    <string name="budget_sheet_title">Add Entry</string>
+    <string name="budget_sheet_save">Save</string>
+    <string name="budget_type_expense">Expense</string>
+    <string name="budget_type_phase_budget">Phase Budget</string>
+    <string name="budget_field_phase">Phase name</string>
+    <string name="budget_field_category">Category</string>
+    <string name="budget_field_amount_expense">Amount (SEK)</string>
+    <string name="budget_field_amount_budget">Budgeted amount (SEK)</string>
+    <!-- Common -->
+    <string name="common_saving">Saving…</string>
 </resources>

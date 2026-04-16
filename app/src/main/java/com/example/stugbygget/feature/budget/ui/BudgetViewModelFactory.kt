@@ -12,6 +12,8 @@ class BudgetViewModelFactory(
         if (modelClass.isAssignableFrom(BudgetViewModel::class.java)) {
             return BudgetViewModel(
                 observeBudgetOverviewUseCase = container.observeBudgetOverviewUseCase,
+                savePhaseBudgetUseCase = container.savePhaseBudgetUseCase,
+                addExpenseUseCase = container.addExpenseUseCase,
                 projectId = container.projectSessionRepository.getProjectId()
             ) as T
         }

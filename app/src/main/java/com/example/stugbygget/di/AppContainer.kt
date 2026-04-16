@@ -55,7 +55,9 @@ import com.example.stugbygget.domain.usecase.ObservePhotosUseCase
 import com.example.stugbygget.domain.usecase.ObservePriceQuotesUseCase
 import com.example.stugbygget.domain.usecase.ObservePhasesUseCase
 import com.example.stugbygget.domain.usecase.ObserveShoppingListsUseCase
+import com.example.stugbygget.domain.usecase.AddExpenseUseCase
 import com.example.stugbygget.domain.usecase.ObserveBudgetOverviewUseCase
+import com.example.stugbygget.domain.usecase.SavePhaseBudgetUseCase
 import com.example.stugbygget.domain.usecase.ObserveTodosUseCase
 import com.example.stugbygget.domain.usecase.SignInWithEmailPasswordUseCase
 import com.example.stugbygget.domain.usecase.SignOutUseCase
@@ -175,6 +177,8 @@ class AppContainer(
     val observeBudgetOverviewUseCase: ObserveBudgetOverviewUseCase by lazy {
         ObserveBudgetOverviewUseCase(budgetRepository)
     }
+    val savePhaseBudgetUseCase: SavePhaseBudgetUseCase by lazy { SavePhaseBudgetUseCase(budgetRepository) }
+    val addExpenseUseCase: AddExpenseUseCase by lazy { AddExpenseUseCase(budgetRepository) }
     val createShoppingListUseCase: CreateShoppingListUseCase by lazy {
         CreateShoppingListUseCase(shoppingRepository)
     }

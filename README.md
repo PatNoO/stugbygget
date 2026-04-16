@@ -20,19 +20,7 @@ It is also a portfolio project showcasing Android development with modern Jetpac
 
 ## Screenshots
 
-> _Screenshots will be added once the physical renovation begins. Placeholder previews below._
-
-| Planning | Todos | Gallery |
-|---|---|---|
-| `[Planning screen]` | `[Todos screen]` | `[Gallery screen]` |
-
-| AI Chat | Room Planner | AR Measure |
-|---|---|---|
-| `[AI screen]` | `[Room planner]` | `[AR measurement]` |
-
-| Materials | Shopping | Budget |
-|---|---|---|
-| `[Materials screen]` | `[Shopping screen]` | `[Budget screen]` |
+> _Screenshots will be added when the renovation is underway (Summer 2026)._
 
 ---
 
@@ -44,7 +32,7 @@ It is also a portfolio project showcasing Android development with modern Jetpac
 | UI | Jetpack Compose + Material 3 |
 | Architecture | Clean Architecture (UI → ViewModel → UseCase → Repository) |
 | Async | Kotlin Coroutines + StateFlow |
-| Dependency Injection | Manual `AppContainer` (Hilt planned) |
+| Dependency Injection | Manual `AppContainer` |
 | Auth | Firebase Authentication (email/password) |
 | Database | Cloud Firestore (real-time, offline-capable) |
 | File Storage | Firebase Storage |
@@ -113,7 +101,7 @@ Composable  ──►  ViewModel  ──►  UseCase  ──►  Repository  ─
 | AR Measurement | ✅ Done | ARCore-based distance measurement with export to Room Planner |
 | Smart Materials | ✅ Done | Material spec sheets, unit calculator, live price comparison |
 | Shopping Lists | ✅ Done | Multi-list shopping manager with budget estimates |
-| Budget | ✅ Done | Phase and category budget tracking with over-budget warnings |
+| Budget | ✅ Done | Phase and category budget tracking with add/edit entries and over-budget warnings |
 | Logistics Planning | ✅ Done | Transport recommendation engine (own car / trailer / delivery) |
 
 ### Infrastructure
@@ -247,7 +235,7 @@ The UI uses a custom design system called **Svensk Sommar** built on top of Mate
 - [ ] **SB70** — Scheduled Cloud Function for daily price scraping from Swedish building suppliers (Byggmax, Bauhaus, Hornbach)
 - [ ] **SB71** — Callable Cloud Functions for price optimiser (`price-compare`) and live transport cost calculator using Google Maps Routes API (`transport-calc`)
 - [ ] **SB72** — End-to-end testing pass across all 9 modules
-- [ ] **Future** — Hilt dependency injection, multi-user/invite support, widget for daily progress
+- [ ] **Future** — Hilt dependency injection, multi-user/invite support, widget for daily progress, screenshots and demo video
 
 ---
 
