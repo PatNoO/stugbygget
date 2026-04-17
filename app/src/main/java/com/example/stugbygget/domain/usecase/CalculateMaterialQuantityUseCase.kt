@@ -9,12 +9,27 @@ data class MaterialQuantityResult(
     val roundedUnits: Int
 )
 
+/**
+ * Calculates how many units of a material are required for a given surface area or length.
+ *
+ * Uses the formula: `(baseAmount / coveragePerUnit) * (1 + wasteMargin)`
+ *
+ * The `baseAmount` is derived from the material category:
+ * - [MaterialCategory.PAINT] — `areaM2 * layers`
+ * - [MaterialCategory.WOOD] — `lengthM`
+ * - [MaterialCategory.INSULATION] / [MaterialCategory.TILE] — `areaM2`
+ *
+ * The result is provided both as a precise [Double] and as a ceiling-rounded [Int]
+ * suitable for purchasing decisions.
+ */
 class CalculateMaterialQuantityUseCase {
 
     /**
-     * Calculates required units for supported material categories using one
-     * consistent formula: (base amount / coverage) * (1 + wasteMargin).
-     * Category-specific parameters are passed in via the input dimensions.
+     * @param spec The material specification including coveragePerUnit and wasteMargin.
+     * @param areaM2 Surface area in square metres (used for paint, insulation, tiles).
+     * @param lengthM Linear length in metres (used for wood/boards).
+     * @param layers Number of coats/layers (used for paint calculations).
+     * @return [MaterialQuantityResult] with exact and rounded unit counts.
      */
     operator fun invoke(
         spec: MaterialSpec,

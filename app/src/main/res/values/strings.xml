@@ -224,6 +224,7 @@
     <!-- Gallery additions -->
     <string name="gallery_dialog_delete_title">Delete photo?</string>
     <string name="gallery_dialog_delete_message">This photo will be permanently deleted.</string>
+    <string name="gallery_field_room">Room</string>
     <string name="gallery_sheet_upload_title">Save Photo</string>
     <string name="gallery_content_desc_captured">Captured photo</string>
     <string name="gallery_sheet_add_title">Add Photos</string>

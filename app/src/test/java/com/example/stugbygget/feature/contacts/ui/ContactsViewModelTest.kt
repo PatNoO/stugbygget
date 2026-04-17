@@ -10,6 +10,7 @@ import com.example.stugbygget.domain.usecase.mockContact
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -279,9 +280,9 @@ class ContactsViewModelTest {
         var lastUpserted: Contact? = null
         var lastDeletedId: String? = null
 
-        override fun observeContacts(projectId: String): Flow<List<Contact>> {
+        override fun observeContacts(projectId: String): Flow<List<Contact>> = flow {
             if (throwOnObserve) throw RuntimeException("Firestore unavailable")
-            return flowOf(contacts)
+            emit(contacts)
         }
 
         override suspend fun upsertContact(projectId: String, contact: Contact) {

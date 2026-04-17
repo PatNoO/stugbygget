@@ -1,6 +1,5 @@
 package com.example.stugbygget.feature.materials.ui
 
-import android.net.Uri
 import com.example.stugbygget.domain.model.MaterialSpec
 import com.example.stugbygget.domain.model.OwnedMaterial
 import com.example.stugbygget.domain.model.PriceQuote
@@ -17,7 +16,7 @@ data class MaterialsUiState(
     val draftOwnedQuantity: String = "",
     val draftOwnedUnit: String = "",
     val draftOwnedNotes: String = "",
-    val draftOwnedPhotoUri: Uri? = null,
+    val draftOwnedPhotoUri: String? = null,
     val isAddingOwned: Boolean = false,
     val ownedAddError: String? = null,
     val viewingPhotoUrl: String? = null,

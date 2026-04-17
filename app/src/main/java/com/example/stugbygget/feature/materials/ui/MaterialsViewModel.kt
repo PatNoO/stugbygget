@@ -30,8 +30,8 @@ class MaterialsViewModel(
     private val upsertOwnedMaterialUseCase: UpsertOwnedMaterialUseCase,
     private val deleteOwnedMaterialUseCase: DeleteOwnedMaterialUseCase,
     private val projectId: String,
-    private val contentResolver: ContentResolver,
-    private val storage: FirebaseStorage,
+    private val contentResolver: ContentResolver?,
+    private val storage: FirebaseStorage?,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MaterialsUiState(isLoading = true))
@@ -106,7 +106,8 @@ class MaterialsViewModel(
     fun onDraftOwnedQuantityChanged(value: String) = _uiState.update { it.copy(draftOwnedQuantity = value) }
     fun onDraftOwnedUnitChanged(value: String) = _uiState.update { it.copy(draftOwnedUnit = value) }
     fun onDraftOwnedNotesChanged(value: String) = _uiState.update { it.copy(draftOwnedNotes = value) }
-    fun onDraftOwnedPhotoSelected(uri: Uri) = _uiState.update { it.copy(draftOwnedPhotoUri = uri) }
+    /** Stores the selected photo URI as a string to keep UiState framework-agnostic. */
+    fun onDraftOwnedPhotoSelected(uri: Uri) = _uiState.update { it.copy(draftOwnedPhotoUri = uri.toString()) }
     fun onViewOwnedPhoto(url: String) = _uiState.update { it.copy(viewingPhotoUrl = url) }
     fun onDismissPhotoViewer() = _uiState.update { it.copy(viewingPhotoUrl = null) }
 
@@ -123,12 +124,13 @@ class MaterialsViewModel(
         _uiState.update { it.copy(isAddingOwned = true, ownedAddError = null) }
         viewModelScope.launch(Dispatchers.IO) {
             runCatching {
-                val photoUrl = state.draftOwnedPhotoUri?.let { uri ->
-                    val bytes = contentResolver.openInputStream(uri)?.use { it.readBytes() }
+                val photoUrl = state.draftOwnedPhotoUri?.let { uriString ->
+                    val uri = Uri.parse(uriString)
+                    val bytes = contentResolver!!.openInputStream(uri)?.use { it.readBytes() }
                         ?: throw IllegalStateException("Could not read photo.")
-                    val mimeType = contentResolver.getType(uri) ?: "image/jpeg"
+                    val mimeType = contentResolver!!.getType(uri) ?: "image/jpeg"
                     val ext = if (mimeType.contains("png")) "png" else "jpg"
-                    val ref = storage.reference
+                    val ref = storage!!.reference
                         .child("projects/$projectId/owned_materials/${UUID.randomUUID()}.$ext")
                     ref.putBytes(bytes).await()
                     ref.downloadUrl.await().toString()

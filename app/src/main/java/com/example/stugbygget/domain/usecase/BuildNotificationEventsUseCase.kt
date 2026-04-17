@@ -8,6 +8,23 @@ import java.time.Duration
 import java.time.Instant
 import java.util.UUID
 
+/**
+ * Builds a list of push notification events by comparing current state against
+ * user notification preferences.
+ *
+ * Three event types are produced:
+ * - [NotificationType.PRICE_DROP] — emitted when a watched material's latest price
+ *   is lower than the previously recorded price.
+ * - [NotificationType.DELIVERY_REMINDER] — emitted when a phase starts within 0–2 days,
+ *   prompting the user to ensure materials are ordered.
+ * - [NotificationType.PHASE_DEADLINE] — emitted when a phase end date is within 0–1 days.
+ *
+ * Each condition is gated by the corresponding flag in [NotificationSettings], allowing
+ * users to opt in/out of each notification type independently.
+ *
+ * This use case is pure (no side effects) — it only builds the event list.
+ * Dispatching is handled separately by [DispatchNotificationEventsUseCase].
+ */
 class BuildNotificationEventsUseCase {
     fun invoke(
         settings: NotificationSettings,

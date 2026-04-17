@@ -304,7 +304,7 @@ private fun AddOwnedMaterialSheet(
         if (uiState.draftOwnedPhotoUri != null) {
             // Preview of the selected photo
             SubcomposeAsyncImage(
-                model = uiState.draftOwnedPhotoUri,
+                model = Uri.parse(uiState.draftOwnedPhotoUri),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier

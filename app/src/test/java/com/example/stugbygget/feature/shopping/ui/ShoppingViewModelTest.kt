@@ -3,14 +3,22 @@ package com.example.stugbygget.feature.shopping.ui
 import com.example.stugbygget.domain.model.ShoppingItem
 import com.example.stugbygget.domain.model.ShoppingList
 import com.example.stugbygget.domain.repository.ShoppingRepository
+import com.example.stugbygget.domain.model.MaterialSpec
+import com.example.stugbygget.domain.model.PriceComparisonResult
+import com.example.stugbygget.domain.model.PriceQuote
+import com.example.stugbygget.domain.repository.MaterialRepository
+import com.example.stugbygget.domain.repository.PriceRecommendationRepository
 import com.example.stugbygget.domain.usecase.AddShoppingItemUseCase
+import com.example.stugbygget.domain.usecase.CompareShoppingPricesUseCase
 import com.example.stugbygget.domain.usecase.CreateShoppingListUseCase
+import com.example.stugbygget.domain.usecase.ObservePriceQuotesUseCase
 import com.example.stugbygget.domain.usecase.ObserveShoppingListsUseCase
 import com.example.stugbygget.domain.usecase.ToggleShoppingItemPurchasedUseCase
 import com.example.stugbygget.domain.usecase.mockShoppingList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -246,6 +254,8 @@ class ShoppingViewModelTest {
         createShoppingListUseCase = CreateShoppingListUseCase(repo),
         addShoppingItemUseCase = AddShoppingItemUseCase(repo),
         toggleShoppingItemPurchasedUseCase = ToggleShoppingItemPurchasedUseCase(repo),
+        compareShoppingPricesUseCase = CompareShoppingPricesUseCase(FakePriceRecommendationRepository()),
+        observePriceQuotesUseCase = ObservePriceQuotesUseCase(FakeMaterialRepository()),
         projectId = "project-1",
         currentUserIdProvider = { userId }
     )
@@ -261,9 +271,9 @@ class ShoppingViewModelTest {
         var lastToggledItemId: String? = null
         var lastToggledPurchased: Boolean? = null
 
-        override fun observeShoppingLists(projectId: String): Flow<List<ShoppingList>> {
+        override fun observeShoppingLists(projectId: String): Flow<List<ShoppingList>> = flow {
             if (throwOnObserve) throw RuntimeException("Firestore unavailable")
-            return flowOf(lists)
+            emit(lists)
         }
 
         override suspend fun createShoppingList(
@@ -284,5 +294,17 @@ class ShoppingViewModelTest {
             lastToggledItemId = itemId
             lastToggledPurchased = purchased
         }
+    }
+
+    private class FakePriceRecommendationRepository : PriceRecommendationRepository {
+        override suspend fun saveSnapshot(
+            projectId: String, shoppingListId: String, result: PriceComparisonResult
+        ) { /* no-op */ }
+    }
+
+    private class FakeMaterialRepository : MaterialRepository {
+        override fun observeMaterials(projectId: String): Flow<List<MaterialSpec>> = flowOf(emptyList())
+        override fun observePriceQuotes(projectId: String, materialId: String): Flow<List<PriceQuote>> = flowOf(emptyList())
+        override suspend fun seedDefaultMaterials(projectId: String) { /* no-op */ }
     }
 }

@@ -43,6 +43,10 @@ class ObserveBudgetOverviewUseCaseTest {
             lastProjectId = projectId
             return flowOf(overview)
         }
+
+        override suspend fun setTotalBudget(projectId: String, totalBudget: Double) { /* no-op */ }
+        override suspend fun savePhaseBudget(projectId: String, phaseId: String, budgeted: Double) { /* no-op */ }
+        override suspend fun addExpense(projectId: String, phaseId: String, category: String, amount: Double) { /* no-op */ }
     }
 }
 
