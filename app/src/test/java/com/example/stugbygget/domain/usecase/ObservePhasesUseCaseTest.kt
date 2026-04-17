@@ -30,5 +30,6 @@ class ObservePhasesUseCaseTest {
     ) : PhaseRepository {
         override fun observePhases(projectId: String): Flow<List<RenovationPhase>> = flowOf(phases)
         override suspend fun upsertPhase(projectId: String, phase: RenovationPhase) = Unit
+        override suspend fun deletePhase(projectId: String, phaseId: String) = Unit
     }
 }

@@ -13,7 +13,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.stugbygget"
+        applicationId = "com.example.stugbygget" // TODO SB101: update to se.noordh.stugbygget after Firebase re-registration
         minSdk = 26
         targetSdk = 36
         versionCode = 1

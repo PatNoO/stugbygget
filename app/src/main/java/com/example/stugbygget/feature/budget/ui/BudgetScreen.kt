@@ -293,12 +293,12 @@ private fun BudgetAddSheet(
         // Type selector
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             SommarFilterChip(
-                label = stringResource(R.string.budget_type_expense),
+                text = stringResource(R.string.budget_type_expense),
                 selected = uiState.addType == BudgetAddType.EXPENSE,
                 onClick = { onAddTypeChanged(BudgetAddType.EXPENSE) },
             )
             SommarFilterChip(
-                label = stringResource(R.string.budget_type_phase_budget),
+                text = stringResource(R.string.budget_type_phase_budget),
                 selected = uiState.addType == BudgetAddType.PHASE_BUDGET,
                 onClick = { onAddTypeChanged(BudgetAddType.PHASE_BUDGET) },
             )
@@ -322,7 +322,7 @@ private fun BudgetAddSheet(
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 categories.forEach { cat ->
                     SommarFilterChip(
-                        label = cat.lowercase().replaceFirstChar { it.uppercase() },
+                        text = cat.lowercase().replaceFirstChar { it.uppercase() },
                         selected = uiState.draftCategory == cat,
                         onClick = { onCategoryChanged(cat) },
                     )

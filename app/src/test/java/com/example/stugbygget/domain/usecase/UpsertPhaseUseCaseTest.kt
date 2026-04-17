@@ -60,5 +60,7 @@ class UpsertPhaseUseCaseTest {
             lastProjectId = projectId
             lastUpserted = phase
         }
+
+        override suspend fun deletePhase(projectId: String, phaseId: String) { /* no-op */ }
     }
 }

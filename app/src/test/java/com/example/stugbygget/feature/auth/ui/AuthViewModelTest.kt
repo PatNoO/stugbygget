@@ -8,6 +8,7 @@ import com.example.stugbygget.domain.usecase.SignOutUseCase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -199,9 +200,9 @@ class AuthViewModelTest {
         var signOutCalled = false
         var lastSignInEmail: String? = null
 
-        override fun observeCurrentUser(): Flow<AppUser?> {
+        override fun observeCurrentUser(): Flow<AppUser?> = flow {
             if (throwOnObserve) throw RuntimeException("Auth stream failed")
-            return flowOf(currentUser)
+            emit(currentUser)
         }
 
         override suspend fun signInWithEmailPassword(email: String, password: String) {

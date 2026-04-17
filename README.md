@@ -97,12 +97,12 @@ Composable  ──►  ViewModel  ──►  UseCase  ──►  Repository  ─
 | Todos | ✅ Done | Task list with priority, assignee, phase linking, and filter chips |
 | Photo Gallery | ✅ Done | Before/during/after gallery with Firebase Storage upload |
 | Stugan AI | ✅ Done | Chat interface powered by Claude API with markdown rendering |
-| Room Planner 2D | ✅ Done | Drag-and-drop 2D room layout editor with furniture catalogue |
-| AR Measurement | ✅ Done | ARCore-based distance measurement with export to Room Planner |
+| Room Planner 2D | 🚧 In Progress | Drag-and-drop 2D room layout editor with furniture catalogue |
+| AR Measurement | 🚧 In Progress | ARCore-based distance measurement with export to Room Planner |
 | Smart Materials | ✅ Done | Material spec sheets, unit calculator, live price comparison |
 | Shopping Lists | ✅ Done | Multi-list shopping manager with budget estimates |
 | Budget | ✅ Done | Phase and category budget tracking with add/edit entries and over-budget warnings |
-| Logistics Planning | ✅ Done | Transport recommendation engine (own car / trailer / delivery) |
+| Logistics Planning | 🚧 In Progress | Transport recommendation engine (own car / trailer / delivery) |
 
 ### Infrastructure
 
@@ -235,6 +235,9 @@ The UI uses a custom design system called **Svensk Sommar** built on top of Mate
 - [ ] **SB70** — Scheduled Cloud Function for daily price scraping from Swedish building suppliers (Byggmax, Bauhaus, Hornbach)
 - [ ] **SB71** — Callable Cloud Functions for price optimiser (`price-compare`) and live transport cost calculator using Google Maps Routes API (`transport-calc`)
 - [ ] **SB72** — End-to-end testing pass across all 9 modules
+- [ ] **SB73** — Room Planner 2D: drag-and-drop canvas with room shapes and furniture
+- [ ] **SB74** — AR Measurement: ARCore plane detection and distance export to Room Planner
+- [ ] **SB75** — Logistics Planning: transport recommendation screen (own car / trailer / delivery)
 - [ ] **Future** — Hilt dependency injection, multi-user/invite support, widget for daily progress, screenshots and demo video
 
 ---

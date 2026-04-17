@@ -4,11 +4,14 @@ import com.example.stugbygget.domain.model.BudgetOverview
 import com.example.stugbygget.domain.model.CategoryBudget
 import com.example.stugbygget.domain.model.PhaseBudget
 import com.example.stugbygget.domain.repository.BudgetRepository
+import com.example.stugbygget.domain.usecase.AddExpenseUseCase
 import com.example.stugbygget.domain.usecase.ObserveBudgetOverviewUseCase
+import com.example.stugbygget.domain.usecase.SavePhaseBudgetUseCase
 import com.example.stugbygget.domain.usecase.mockBudgetOverview
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -133,20 +136,27 @@ class BudgetViewModelTest {
     private fun buildViewModel(
         overview: BudgetOverview = mockBudgetOverview(),
         throwError: Boolean = false
-    ): BudgetViewModel = BudgetViewModel(
-        observeBudgetOverviewUseCase = ObserveBudgetOverviewUseCase(
-            FakeBudgetRepository(overview = overview, throwError = throwError)
-        ),
-        projectId = "project-1"
-    )
+    ): BudgetViewModel {
+        val repo = FakeBudgetRepository(overview = overview, throwError = throwError)
+        return BudgetViewModel(
+            observeBudgetOverviewUseCase = ObserveBudgetOverviewUseCase(repo),
+            savePhaseBudgetUseCase = SavePhaseBudgetUseCase(repo),
+            addExpenseUseCase = AddExpenseUseCase(repo),
+            projectId = "project-1"
+        )
+    }
 
     private class FakeBudgetRepository(
         private val overview: BudgetOverview,
         private val throwError: Boolean = false
     ) : BudgetRepository {
-        override fun observeBudget(projectId: String): Flow<BudgetOverview> {
+        override fun observeBudget(projectId: String): Flow<BudgetOverview> = flow {
             if (throwError) throw RuntimeException("Firestore unavailable")
-            return flowOf(overview)
+            emit(overview)
         }
+
+        override suspend fun setTotalBudget(projectId: String, totalBudget: Double) { /* no-op */ }
+        override suspend fun savePhaseBudget(projectId: String, phaseId: String, budgeted: Double) { /* no-op */ }
+        override suspend fun addExpense(projectId: String, phaseId: String, category: String, amount: Double) { /* no-op */ }
     }
 }

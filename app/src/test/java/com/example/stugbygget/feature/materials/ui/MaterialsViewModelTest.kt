@@ -3,15 +3,24 @@ package com.example.stugbygget.feature.materials.ui
 import com.example.stugbygget.domain.model.MaterialCategory
 import com.example.stugbygget.domain.model.MaterialSpec
 import com.example.stugbygget.domain.model.PriceQuote
+import android.content.ContentResolver
+import com.example.stugbygget.domain.model.OwnedMaterial
 import com.example.stugbygget.domain.repository.MaterialRepository
+import com.example.stugbygget.domain.repository.OwnedMaterialRepository
 import com.example.stugbygget.domain.usecase.CalculateMaterialQuantityUseCase
+import com.example.stugbygget.domain.usecase.DeleteOwnedMaterialUseCase
 import com.example.stugbygget.domain.usecase.ObserveMaterialsUseCase
+import com.example.stugbygget.domain.usecase.ObserveOwnedMaterialsUseCase
 import com.example.stugbygget.domain.usecase.ObservePriceQuotesUseCase
+import com.example.stugbygget.domain.usecase.SeedMaterialsUseCase
+import com.example.stugbygget.domain.usecase.UpsertOwnedMaterialUseCase
 import com.example.stugbygget.domain.usecase.mockMaterialSpec
 import com.example.stugbygget.domain.usecase.mockPriceQuote
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -179,9 +188,17 @@ class MaterialsViewModelTest {
             materials = materials,
             throwOnMaterials = throwError
         )
+        val ownedRepo = FakeOwnedMaterialRepository()
+        @Suppress("UNCHECKED_CAST")
         return MaterialsViewModel(
             observeMaterialsUseCase = ObserveMaterialsUseCase(repo),
-            projectId = "project-1"
+            seedMaterialsUseCase = SeedMaterialsUseCase(repo),
+            observeOwnedMaterialsUseCase = ObserveOwnedMaterialsUseCase(ownedRepo),
+            upsertOwnedMaterialUseCase = UpsertOwnedMaterialUseCase(ownedRepo),
+            deleteOwnedMaterialUseCase = DeleteOwnedMaterialUseCase(ownedRepo),
+            projectId = "project-1",
+            contentResolver = null, // never exercised in these tests
+            storage = null          // never exercised in these tests
         )
     }
 
@@ -210,14 +227,22 @@ class MaterialsViewModelTest {
         private val quotes: List<PriceQuote> = emptyList(),
         private val throwOnMaterials: Boolean = false
     ) : MaterialRepository {
-        override fun observeMaterials(projectId: String): Flow<List<MaterialSpec>> {
+        override fun observeMaterials(projectId: String): Flow<List<MaterialSpec>> = flow {
             if (throwOnMaterials) throw RuntimeException("Firestore unavailable")
-            return flowOf(materials)
+            emit(materials)
         }
 
         override fun observePriceQuotes(
             projectId: String,
             materialId: String
         ): Flow<List<PriceQuote>> = flowOf(quotes)
+
+        override suspend fun seedDefaultMaterials(projectId: String) { /* no-op */ }
+    }
+
+    private class FakeOwnedMaterialRepository : OwnedMaterialRepository {
+        override fun observeOwnedMaterials(projectId: String): Flow<List<OwnedMaterial>> = flowOf(emptyList())
+        override suspend fun upsertOwnedMaterial(projectId: String, material: OwnedMaterial) { /* no-op */ }
+        override suspend fun deleteOwnedMaterial(projectId: String, id: String) { /* no-op */ }
     }
 }

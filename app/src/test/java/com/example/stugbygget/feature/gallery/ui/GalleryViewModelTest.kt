@@ -1,9 +1,12 @@
 package com.example.stugbygget.feature.gallery.ui
 
+import android.content.ContentResolver
 import com.example.stugbygget.domain.model.PhotoItem
 import com.example.stugbygget.domain.model.PhotoPhase
 import com.example.stugbygget.domain.repository.PhotoRepository
+import com.example.stugbygget.domain.usecase.DeletePhotoUseCase
 import com.example.stugbygget.domain.usecase.ObservePhotosUseCase
+import com.example.stugbygget.domain.usecase.UploadPhotoUseCase
 import com.example.stugbygget.domain.usecase.mockPhoto
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -131,12 +134,17 @@ class GalleryViewModelTest {
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
+    @Suppress("UNCHECKED_CAST")
     private fun buildViewModel(
         photos: List<PhotoItem> = emptyList(),
         throwError: Boolean = false,
         repo: FakePhotoRepository = FakePhotoRepository(photos = photos, throwOnObserve = throwError)
     ): GalleryViewModel = GalleryViewModel(
         observePhotosUseCase = ObservePhotosUseCase(repo),
+        uploadPhotoUseCase = UploadPhotoUseCase(repo),
+        deletePhotoUseCase = DeletePhotoUseCase(repo),
+        contentResolver = null, // never exercised in these tests
+        currentUserEmail = "test@example.com",
         projectId = "project-1"
     )
 

@@ -63,6 +63,8 @@ class ObservePriceQuotesUseCaseTest {
             lastMaterialId = materialId
             return flowOf(quotes)
         }
+
+        override suspend fun seedDefaultMaterials(projectId: String) { /* no-op */ }
     }
 }
 

@@ -61,6 +61,8 @@ class ObserveMaterialsUseCaseTest {
             projectId: String,
             materialId: String
         ): Flow<List<PriceQuote>> = flowOf(emptyList())
+
+        override suspend fun seedDefaultMaterials(projectId: String) { /* no-op */ }
     }
 }
 

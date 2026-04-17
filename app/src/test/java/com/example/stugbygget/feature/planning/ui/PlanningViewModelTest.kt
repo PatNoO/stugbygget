@@ -4,12 +4,16 @@ import com.example.stugbygget.data.firebase.firestore.PhaseDocumentMapper
 import com.example.stugbygget.domain.model.RenovationPhase
 import com.example.stugbygget.domain.repository.PhaseRepository
 import com.example.stugbygget.domain.usecase.BuildPlanningOverviewUseCase
+import com.example.stugbygget.domain.usecase.DeletePhaseUseCase
 import com.example.stugbygget.domain.usecase.ObservePhasesUseCase
 import com.example.stugbygget.domain.usecase.UpsertPhaseUseCase
+import java.time.LocalDate
+import java.time.ZoneOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -28,6 +32,10 @@ import org.junit.Test
 class PlanningViewModelTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
+
+    // Epoch millis for test dates (UTC midnight)
+    private val MILLIS_JUN_01 = LocalDate.parse("2026-06-01").atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+    private val MILLIS_JUN_08 = LocalDate.parse("2026-06-08").atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
 
     @Before
     fun setUp() {
@@ -111,13 +119,13 @@ class PlanningViewModelTest {
 
         vm.onDraftNameChanged("Rivning")
         vm.onDraftRoomChanged("Kök")
-        vm.onDraftStartDateChanged("2026-06-01")
-        vm.onDraftEndDateChanged("2026-06-08")
+        vm.onDraftStartMillisChanged(MILLIS_JUN_01)
+        vm.onDraftEndMillisChanged(MILLIS_JUN_08)
 
         assertEquals("Rivning", vm.uiState.value.draftName)
         assertEquals("Kök", vm.uiState.value.draftRoom)
-        assertEquals("2026-06-01", vm.uiState.value.draftStartDate)
-        assertEquals("2026-06-08", vm.uiState.value.draftEndDate)
+        assertEquals(MILLIS_JUN_01, vm.uiState.value.draftStartMillis)
+        assertEquals(MILLIS_JUN_08, vm.uiState.value.draftEndMillis)
     }
 
     // ── Validation ────────────────────────────────────────────────────────────
@@ -125,9 +133,10 @@ class PlanningViewModelTest {
     @Test
     fun `submit with blank name sets addError`() = runTest {
         val vm = buildViewModel()
+        vm.onShowAddSheet()
         vm.onDraftRoomChanged("Kök")
-        vm.onDraftStartDateChanged("2026-06-01")
-        vm.onDraftEndDateChanged("2026-06-08")
+        vm.onDraftStartMillisChanged(MILLIS_JUN_01)
+        vm.onDraftEndMillisChanged(MILLIS_JUN_08)
 
         vm.onSubmitPhase()
 
@@ -139,8 +148,8 @@ class PlanningViewModelTest {
     fun `submit with blank room sets addError`() = runTest {
         val vm = buildViewModel()
         vm.onDraftNameChanged("Rivning")
-        vm.onDraftStartDateChanged("2026-06-01")
-        vm.onDraftEndDateChanged("2026-06-08")
+        vm.onDraftStartMillisChanged(MILLIS_JUN_01)
+        vm.onDraftEndMillisChanged(MILLIS_JUN_08)
 
         vm.onSubmitPhase()
 
@@ -148,12 +157,11 @@ class PlanningViewModelTest {
     }
 
     @Test
-    fun `submit with invalid date format sets addError`() = runTest {
+    fun `submit with missing dates sets addError`() = runTest {
         val vm = buildViewModel()
         vm.onDraftNameChanged("Rivning")
         vm.onDraftRoomChanged("Kök")
-        vm.onDraftStartDateChanged("01-06-2026") // wrong format
-        vm.onDraftEndDateChanged("08-06-2026")
+        // Intentionally omitting date selection — draftStartMillis/draftEndMillis remain null
 
         vm.onSubmitPhase()
 
@@ -165,8 +173,8 @@ class PlanningViewModelTest {
         val vm = buildViewModel()
         vm.onDraftNameChanged("Rivning")
         vm.onDraftRoomChanged("Kök")
-        vm.onDraftStartDateChanged("2026-06-08")
-        vm.onDraftEndDateChanged("2026-06-01") // before start
+        vm.onDraftStartMillisChanged(MILLIS_JUN_08)
+        vm.onDraftEndMillisChanged(MILLIS_JUN_01) // before start
 
         vm.onSubmitPhase()
 
@@ -178,8 +186,8 @@ class PlanningViewModelTest {
         val vm = buildViewModel()
         vm.onDraftNameChanged("Rivning")
         vm.onDraftRoomChanged("Kök")
-        vm.onDraftStartDateChanged("2026-06-08")
-        vm.onDraftEndDateChanged("2026-06-08") // same day
+        vm.onDraftStartMillisChanged(MILLIS_JUN_08)
+        vm.onDraftEndMillisChanged(MILLIS_JUN_08) // same day
 
         vm.onSubmitPhase()
 
@@ -195,8 +203,8 @@ class PlanningViewModelTest {
 
         vm.onDraftNameChanged("Rivning")
         vm.onDraftRoomChanged("Kök")
-        vm.onDraftStartDateChanged("2026-06-01")
-        vm.onDraftEndDateChanged("2026-06-08")
+        vm.onDraftStartMillisChanged(MILLIS_JUN_01)
+        vm.onDraftEndMillisChanged(MILLIS_JUN_08)
         vm.onSubmitPhase()
 
         assertNotNull(repo.lastUpserted)
@@ -213,8 +221,8 @@ class PlanningViewModelTest {
 
         vm.onDraftNameChanged("Rivning")
         vm.onDraftRoomChanged("Kök")
-        vm.onDraftStartDateChanged("2026-06-01")
-        vm.onDraftEndDateChanged("2026-06-08")
+        vm.onDraftStartMillisChanged(MILLIS_JUN_01)
+        vm.onDraftEndMillisChanged(MILLIS_JUN_08)
         vm.onSubmitPhase()
 
         assertNotNull(vm.uiState.value.addError)
@@ -230,7 +238,8 @@ class PlanningViewModelTest {
         observePhasesUseCase = ObservePhasesUseCase(repo),
         projectId = "project-1",
         buildPlanningOverviewUseCase = BuildPlanningOverviewUseCase(),
-        upsertPhaseUseCase = UpsertPhaseUseCase(repo)
+        upsertPhaseUseCase = UpsertPhaseUseCase(repo),
+        deletePhaseUseCase = DeletePhaseUseCase(repo)
     )
 
     private class FakePhaseRepository(
@@ -240,14 +249,16 @@ class PlanningViewModelTest {
     ) : PhaseRepository {
         var lastUpserted: RenovationPhase? = null
 
-        override fun observePhases(projectId: String): Flow<List<RenovationPhase>> {
+        override fun observePhases(projectId: String): Flow<List<RenovationPhase>> = flow {
             if (throwOnObserve) throw RuntimeException("Firestore unavailable")
-            return flowOf(phases)
+            emit(phases)
         }
 
         override suspend fun upsertPhase(projectId: String, phase: RenovationPhase) {
             if (throwOnUpsert) throw RuntimeException("Write failed")
             lastUpserted = phase
         }
+
+        override suspend fun deletePhase(projectId: String, phaseId: String) { /* no-op */ }
     }
 }
